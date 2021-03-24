@@ -1,7 +1,6 @@
 import os
 import librosa
 import soundfile as sf
-import numpy as np
 from pydub import AudioSegment
 
 
@@ -15,7 +14,7 @@ class Audioengine:
     """
 
     @staticmethod
-    def load_wav(file: str, sample_rate: int, mono_channel: bool) -> (np.ndarry, int):
+    def load_wav(file: str, sample_rate: int = 48_000, mono_channel: bool = False):
         """
         Load and Resample (WAV) Audiofile
 
@@ -23,14 +22,16 @@ class Audioengine:
             Path to (input) WAV-File
         :param sample_rate: int
             The sample rate of the audio data.
+            Default: 48_000 [Hz]
         :param mono_channel: bool
             Force Convert Audio from n to 1 Channel.
+            Default: False
         :return: (signal, signal_sample_rate): (np.ndarry, int)
         """
         return librosa.load(file, sr=sample_rate, mono=mono_channel)  # signal, sample_rate
 
     @staticmethod
-    def save_wav(signal: any, destination: str, sample_rate: int) -> None:
+    def save_wav(signal: any, destination: str, sample_rate: int = 48_000) -> None:
         """
         Write Wav-Signal to File.
 
@@ -43,6 +44,7 @@ class Audioengine:
             The file to write to.  See :class:`SoundFile` for details.
         :param sample_rate: int
             The sample rate of the audio data.
+            Default 48_000 [Hz]
         :return: None
         """
         sf.write(destination, data=signal, samplerate=sample_rate, subtype='PCM_24')
@@ -81,3 +83,4 @@ class Audioengine:
         os.remove(tmp_dst)
 
         return dst
+Audioengine.load_wav("D:\\Download\\test\\sgr2.wav", 16_000, True)
