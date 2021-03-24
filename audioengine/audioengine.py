@@ -83,4 +83,3 @@ class Audioengine:
         os.remove(tmp_dst)
 
         return dst
-Audioengine.load_wav("D:\\Download\\test\\sgr2.wav", 16_000, True)
