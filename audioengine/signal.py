@@ -5,7 +5,7 @@ from sklearn.preprocessing import scale
 
 class Signal:
     @staticmethod
-    def mfcc(signal: np.ndarray, **kwargs) -> np.ndarray:
+    def mfcc(signal: np.ndarray, sample_rate: int, **kwargs) -> np.ndarray:
         """
 Calc MFCC
         Args:
@@ -60,7 +60,7 @@ Calc MFCC
             MFCC: numpy.ndarray
         """
         return librosa.feature.mfcc(y=signal,
-                                    sr=kwargs.get("sr", 8_000),
+                                    sr=sample_rate,
                                     #                                    S=kwargs.get("S", None),
                                     #                                    n_mfcc=kwargs.get("n_mfcc", 20),
                                     #                                    dct_type=kwargs.get("dct_type", 2),
