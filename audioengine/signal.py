@@ -66,7 +66,7 @@ Calc MFCC
                                     dct_type=kwargs.get("dct_type", 2),
                                     norm=kwargs.get("norm", 'ortho'),
                                     lifter=kwargs.get("lifter", 0),
-                                    kwargs=kwargs)
+                                    **kwargs)
 
     @staticmethod
     def mfcc_inverse(mfcc: np.ndarray, **kwargs) -> np.ndarray:
@@ -76,7 +76,7 @@ Calc MFCC
                                                      norm=kwargs.get("norm", 'ortho'),
                                                      ref=kwargs.get("ref", 1.0),
                                                      lifter=kwargs.get("lifter", 0),
-                                                     kwargs=kwargs)
+                                                     **kwargs)
 
     @staticmethod
     def normalize(y: np.ndarray) -> np.ndarray:
