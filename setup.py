@@ -18,6 +18,11 @@ setup(
     license=license,
     packages=find_packages(exclude=('tests', 'docs')),
     install_requires=[
-        "pydub", "soundfile", "librosa"
+        "librosa~=0.8.0",
+        "SoundFile~=0.10.3.post1",
+        "pydub~=0.25.1",
+        "numpy~=1.19.5",
+        "scikit-learn~=0.24.1"
     ],
 )
+
