@@ -79,6 +79,6 @@ See :func:`my text <librosa.effects.pitch_shift>`
         return librosa.effects.pitch_shift(y,
                                            sample_rate,
                                            n_steps,
-                                           bins_per_octave=kwargs.get("bins_per_octave", 12),
-                                           res_type=kwargs.get("res_type", 'kaiser_best'),
+#                                           bins_per_octave=kwargs.get("bins_per_octave", 12),
+#                                           res_type=kwargs.get("res_type", 'kaiser_best'),
                                            **kwargs)

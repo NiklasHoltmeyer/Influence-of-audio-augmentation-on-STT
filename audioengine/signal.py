@@ -61,21 +61,21 @@ Calc MFCC
         """
         return librosa.feature.mfcc(y=signal,
                                     sr=kwargs.get("sr", 8_000),
-                                    S=kwargs.get("S", None),
-                                    n_mfcc=kwargs.get("n_mfcc", 20),
-                                    dct_type=kwargs.get("dct_type", 2),
-                                    norm=kwargs.get("norm", 'ortho'),
-                                    lifter=kwargs.get("lifter", 0),
+                                    #                                    S=kwargs.get("S", None),
+                                    #                                    n_mfcc=kwargs.get("n_mfcc", 20),
+                                    #                                    dct_type=kwargs.get("dct_type", 2),
+                                    #                                    norm=kwargs.get("norm", 'ortho'),
+                                    #                                    lifter=kwargs.get("lifter", 0),
                                     **kwargs)
 
     @staticmethod
     def mfcc_inverse(mfcc: np.ndarray, **kwargs) -> np.ndarray:
         return librosa.feature.inverse.mfcc_to_audio(mfcc,
-                                                     n_mels=kwargs.get("n_mels", 128),
-                                                     dct_type=kwargs.get("dct_type", 2),
-                                                     norm=kwargs.get("norm", 'ortho'),
-                                                     ref=kwargs.get("ref", 1.0),
-                                                     lifter=kwargs.get("lifter", 0),
+#                                                     n_mels=kwargs.get("n_mels", 128),
+#                                                     dct_type=kwargs.get("dct_type", 2),
+#                                                     norm=kwargs.get("norm", 'ortho'),
+#                                                     ref=kwargs.get("ref", 1.0),
+#                                                     lifter=kwargs.get("lifter", 0),
                                                      **kwargs)
 
     @staticmethod
