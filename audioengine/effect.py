@@ -29,7 +29,10 @@ Apply Noise-Signal to Signal.
         if signal_length_dif > 0:
             y_noise = np.pad(y_noise, (0, signal_length_dif), 'constant', constant_values=(0, 0))
         elif signal_length_dif < 0:
-            y = np.pad(y, (0, -signal_length_dif), 'constant', constant_values=(0, 0))
+            if clip_noise:
+                y_noise = y_noise[:y.shape[0]]
+            else:
+                y = np.pad(y, (0, -signal_length_dif), 'constant', constant_values=(0, 0))
 
         return y + ratio * y_noise
 
