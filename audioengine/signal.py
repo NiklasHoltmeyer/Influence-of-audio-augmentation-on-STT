@@ -14,7 +14,7 @@ Calc MFCC
             **kwargs:
 
             ** librosa.feature.mfcc ** (https://librosa.org/doc/main/generated/librosa.feature.mfcc.html)
-                sr: Sample_Rate
+                sample_rate: Sample_Rate
                     8_000 [default]
                 S:
                     None [default]

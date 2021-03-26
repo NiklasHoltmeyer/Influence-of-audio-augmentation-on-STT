@@ -4,7 +4,7 @@ import numpy as np
 
 class Effect:
     @staticmethod
-    def add_noise(y: np.ndarray, y_noise: np.ndarray, ratio: float, **kwargs: object) -> np.ndarray:
+    def add_noise(y: np.ndarray, y_noise: np.ndarray, ratio: float, clip_noise: bool = True, **kwargs: object) -> np.ndarray:
         """
 Apply Noise-Signal to Signal.
         Args:
@@ -14,6 +14,11 @@ Apply Noise-Signal to Signal.
                 Noise-Signal
             ratio: int
                 Ratio
+            clip_noise: bool
+                True: Cut y_noise to fit y
+                    len(y_t) = len(y)
+                False: Pad y or y_noise
+                    len(y_t) = max(len(y), len(y_noise))
             **kwargs: **kwargs
                 Additional Parameter
         Returns:
