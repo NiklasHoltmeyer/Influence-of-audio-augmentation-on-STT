@@ -25,10 +25,28 @@ class Dataset:
 
 if __name__ == "__main__":
     import os
-    path = f"C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de\clips"
-    file_names = os.listdir(path)[:3] + os.listdir(path)[:-3]
 
-    dataset = Dataset.from_file_names(file_names)
+    path_mp3 = f"C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de\clips"
+    path_wav = f"C:\workspace\datasets\LJSpeech-1.1\wavs"
 
-    for item in dataset.batch(1):
+    file_names_mp3 = os.listdir(path_mp3)[:3] + os.listdir(path_mp3)[:-3]
+    file_names_mp3 = [f"{path_mp3}\\{x}" for x in file_names_mp3]
+
+    file_names_wav = os.listdir(path_wav)[:3] + os.listdir(path_wav)[:-3]
+    file_names_wav = [f"{path_wav}\\{x}" for x in file_names_wav]
+
+    dataset_mp3 = Dataset.from_file_names(file_names_mp3)
+    dataset_wav = Dataset.from_file_names(file_names_wav)
+
+    for idx, item in enumerate(dataset_mp3.batch(1).take(5)):
+        print(f"File: {file_names_mp3[idx]}")
         print(item)
+        print("*"*32)
+
+
+    print("-"*32)
+
+    for idx, item in enumerate(dataset_wav.batch(1).take(5)):
+        print(f"File: {file_names_wav[idx]}")
+        print(item)
+        print("*"*32)
