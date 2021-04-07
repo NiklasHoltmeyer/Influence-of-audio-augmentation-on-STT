@@ -27,7 +27,8 @@ setup(
         "SoundFile",
         "pydub",
         "numpy",
-        "scikit-learn"
+        "scikit-learn",
+        "tensorflow-io"
     ],
 )
 
