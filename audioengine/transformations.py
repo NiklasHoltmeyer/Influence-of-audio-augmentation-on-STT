@@ -97,4 +97,5 @@ class Transformations:
 
     @staticmethod
     def _decode_mp3(**kwargs):
-        return lambda audio_binary: tfio.audio.decode_mp3(audio_binary, shape=None, name=None)
+        shape = kwargs.get("shape", None)
+        return lambda audio_binary: tfio.audio.decode_mp3(audio_binary, shape=shape)
