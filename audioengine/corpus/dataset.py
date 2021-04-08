@@ -26,7 +26,7 @@ class Dataset:
     @staticmethod
     def from_dataframe(dataframe, audio_format, **kwargs):
         """ (DF) req-Keys: audio_path, transscript """
-        return Dataset.from_slices(dataframe.audio_path, dataframe.transscript, audio_format, **kwargs)
+        return Dataset.from_slices(dataframe.audio_path, dataframe.transcript, audio_format, **kwargs)
 
     @staticmethod
     def CommonVoice(base_path, **kwargs):
