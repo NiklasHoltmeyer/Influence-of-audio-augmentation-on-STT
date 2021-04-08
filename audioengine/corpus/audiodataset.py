@@ -4,18 +4,18 @@ from tqdm.auto import tqdm
 import logging
 import swifter
 import os
-from audioengine.dataset.util.text import Text
-from audioengine.dataset.util.interceptors import time_logger
+from audioengine.corpus.util.text import Text
+from audioengine.corpus.util.interceptors import time_logger
 
 
 class AudioDataset(metaclass=ABCMeta):
 
     def __init__(self, sample_rate, **kwargs):
-        self.logger = logging.getLogger("audioengine-dataset")
+        self.logger = logging.getLogger("audioengine-corpus")
         self.sample_rate = sample_rate
         self.audio_format = kwargs.get("audio_format", "wav")
 
-    @time_logger(logger=logging.getLogger("audioengine-dataset"),
+    @time_logger(logger=logging.getLogger("audioengine-corpus"),
                  name="  -load DF", padding_length=50)
     def load_dataframe(self, path, shuffle=True, drop_cols=None, rename_cols=None, **kwargs):
         data_frame = Text.read_csv(path, **kwargs)

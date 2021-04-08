@@ -1,6 +1,6 @@
 import logging
 
-from audioengine.dataset.commonvoice import CommonVoice
+from audioengine.corpus.commonvoice import CommonVoice
 from audioengine.transformations import *
 
 

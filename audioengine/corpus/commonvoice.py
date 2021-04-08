@@ -1,7 +1,7 @@
-from audioengine.dataset.audiodataset import AudioDataset
+from audioengine.corpus.audiodataset import AudioDataset
 import logging
 
-from audioengine.dataset.util.interceptors import time_logger
+from audioengine.corpus.util.interceptors import time_logger
 from pathlib import Path
 
 
@@ -11,7 +11,7 @@ class CommonVoice(AudioDataset):
         super(CommonVoice, self).__init__(audio_format="mp3", sample_rate=48_000, **kwargs)
         self.path = path
 
-    @time_logger(logger=logging.getLogger("audioengine-dataset"),
+    @time_logger(logger=logging.getLogger("audioengine-corpus"),
                  name="CV-load DF",
                  header="CommonVoice", padding_length=50)
     def load_dataframe(self, **kwargs):
