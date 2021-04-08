@@ -1,8 +1,8 @@
 import tensorflow as tf
 import tensorflow_io as tfio
+import logging
 
-
-class Transformations:
+class AudioTransformations:
     @staticmethod
     def load_audio(**kwargs):
         """
@@ -14,7 +14,7 @@ class Transformations:
 
         """
 
-        audio_decoder = Transformations.decode_audio(**kwargs)
+        audio_decoder = AudioTransformations.decode_audio(**kwargs)
 
         def __call__(audio_path):
             audio_binary = tf.io.read_file(audio_path)
@@ -30,8 +30,7 @@ class Transformations:
 
         def __call__(audio):
             stfts = tf.signal.stft(audio, frame_length=frame_length, frame_step=frame_step, fft_length=fft_length)
-            x = tf.math.pow(tf.abs(stfts), 0.5)
-            return x
+            return tf.math.pow(tf.abs(stfts), 0.5)
 
         return __call__
 
@@ -40,15 +39,15 @@ class Transformations:
         def __call__(x):
             means = tf.math.reduce_mean(x, 1, keepdims=True)
             stddevs = tf.math.reduce_std(x, 1, keepdims=True)
-            x = (x - means) / stddevs
-
-            return x
+            return (x - means) / stddevs
 
         return __call__
 
     @staticmethod
     def pad(**kwargs):
         pad_len = kwargs.get("pad_len", 50)
+
+        logging.getLogger("audioengine-corpus").debug(f"pad_len {pad_len}")
 
         def __call__(x):
             paddings = tf.constant([[0, pad_len], [0, 0]])
@@ -71,8 +70,8 @@ class Transformations:
         audio_format = kwargs.get("audio_format", "wav")
 
         _formats = {
-            "wav": Transformations._decode_wav(**kwargs),
-            "mp3": Transformations._decode_mp3(**kwargs)
+            "wav": AudioTransformations._decode_wav(**kwargs),
+            "mp3": AudioTransformations._decode_mp3(**kwargs)
         }
 
         audio_decoder = _formats.get(audio_format, None)
@@ -101,7 +100,3 @@ class Transformations:
         return lambda audio_binary: tfio.audio.decode_mp3(audio_binary, shape=shape)
 
 
-class TextTransformations:
-    @staticmethod
-    def lower():
-        return lambda msg: tf.strings.lower(msg)

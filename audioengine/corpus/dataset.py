@@ -1,7 +1,10 @@
 import logging
 
+import tensorflow as tf
 from audioengine.corpus.commonvoice import CommonVoice
 from audioengine.transformations import *
+from audioengine.transformations.audiotransformations import AudioTransformations
+from audioengine.transformations.texttransformations import TextTransformations
 
 
 class Dataset:
@@ -11,10 +14,10 @@ class Dataset:
         BATCH_SIZE = kwargs.get("batch_size", 32)
 
         audio_ds = tf.data.Dataset.from_tensor_slices(audio_paths)
-        audio_ds = Dataset._transform_audio(audio_ds, audio_format)
+        audio_ds = Dataset._transform_audio(audio_ds, audio_format, **kwargs)
 
         trans_ds = tf.data.Dataset.from_tensor_slices(audio_transcriptions)
-        trans_ds = Dataset._transform_transcriptions(trans_ds)
+        trans_ds = Dataset._transform_transcriptions(trans_ds, **kwargs)
 
         return tf.data.Dataset.zip((audio_ds, trans_ds)).batch(BATCH_SIZE).cache().prefetch(AUTOTUNE)
 
@@ -39,11 +42,11 @@ class Dataset:
     @staticmethod
     def _transform_audio(audio_ds, audio_format, **kwargs):
         AUTOTUNE = kwargs.get("AUTOTUNE", tf.data.AUTOTUNE)
-        transformations = kwargs.get("audio_transformations", [Transformations.audio_to_spectrogram(**kwargs),
-                                                               Transformations.normalize(),
-                                                               Transformations.pad(**kwargs)])
+        transformations = kwargs.get("audio_transformations", [AudioTransformations.audio_to_spectrogram(**kwargs),
+                                                               AudioTransformations.normalize(),
+                                                               AudioTransformations.pad(**kwargs)])
         audio_ds = audio_ds \
-            .map(Transformations.load_audio(audio_format=audio_format, **kwargs), num_parallel_calls=AUTOTUNE)
+            .map(AudioTransformations.load_audio(audio_format=audio_format, **kwargs), num_parallel_calls=AUTOTUNE)
 
         for transformation in transformations:
             audio_ds = audio_ds.map(transformation, num_parallel_calls=AUTOTUNE)
