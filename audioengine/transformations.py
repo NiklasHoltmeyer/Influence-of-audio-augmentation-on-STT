@@ -99,3 +99,9 @@ class Transformations:
     def _decode_mp3(**kwargs):
         shape = kwargs.get("shape", None)
         return lambda audio_binary: tfio.audio.decode_mp3(audio_binary, shape=shape)
+
+
+class TextTransformations:
+    @staticmethod
+    def lower():
+        return lambda msg: tf.strings.lower(msg)
