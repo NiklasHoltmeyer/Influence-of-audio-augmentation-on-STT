@@ -56,10 +56,7 @@ class Dataset:
     @staticmethod
     def _transform_transcriptions(trans_ds, **kwargs):
         AUTOTUNE = kwargs.get("AUTOTUNE", tf.data.AUTOTUNE)
-        transformations = kwargs.get("transcription_transformations", [])
-
-        # map -> basic clean_text -> to lower etc
-        trans_ds = trans_ds.map(TextTransformations.lower(), num_parallel_calls=AUTOTUNE)
+        transformations = kwargs.get("transcription_transformations", [TextTransformations.lower()])
 
         for transformation in transformations:
             trans_ds = trans_ds.map(transformation, num_parallel_calls=AUTOTUNE)
