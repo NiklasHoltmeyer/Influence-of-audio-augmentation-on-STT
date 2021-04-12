@@ -28,7 +28,8 @@ setup(
         "pydub",
         "numpy",
         "scikit-learn",
-        "tensorflow-io"
+        "tensorflow-io", 
+        "swifter"
     ],
 )
 
