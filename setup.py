@@ -30,6 +30,7 @@ setup(
         "tqdm",
         "sklearn",
         "torchaudio",
-        "torch"
+        "torch",
+        "jiwer"
     ],
 )
