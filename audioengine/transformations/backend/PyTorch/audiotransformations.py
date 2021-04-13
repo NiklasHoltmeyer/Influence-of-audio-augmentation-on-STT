@@ -16,7 +16,7 @@ class LoadAudio(object):
         if self.resampler:
             waveform = self.resampler(waveform)
 
-        return waveform, torch.from_numpy(transcript)
+        return waveform, transcript
 
 
 class Spectrogram:
