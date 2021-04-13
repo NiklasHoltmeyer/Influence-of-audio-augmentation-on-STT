@@ -1,8 +1,8 @@
-import jiwer
+import wer
 from datasets import load_metric
 
 
-class HuggingWer:
+class Wer:
     def __init__(self, transformation=None):
         self.transformation = transformation
         self.wer = load_metric("wer")
@@ -37,7 +37,7 @@ class Jiwer:
 
     @staticmethod
     def compute_measurements(ground_truth, measurements):
-        compute_measures = jiwer.compute_measures(ground_truth, measurements)
+        compute_measures = wer.compute_measures(ground_truth, measurements)
 
         hits = compute_measures["hits"]
         substitutions = compute_measures["substitutions"]
