@@ -17,7 +17,7 @@ class Dataset:
         input_key = "audio_path"
         target_key = "transcript"
 
-        return self.backend.from_dataframe(dataframe, input_key, target_key, **kwargs)
+        return self.backend.from_dataframe(dataframe, input_key, target_key, audio_format=audio_format, **kwargs)
 
     def __load_backend(self, backend):
         if "torch" in backend:
