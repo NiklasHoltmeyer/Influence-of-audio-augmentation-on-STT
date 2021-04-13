@@ -30,6 +30,3 @@ class WER:
         insertions = compute_measures["insertions"]
 
         return hits, substitutions, deletions, insertions
-
-wer_fn = WER()
-print(wer_fn.calc())
