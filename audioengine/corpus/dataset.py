@@ -1,4 +1,4 @@
-from audioengine.corpus.backend.PyTorch import TorchDataset
+from audioengine.corpus.backend.PyTorch.torchdataset import TorchDataset
 from audioengine.corpus.backend.Tensorflow.tensorflowdataset import TensorflowDataset
 from audioengine.corpus.commonvoice import CommonVoice
 
