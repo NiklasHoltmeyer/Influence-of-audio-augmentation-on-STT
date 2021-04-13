@@ -1,76 +1,31 @@
-import logging
-
-import tensorflow as tf
+from audioengine.corpus.backend.PyTorch import TorchDataset
+from audioengine.corpus.backend.Tensorflow.tensorflowdataset import TensorflowDataset
 from audioengine.corpus.commonvoice import CommonVoice
-from audioengine.transformations import *
-from audioengine.transformations.audiotransformations import AudioTransformations
-from audioengine.transformations.texttransformations import TextTransformations
 
 
 class Dataset:
-    @staticmethod
-    def from_slices(audio_paths, audio_transcriptions, audio_format, **kwargs):
-        AUTOTUNE = kwargs.get("AUTOTUNE", tf.data.AUTOTUNE)
-        BATCH_SIZE = kwargs.get("batch_size", 32)
+    def __init__(self, backend):
+        """
 
-        audio_ds = tf.data.Dataset.from_tensor_slices(audio_paths)
-        audio_ds = Dataset._transform_audio(audio_ds, audio_format, **kwargs)
+        Args:
+            backend: str
+                Tensorflow or Pytorch
+        """
+        self.backend = self.__load_backend(backend)
 
-        trans_ds = tf.data.Dataset.from_tensor_slices(audio_transcriptions)
-        trans_ds = Dataset._transform_transcriptions(trans_ds, **kwargs)
-
-        return tf.data.Dataset.zip((audio_ds, trans_ds)).batch(BATCH_SIZE).cache().prefetch(AUTOTUNE)
-
-    @staticmethod
-    def from_file_names(file_names, transcriptions, **kwargs):
-        audio_format = Dataset._get_audio_format(file_names[0])
-        return Dataset.from_slices(file_names, transcriptions, **kwargs)
-
-    @staticmethod
-    def from_dataframe(dataframe, audio_format, **kwargs):
-        """ (DF) req-Keys: audio_path, transscript """
-        return Dataset.from_slices(dataframe.audio_path, dataframe.transcript, audio_format, **kwargs)
-
-    @staticmethod
-    def CommonVoice(base_path, **kwargs):
+    def CommonVoice(self, base_path, **kwargs):
         cv = CommonVoice(base_path)
         audio_format = cv.audio_format
         dataframe = cv.load_dataframe(**kwargs)
+        input_key = "audio_path"
+        target_key = "transcript"
 
-        return Dataset.from_dataframe(dataframe, audio_format, **kwargs)
+        return self.backend.from_dataframe(dataframe, input_key, target_key, **kwargs)
 
-    @staticmethod
-    def _transform_audio(audio_ds, audio_format, **kwargs):
-        AUTOTUNE = kwargs.get("AUTOTUNE", tf.data.AUTOTUNE)
-        transformations = kwargs.get("audio_transformations", [AudioTransformations.audio_to_spectrogram(**kwargs),
-                                                               AudioTransformations.normalize(),
-                                                               AudioTransformations.pad(**kwargs)])
-        audio_ds = audio_ds \
-            .map(AudioTransformations.load_audio(audio_format=audio_format, **kwargs), num_parallel_calls=AUTOTUNE)
+    def __load_backend(self, backend):
+        if "torch" in backend:
+            return TorchDataset()
+        if "tensorflow" in backend or "tf" in backend:
+            return TensorflowDataset()
+        raise Exception(f"Unknown Backend {backend}. \n Supported Backends: pytorch, tensorflow")
 
-        for transformation in transformations:
-            audio_ds = audio_ds.map(transformation, num_parallel_calls=AUTOTUNE)
-
-        return audio_ds
-
-    @staticmethod
-    def _transform_transcriptions(trans_ds, **kwargs):
-        AUTOTUNE = kwargs.get("AUTOTUNE", tf.data.AUTOTUNE)
-        transformations = kwargs.get("transcription_transformations", [TextTransformations.lower()])
-
-        for transformation in transformations:
-            trans_ds = trans_ds.map(transformation, num_parallel_calls=AUTOTUNE)
-
-        return trans_ds
-
-    @staticmethod
-    def _get_audio_format(file_path):
-        return file_path[-3:]
-
-
-if __name__ == "__main__":
-    #r"C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de"
-    logging.basicConfig(level=logging.DEBUG)
-    cv_path = r"C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de"
-
-    Dataset.CommonVoice(cv_path)
