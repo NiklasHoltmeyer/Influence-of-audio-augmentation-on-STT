@@ -13,13 +13,12 @@ class wav2vec2:
         self.model, self.processor = self._load_pretrained()
 
     def predict(self, batch, sampling_rate=16_000, padding=True):
-        print("1")
         inputs = self.processor(batch["speech"], sampling_rate=sampling_rate, return_tensors="pt", padding=padding)
-        print("2")
+
         with torch.no_grad():
             logits = self.model(inputs.input_values.to(self.device),
                                 attention_mask=inputs.attention_mask.to(self.device)).logits
-        print("3")
+
         pred_ids = torch.argmax(logits, dim=-1)
         batch["transcription"] = self.processor.batch_decode(pred_ids)
         return batch
