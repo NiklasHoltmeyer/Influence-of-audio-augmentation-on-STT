@@ -44,6 +44,12 @@ class DataframeDataset(Dataset):
 
         return data
 
+    @staticmethod
+    def collate_fn(batch):
+        speeches = [data['speech'] for data in batch]
+        sentences = [data['sentence'] for data in batch]
+        return speeches, sentences
+
 
 #    @staticmethod
 #    def collate_fn(batch):
@@ -63,13 +69,13 @@ if __name__ == "__main__":
     print("Len:", len(ds))
     print("Ds", ds)
 
-    #loader = DataLoader(ds, batch_size=3, shuffle=False, num_workers=4)  # collate_fn=DataframeDataset.collate_fn
-    #print(loader)
-    print("o"*33)
+    # loader = DataLoader(ds, batch_size=3, shuffle=False, num_workers=4)  # collate_fn=DataframeDataset.collate_fn
+    # print(loader)
+    print("o" * 33)
     for idx in range(0, len(ds)):
         data = ds[idx]
-        print(idx,"->",data)
-        #pass
+        print(idx, "->", data)
+        # pass
 #    for idx, (x, y) in enumerate(loader):
 #        print("x", x, "\t", "y", y)
 
