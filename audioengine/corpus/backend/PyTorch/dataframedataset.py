@@ -7,22 +7,35 @@ class DataframeDataset(Dataset):
     
     """
 
-    def __init__(self, data_frame, input_key, target_key, transform=None):
+    def __init__(self, data_frame, input_key, target_key, transform=None, features=None):
         self.data_frame = data_frame
+        self.input_key = input_key
+        self.target_key = target_key
         self.inputs = self.data_frame[input_key]
         self.targets = self.data_frame[target_key]
         self.transform = transform
+        self.features = [input_key, target_key] if features is None else features
 
     def __len__(self):
         return len(self.data_frame)
+
+    def __str__(self):
+        return str(self.info())
+
+    def info(self):
+        info = {
+            'features': self.features,
+            'num_rows': len(self)
+        }
+        return info
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
         data = {
-            'input' : self.inputs[idx],
-            'output' : self.targets[idx]
+            self.input_key: self.inputs[idx],
+            self.target_key: self.targets[idx]
         }
 
         if self.transform:
@@ -30,14 +43,15 @@ class DataframeDataset(Dataset):
 
         return data
 
-    @staticmethod
-    def collate_fn(batch):
-        return [(data["input"], data["output"]) for data in batch]
+#    @staticmethod
+#    def collate_fn(batch):
+#        return [(data["input"], data["output"]) for data in batch]
 
 
 if __name__ == "__main__":
     import pandas as pd
     from torch.utils.data import DataLoader
+
     data = [("x1", "y2", "A3"), ("x1", "y2", "b3"), ("x1", "y2", "c3"), ("x1", "y2", "d3")]
     df = pd.DataFrame(data, columns=['input', 'target', 'random'])
     print(df.head())
@@ -46,7 +60,7 @@ if __name__ == "__main__":
     print("*" * 40)
     print("Len:", len(ds))
 
-    loader = DataLoader(ds, batch_size=3, shuffle=False, num_workers=4, collate_fn=DataframeDataset.collate_fn)
+    loader = DataLoader(ds, batch_size=3, shuffle=False, num_workers=4) #collate_fn=DataframeDataset.collate_fn
 
     print(loader)
     for x in loader:
@@ -54,4 +68,4 @@ if __name__ == "__main__":
 #    for idx, (x, y) in enumerate(loader):
 #        print("x", x, "\t", "y", y)
 
-    # asd
+# asd

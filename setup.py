@@ -31,6 +31,7 @@ setup(
         "sklearn",
         "torchaudio",
         "torch",
+        "datasets", #hugging_face
         "jiwer"
     ],
 )

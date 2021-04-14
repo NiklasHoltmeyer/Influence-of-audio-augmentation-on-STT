@@ -4,7 +4,7 @@ from audioengine.corpus.backend.PyTorch.dataframedataset import DataframeDataset
 
 
 class TorchDataset:
-    def from_dataframe(self, data_frame, input_key, target_key, transform=None, **kwargs):
+    def from_dataframe(self, data_frame, input_key, target_key, transform=None, features=None, **kwargs):
         """
 
         Args:
@@ -21,5 +21,6 @@ class TorchDataset:
         shuffle = kwargs.get("shuffle", False)
         num_workers = kwargs.get("num_workers", False)
 
-        ds = DataframeDataset(data_frame, input_key, target_key, transform)
-        return DataLoader(ds, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
+        ds = DataframeDataset(data_frame, input_key, target_key, transform, features=features)
+        return ds
+        #return DataLoader(ds, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)

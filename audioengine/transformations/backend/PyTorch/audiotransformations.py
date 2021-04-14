@@ -6,17 +6,21 @@ from typing import Callable, Optional
 
 class LoadAudio(object):
     def __init__(self, input_sr=None, output_sr=None):
+        self.sr = output_sr
+        self.sr_default = input_sr
         self.resampler = torchaudio.transforms.Resample(input_sr, output_sr) if input_sr and output_sr else None
 
     def __call__(self, data):
-        audio_path, transcript = data
-
-        waveform, _ = torchaudio.load(audio_path)
+        waveform, _ = torchaudio.load(data['path'])
         # waveform = waveform.squeeze(0).numpy()
         if self.resampler:
             waveform = self.resampler(waveform)
+            data["sampling_rate"] = self.sr
+        else:
+            data["sampling_rate"] = self.sr_default
 
-        return waveform, transcript
+        data["speech"] = waveform
+        return data
 
 
 class Spectrogram:
@@ -34,8 +38,9 @@ class Spectrogram:
         self.transform = torchaudio.transforms.Spectrogram(n_fft, win_length, hop_length, pad, window_fn, power,
                                                            normalized, wkwargs, center, pad_mode, onesided)
 
-    def __call__(self, waveform: Tensor) -> Tensor:
-        return self.transform.forward(waveform)
+    def __call__(self, data):
+        data["spectrogram"] = self.transform.forward(data["speech"])
+        return data
 
     def forward(self, waveform: Tensor) -> Tensor:
         return self.transform.forward(waveform)
