@@ -17,7 +17,7 @@ class DataframeDataset(Dataset):
         self.features = [input_key, target_key] if features is None else features
 
     def __len__(self):
-        return len(self.data_frame)
+        return len(self.data_frame) - 1
 
     def __str__(self):
         return str(self.info())
