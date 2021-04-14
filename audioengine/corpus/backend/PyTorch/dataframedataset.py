@@ -30,8 +30,8 @@ class DataframeDataset(Dataset):
         return info
 
     def __getitem__(self, idx):
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
+#        if torch.is_tensor(idx):
+#            idx = idx.tolist()
 
         data = {
             self.input_key: self.inputs[idx],
