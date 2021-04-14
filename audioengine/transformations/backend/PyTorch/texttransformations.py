@@ -11,8 +11,6 @@ class RegExp:
         self.patterns = patterns
 
     def __call__(self, data):
-        print("test 2")
-        print(self.patterns)
         for pattern, replacement in self.patterns:
             data["sentence"] = re.sub(pattern, replacement, data["sentence"])
         return data

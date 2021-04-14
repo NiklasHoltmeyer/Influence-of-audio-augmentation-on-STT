@@ -45,7 +45,6 @@ if __name__ == "__main__":
         return data
 
 
-    LoadAudio()
     chars_to_ignore_regex = ('[\,\?\.\!\-\;\:\"]', '')
     regexp_layer = RegExp([chars_to_ignore_regex])
     transformations = [simple_text_transform, regexp_layer, LoadAudio(48_000, 16_000)] #LoadAudio(48_000, 16_000)
