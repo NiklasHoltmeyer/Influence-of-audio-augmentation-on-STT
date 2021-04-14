@@ -13,33 +13,35 @@ class wav2vec2:
         self.model, self.processor = self._load_pretrained()
 
     def predict(self, batch, sampling_rate=16_000, padding=True):
+        print("1")
         inputs = self.processor(batch["speech"], sampling_rate=sampling_rate, return_tensors="pt", padding=padding)
-
+        print("2")
         with torch.no_grad():
-            logits = self.model(inputs.input_values.to(self.device), attention_mask=inputs.attention_mask.to(self.device)).logits
-
+            logits = self.model(inputs.input_values.to(self.device),
+                                attention_mask=inputs.attention_mask.to(self.device)).logits
+        print("3")
         pred_ids = torch.argmax(logits, dim=-1)
         batch["transcription"] = self.processor.batch_decode(pred_ids)
         return batch
 
     def transformations(self):
-        #req. transformations
         def to_lower(data):
             data["sentence"] = data["sentence"].lower().replace("’", "'")
             return data
 
-        transformations = []
-        chars_to_ignore_regex = self._chars_to_remove(_else=[])
-        chars_to_ignore_regex = [] if chars_to_ignore_regex is None else chars_to_ignore_regex
+        transformations = [to_lower]
+
+        chars_to_ignore_regex = self._chars_to_remove()
+        regexp_subs = [(chars_to_ignore_regex, '')] if chars_to_ignore_regex else []
 
         replacements = self._chars_to_replace()
         if replacements:
-            for replacment in replacements.items():
+            for key, value in replacements.items():
                 # replace (value, key)
-                chars_to_ignore_regex.append(replacment)
+                regexp_subs.append((value, key))
 
         if chars_to_ignore_regex:
-            regexp_layer = RegExp([(chars_to_ignore_regex, '')])
+            regexp_layer = RegExp(regexp_subs)
             transformations.append(regexp_layer)
 
         transformations.append(LoadAudio(48_000, 16_000))
@@ -60,15 +62,14 @@ class wav2vec2:
 
     def _chars_to_remove(self):
         mappings = {
-            'facebook/wav2vec2-large-xlsr-53-german':   '[\,\?\.\!\-\;\:\"]',
-            'maxidl/wav2vec2-large-xlsr-german':        '[\\,\\?\\.\\!\\-\\;\\:\\"\\“]',
-            'marcel/wav2vec2-large-xlsr-53-german':     '[\,\?\.\!\-\;\:\"\“\%\”\�\カ\æ\無\ན\カ\臣\ѹ\…\«\»\ð\ı\„\幺\א\ב\比\ш\ע\)\ứ\в\œ\ч\+\—\ш\‚\נ\м\ń\乡\$\=\ש\ф\支\(\°\и\к\̇]',
+            'facebook/wav2vec2-large-xlsr-53-german': '[\,\?\.\!\-\;\:\"]',
+            'maxidl/wav2vec2-large-xlsr-german': '[\\,\\?\\.\\!\\-\\;\\:\\"\\“]',
+            'marcel/wav2vec2-large-xlsr-53-german': '[\,\?\.\!\-\;\:\"\“\%\”\�\カ\æ\無\ན\カ\臣\ѹ\…\«\»\ð\ı\„\幺\א\ב\比\ш\ע\)\ứ\в\œ\ч\+\—\ш\‚\נ\м\ń\乡\$\=\ש\ф\支\(\°\и\к\̇]',
             'flozi00/wav2vec-xlsr-german': '[\\\\,\\\\?\\\\.\\\\!\\\\-\\\\;\\\\:\\\\"\\\\“\\\\%\\\\‘\\\\”\\\\�]',
             "marcel/wav2vec2-large-xlsr-german-demo": '[\,\?\.\!\-\;\:\"\“\%\”\�\カ\æ\無\ན\カ\臣\ѹ\…\«\»\ð\ı\„\幺\א\ב\比\ш\ע\)\ứ\в\œ\ч\+\—\ш\‚\נ\м\ń\乡\$\=\ש\ф\支\(\°\и\к\̇]',
             'MehdiHosseiniMoghadam/wav2vec2-large-xlsr-53-German': '[\,\?\.\!\-\;\:\"\“\%\‘\”\�]'
         }
-        replace = mappings.get(self.model_name, None)
-        return replace, '' if replace else None
+        return mappings.get(self.model_name, None)
 
     def _chars_to_replace(self, _else=None):
         substitutions_marcel = {
@@ -99,7 +100,6 @@ class wav2vec2:
         }
 
         return mappings.get(self.model_name, _else)
-
 
     @staticmethod
     def __model_list():
