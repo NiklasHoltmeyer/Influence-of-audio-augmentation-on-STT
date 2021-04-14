@@ -12,7 +12,7 @@ class LoadAudio(object):
 
     def __call__(self, data):
         waveform, _ = torchaudio.load(data['path'])
-        # waveform = waveform.squeeze(0).numpy()
+        waveform = waveform.squeeze(0) #.numpy()
         if self.resampler:
             waveform = self.resampler(waveform)
             data["sampling_rate"] = self.sr

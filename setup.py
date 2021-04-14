@@ -32,6 +32,7 @@ setup(
         "torchaudio",
         "torch",
         "datasets", #hugging_face
-        "jiwer"
+        "jiwer",
+        "transformers"
     ],
 )
