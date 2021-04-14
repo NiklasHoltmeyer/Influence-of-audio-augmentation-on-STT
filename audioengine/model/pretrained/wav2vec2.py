@@ -12,16 +12,16 @@ class wav2vec2:
 
         self.model, self.processor = self._load_pretrained()
 
-    def predict(self, batch, sampling_rate=16_000, padding=True):
-        inputs = self.processor(batch["speech"], sampling_rate=sampling_rate, return_tensors="pt", padding=padding)
+    def predict(self, speeches, sampling_rate=16_000, padding=True):
+        inputs = self.processor(speeches, sampling_rate=sampling_rate, return_tensors="pt", padding=padding)
 
         with torch.no_grad():
             logits = self.model(inputs.input_values.to(self.device),
                                 attention_mask=inputs.attention_mask.to(self.device)).logits
 
         pred_ids = torch.argmax(logits, dim=-1)
-        batch["transcription"] = self.processor.batch_decode(pred_ids)
-        return batch
+        transcriptions = self.processor.batch_decode(pred_ids)
+        return transcriptions
 
     def transformations(self):
         def to_lower(data):
