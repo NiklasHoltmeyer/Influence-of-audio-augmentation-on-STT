@@ -48,3 +48,7 @@ class Jiwer:
         insertions = compute_measures["insertions"]
 
         return hits, substitutions, deletions, insertions
+
+if __name__ == "__main__":
+    wer = Wer()
+
