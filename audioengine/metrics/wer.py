@@ -1,4 +1,3 @@
-import wer
 from datasets import load_metric
 import jiwer
 

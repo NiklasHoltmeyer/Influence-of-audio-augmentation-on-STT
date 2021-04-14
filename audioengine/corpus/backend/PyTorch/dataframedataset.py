@@ -15,9 +15,10 @@ class DataframeDataset(Dataset):
         self.targets = self.data_frame[target_key]
         self.transform = transform
         self.features = [input_key, target_key] if features is None else features
+        self.len = len(self.inputs)
 
     def __len__(self):
-        return len(self.data_frame) - 1
+        return self.len
 
     def __str__(self):
         return str(self.info())
@@ -30,8 +31,8 @@ class DataframeDataset(Dataset):
         return info
 
     def __getitem__(self, idx):
-#        if torch.is_tensor(idx):
-#            idx = idx.tolist()
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
 
         data = {
             self.input_key: self.inputs[idx],
@@ -42,6 +43,7 @@ class DataframeDataset(Dataset):
             return self.transform(data)
 
         return data
+
 
 #    @staticmethod
 #    def collate_fn(batch):
@@ -59,12 +61,15 @@ if __name__ == "__main__":
     ds = DataframeDataset(data_frame=df, input_key="input", target_key="target", transform=None)
     print("*" * 40)
     print("Len:", len(ds))
+    print("Ds", ds)
 
-    loader = DataLoader(ds, batch_size=3, shuffle=False, num_workers=4) #collate_fn=DataframeDataset.collate_fn
-
-    print(loader)
-    for x in loader:
-        print(x)
+    #loader = DataLoader(ds, batch_size=3, shuffle=False, num_workers=4)  # collate_fn=DataframeDataset.collate_fn
+    #print(loader)
+    print("o"*33)
+    for idx in range(0, len(ds)):
+        data = ds[idx]
+        print(idx,"->",data)
+        #pass
 #    for idx, (x, y) in enumerate(loader):
 #        print("x", x, "\t", "y", y)
 

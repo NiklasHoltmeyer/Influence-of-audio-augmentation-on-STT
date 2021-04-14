@@ -37,24 +37,22 @@ if __name__ == "__main__":
     from audioengine.transformations.backend.PyTorch.texttransformations import *
     linux_path = "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de"
     windows_path = r"C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de"
-    path = linux_path
+    path = windows_path
 
     def simple_text_transform(data):
-        print("test1")
         data["sentence"] = data["sentence"].lower().replace("’", "'")
         return data
 
 
     chars_to_ignore_regex = ('[\,\?\.\!\-\;\:\"]', '')
     regexp_layer = RegExp([chars_to_ignore_regex])
-    transformations = [simple_text_transform, regexp_layer, LoadAudio(48_000, 16_000)] #LoadAudio(48_000, 16_000)
+    transformations = [simple_text_transform, regexp_layer] #LoadAudio(48_000, 16_000)
     transform = transforms.Compose(transformations)
 
     ds_helper = Dataset("torch")
-    cv_ds = ds_helper.CommonVoice(path, batch_size=1, transform=transform)
+    cv_ds = ds_helper.CommonVoice(path, batch_size=1,shuffle=False, transform=transform)
 
     print(cv_ds)
     print("*"*32)
     for x in cv_ds:
-        print(x)
-        break
+        pass
