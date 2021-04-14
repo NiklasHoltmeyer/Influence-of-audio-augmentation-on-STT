@@ -8,6 +8,9 @@ class Wer:
         self.wer = load_metric("wer")
 
     def add_batch(self, ground_truths, references):
+        ground_truths = self.transformation(ground_truths)
+        references = self.transformation(references)
+
         self.wer.add_batch(predictions=ground_truths, references=references)
 
     def calc(self):

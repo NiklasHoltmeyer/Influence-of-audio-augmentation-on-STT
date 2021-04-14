@@ -6,6 +6,7 @@ class DataframeDataset(Dataset):
     """Load Pytorch Dataset from Dataframe
     
     """
+
     def __init__(self, data_frame, input_key, target_key, transform=None):
         self.data_frame = data_frame
         self.inputs = self.data_frame[input_key]
@@ -19,9 +20,38 @@ class DataframeDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        data = self.inputs[idx], self.targets[idx]
+        data = {
+            'input' : self.inputs[idx],
+            'output' : self.targets[idx]
+        }
 
         if self.transform:
             return self.transform(data)
 
         return data
+
+    @staticmethod
+    def collate_fn(batch):
+        return [(data["input"], data["output"]) for data in batch]
+
+
+if __name__ == "__main__":
+    import pandas as pd
+    from torch.utils.data import DataLoader
+    data = [("x1", "y2", "A3"), ("x1", "y2", "b3"), ("x1", "y2", "c3"), ("x1", "y2", "d3")]
+    df = pd.DataFrame(data, columns=['input', 'target', 'random'])
+    print(df.head())
+
+    ds = DataframeDataset(data_frame=df, input_key="input", target_key="target", transform=None)
+    print("*" * 40)
+    print("Len:", len(ds))
+
+    loader = DataLoader(ds, batch_size=3, shuffle=False, num_workers=4, collate_fn=DataframeDataset.collate_fn)
+
+    print(loader)
+    for x in loader:
+        print(x)
+#    for idx, (x, y) in enumerate(loader):
+#        print("x", x, "\t", "y", y)
+
+    # asd
