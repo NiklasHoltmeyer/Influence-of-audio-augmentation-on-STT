@@ -18,8 +18,8 @@ class AudioDataset(metaclass=ABCMeta):
     @time_logger(logger=logging.getLogger("audioengine-corpus"),
                  name="  -load DF", padding_length=50)
     def load_dataframe(self, path, shuffle=True, drop_cols=None, rename_cols=None, **kwargs):
-        data_frame = Text.read_csv(path, **kwargs)
-        data_frame.fillna("")
+        data_frame = Text.read_csv(path, **kwargs).fillna("")
+
         if drop_cols:
             data_frame.drop(drop_cols, inplace=True, axis=1, errors='ignore')
 
