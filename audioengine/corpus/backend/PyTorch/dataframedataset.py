@@ -45,10 +45,13 @@ class DataframeDataset(Dataset):
         return data
 
     @staticmethod
-    def collate_fn(batch):
-        speeches = [data['speech'] for data in batch]
-        sentences = [data['sentence'] for data in batch]
-        return speeches, sentences
+    def collate_fn(input_key, output_key):
+        def __call__(batch):
+            speeches = [data[input_key] for data in batch]
+            sentences = [data[output_key] for data in batch]
+            return speeches, sentences
+
+        return __call__
 
 
 #    @staticmethod
