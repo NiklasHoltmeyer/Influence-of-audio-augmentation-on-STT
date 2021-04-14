@@ -2,8 +2,8 @@ import logging
 
 import tensorflow as tf
 from audioengine.corpus.commonvoice import CommonVoice
-from audioengine.transformations.backend.Tensorflow.audiotransformations import AudioTransformations
-from audioengine.transformations.backend.Tensorflow.texttransformations import TextTransformations
+from audioengine.transformations.backend.tensorflow.audiotransformations import AudioTransformations
+from audioengine.transformations.backend.tensorflow.texttransformations import TextTransformations
 
 
 class DataframeDataset:

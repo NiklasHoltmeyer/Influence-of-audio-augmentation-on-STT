@@ -1,7 +1,7 @@
 import re
 
 
-class RegExp:
+class Regexp:
     def __init__(self, patterns):
         """
 

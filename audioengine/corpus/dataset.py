@@ -6,7 +6,7 @@ class Dataset:
 
         Args:
             backend: str
-                Tensorflow or Pytorch
+                tensorflow or Pytorch
         """
         self.backend = self.__load_backend(backend)
 
@@ -33,8 +33,8 @@ class Dataset:
 
 if __name__ == "__main__":
     from torchvision import transforms
-    from audioengine.transformations.backend.PyTorch.audiotransformations import *
-    from audioengine.transformations.backend.PyTorch.texttransformations import *
+    from audioengine.transformations.backend.pytorch.audiotransformations import *
+    from audioengine.transformations.backend.pytorch.texttransformations import *
     linux_path = "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de"
     windows_path = r"C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de"
     path = windows_path
@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
 
     chars_to_ignore_regex = ('[\,\?\.\!\-\;\:\"]', '')
-    regexp_layer = RegExp([chars_to_ignore_regex])
+    regexp_layer = Regexp([chars_to_ignore_regex])
     transformations = [simple_text_transform, regexp_layer] #LoadAudio(48_000, 16_000)
     transform = transforms.Compose(transformations)
 

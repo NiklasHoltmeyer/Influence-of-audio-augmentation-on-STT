@@ -1,7 +1,7 @@
 import torch
 
-from audioengine.transformations.backend.PyTorch.audiotransformations import LoadAudio
-from audioengine.transformations.backend.PyTorch.texttransformations import RegExp
+from audioengine.transformations.backend.pytorch.audiotransformations import LoadAudio
+from audioengine.transformations.backend.pytorch.texttransformations import Regexp
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
 
@@ -40,7 +40,7 @@ class wav2vec2:
                 regexp_subs.append((value, key))
 
         if chars_to_ignore_regex:
-            regexp_layer = RegExp(regexp_subs)
+            regexp_layer = Regexp(regexp_subs)
             transformations.append(regexp_layer)
 
         transformations.append(LoadAudio(48_000, 16_000))
@@ -55,7 +55,7 @@ class wav2vec2:
     def __str__(self):
         infos = {
             "model_name": self.model_name,
-            "backend": "PyTorch"
+            "backend": "pytorch"
         }
         return str(infos)
 
