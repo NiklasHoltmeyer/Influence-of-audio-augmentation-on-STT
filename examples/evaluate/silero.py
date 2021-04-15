@@ -15,7 +15,6 @@ from torch.utils.data import DataLoader
 import os
 
 
-
 def validate_model(model_language):
     silero = Silero(model_language)
     transform = transforms.Compose(silero.transformations())
@@ -39,7 +38,7 @@ def validate_model(model_language):
             wer.add_batch(sentence_stacked, transcriptions_stacked, core_count)
             sentence_stacked, transcriptions_stacked = [], []
 
-    return wer.to_tsv(prefix="Silero-"+model_language)
+    return wer.to_tsv(prefix="Silero-" + model_language)
 
 
 def in_list(_list, exception_text):
@@ -47,7 +46,9 @@ def in_list(_list, exception_text):
         if not item in _list:
             raise ArgumentTypeError(exception_text + item)
         return item
+
     return __call__
+
 
 supported_models = ['de', 'es', 'en']
 parser_supported_models_str = ["\t" + model for model in supported_models]
