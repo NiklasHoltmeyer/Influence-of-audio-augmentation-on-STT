@@ -28,17 +28,19 @@ class Jiwer:
         else:
             with Pool(core_count) as p:
                 results = p.map(self._add_job, jobs)
+
                 for hits, substitutions, deletions, insertions in results:
-                    self._add(hits, substitutions, deletions, insertions)
+                    self._add_metric_values(hits, substitutions, deletions, insertions)
 
     def _add_job(self, job):
-        return self.add(job[0], job[1])
+        sentence, transcript = job
+        return self.wer(sentence, transcript)
 
     def add(self, ground_truth, hypothesis):
         hits, substitutions, deletions, insertions = self.wer(ground_truth, hypothesis)
-        self._add(hits, substitutions, deletions, insertions)
+        self._add_metric_values(hits, substitutions, deletions, insertions)
 
-    def _add(self, hits, substitutions, deletions, insertions):
+    def _add_metric_values(self, hits, substitutions, deletions, insertions):
         self.hits += hits
         self.substitutions += substitutions
         self.deletions += deletions
@@ -84,19 +86,19 @@ class Jiwer:
         return hits, substitutions, deletions, insertions
 
 
-class Wer:
-    def __init__(self, transformation=None):
-        self.transformation = transformation
-        self.wer = load_metric("wer")
+##class Wer:
+##    def __init__(self, transformation=None):
+##self.transformation = transformation
+##self.wer = load_metric("wer")
 
-    def add_batch(self, ground_truths, references):
-        ground_truths = self.transformation(ground_truths) if self.transformation else ground_truths
-        references = self.transformation(references) if self.transformation else references
+##    def add_batch(self, ground_truths, references):
+##ground_truths = self.transformation(ground_truths) if self.transformation else ground_truths
+##references = self.transformation(references) if self.transformation else references
 
-        self.wer.add_batch(predictions=ground_truths, references=references)
+##self.wer.add_batch(predictions=ground_truths, references=references)
 
-    def calc(self):
-        return self.wer.compute()
+##    def calc(self):
+##return self.wer.compute()
 
 
 if __name__ == "__main__":
@@ -104,4 +106,3 @@ if __name__ == "__main__":
     wer.add("test 1", "test fest")
     print(wer.to_tsv_header())
     print(wer.to_tsv())
-

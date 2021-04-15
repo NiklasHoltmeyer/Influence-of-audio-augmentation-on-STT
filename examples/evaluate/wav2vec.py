@@ -1,3 +1,5 @@
+import argparse
+from argparse import RawTextHelpFormatter, ArgumentTypeError
 import torch
 from audioengine.corpus.dataset import Dataset  # dataset.Dataset
 from audioengine.metrics.wer import Jiwer
@@ -25,23 +27,46 @@ def validate_model(model_name):
                             collate_fn=DataframeDataset.collate_fn("speech", "sentence"))
 
     wer = Jiwer()
-    s = []
-    t = []
+    sentence_stacked = []
+    transcriptions_stacked = []
     for idx, (speeches, sentences) in enumerate(tqdm(dataloader)):
         transcriptions = w2c.predict(speeches)
-        #t.extend(transcriptions)
-        #s.extend(sentences)
-        wer.add_batch(sentences, transcriptions)
-        #if idx % 13 == 0:
-#            wer.add_batch(s, t, core_count)
-#            s, t = [], []
-        #break
+        transcriptions_stacked.extend(transcriptions)
+        sentence_stacked.extend(sentences)
 
-    print(wer.calc())
-    print(wer.to_tsv_header(prefix=""))
-    print(wer.to_tsv(prefix=model_name))
-    torch.cuda.empty_cache()
+        if idx % 13 == 0:
+            wer.add_batch(sentence_stacked, transcriptions_stacked, core_count)
+            sentence_stacked, transcriptions_stacked = [], []
+            break
 
-model_name = "facebook/wav2vec2-large-xlsr-53-german"
-validate_model(model_name)
-#facebook/wav2vec2-large-xlsr-53-german	0.3188405797101449	94	37	7	0	16
+    return wer.to_tsv(prefix=model_name)
+
+def in_list(_list, exception_text):
+    def __call__(item):
+        if not item in _list:
+            raise ArgumentTypeError(exception_text + item)
+        return item
+    return __call__
+
+
+supported_models = ['facebook/wav2vec2-large-xlsr-53-german',
+                        'maxidl/wav2vec2-large-xlsr-german',
+                        'marcel/wav2vec2-large-xlsr-53-german',
+                        'flozi00/wav2vec-xlsr-german',
+                        'marcel/wav2vec2-large-xlsr-german-demo',
+                        'MehdiHosseiniMoghadam/wav2vec2-large-xlsr-53-German']
+parser_supported_models_str = ["\t" + model for model in supported_models]
+parser_supported_models_str = "Supported Models: \r\n" + "\r\n".join(parser_supported_models_str)
+
+
+parser = argparse.ArgumentParser(description="Evaluate Wav2Vec", formatter_class=RawTextHelpFormatter)
+parser.add_argument('--model_name', '-m', required=True,
+                    help=parser_supported_models_str, type=in_list(supported_models, "\r\nInvalid Model Name: "))
+
+args = parser.parse_args()
+model_name = args.model_name
+try:
+    print(validate_model(model_name))
+except Exception as e:
+    error = "\t".join([model_name, "error", str(e)])
+    print(error)
