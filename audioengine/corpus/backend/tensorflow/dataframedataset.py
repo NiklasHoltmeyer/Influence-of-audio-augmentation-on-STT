@@ -11,17 +11,17 @@ class DataframeDataset:
         pass
 
     @staticmethod
-    def from_dataframe(dataframe, audio_format, input_key, target_key, **kwargs):
-        return DataframeDataset.from_slices(dataframe[input_key], dataframe[target_key], audio_format, **kwargs)
+    def from_dataframe(dataframe, input_key, target_key, **kwargs):
+        return DataframeDataset.from_slices(dataframe[input_key], dataframe[target_key], **kwargs)
 
     @staticmethod
-    def from_slices(audio_paths, audio_transcriptions, audio_format, **kwargs):
+    def from_slices(audio_paths, audio_transcriptions, **kwargs):
         AUTOTUNE = kwargs.get("AUTOTUNE", tf.data.AUTOTUNE)
         shuffle = kwargs.get("shuffle", False)
         BATCH_SIZE = kwargs.get("batch_size", 32)
 
         audio_ds = tf.data.Dataset.from_tensor_slices(audio_paths)
-        audio_ds = DataframeDataset._transform_audio(audio_ds, audio_format, **kwargs)
+        audio_ds = DataframeDataset._transform_audio(audio_ds, **kwargs)
 
         trans_ds = tf.data.Dataset.from_tensor_slices(audio_transcriptions)
         trans_ds = DataframeDataset._transform_transcriptions(trans_ds, **kwargs)
@@ -34,12 +34,13 @@ class DataframeDataset:
 
     @staticmethod
     def from_file_names(file_names, transcriptions, **kwargs):
-        audio_format = DataframeDataset._get_audio_format(file_names[0])
+        #audio_format = DataframeDataset._get_audio_format(file_names[0])
         return DataframeDataset.from_slices(file_names, transcriptions, **kwargs)
 
     @staticmethod
-    def _transform_audio(audio_ds, audio_format, **kwargs):
+    def _transform_audio(audio_ds, **kwargs):
         AUTOTUNE = kwargs.get("AUTOTUNE", tf.data.AUTOTUNE)
+        audio_format = kwargs.get("audio_format", None)
         #                                                      [AudioTransformations.audio_to_spectrogram(**kwargs),
         # AudioTransformations.normalize(),
         # AudioTransformations.pad(**kwargs)])

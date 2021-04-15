@@ -19,10 +19,12 @@ class TensorflowDataset:
 
         """
         audio_format = kwargs.get("audio_format", None)
+
         if audio_format is None:
             raise Exception("please Pass audio_format (e.q 'wav' or 'mp3')")
 
-        df = DataframeDataset.from_dataframe(data_frame, audio_format, input_key, target_key, **kwargs)
+        df = DataframeDataset.from_dataframe(data_frame, input_key, target_key, **kwargs) #audio_format -> passed per kwargs
+        return df
 
 
     def compose_transformations(self, transformations, **kwargs):
@@ -30,5 +32,6 @@ class TensorflowDataset:
         def __call__(dataset):
             for transformation in transformations:
                 dataset = dataset.map(transformation, num_parallel_calls=AUTOTUNE)
+        return __call__
         #audio_transformations
         #transcription_transformations
