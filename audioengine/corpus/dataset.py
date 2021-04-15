@@ -1,4 +1,5 @@
 from audioengine.corpus.commonvoice import CommonVoice
+from audioengine.transformations.backend.tensorflow.audiotransformations import AudioTransformations
 
 
 class Dataset:
@@ -40,8 +41,21 @@ if __name__ == "__main__":
     windows_path = r"C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de"
     path = windows_path
 
-    ds = Dataset("tf").CommonVoice(windows_path)
-    for x in ds:
+    audio_transformations = [
+        AudioTransformations.load_audio(audio_format="mp3"),
+        AudioTransformations.audio_to_spectrogram(),
+        AudioTransformations.normalize(),
+        AudioTransformations.pad(pad_len=2754)
+    ]
+
+    def map_audio(x, y):
+        for trans in audio_transformations:
+            x = trans(x)
+        return x, y
+    transform = AudioTransformations.load_audio(audio_format="mp3")
+
+    ds = Dataset("tf").CommonVoice(windows_path, batch_size=1)
+    ds = ds.map(map_audio)
+    for x, y in ds.take(1):
         print(x)
         break
-    # print(ds)

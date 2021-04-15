@@ -18,6 +18,7 @@ setup(
     license=license,
     packages=find_packages(exclude=('tests', 'docs')),
     install_requires=[
+        "modin",
         "librosa",
         "SoundFile",
         "pydub",

@@ -6,22 +6,26 @@ class DataframeDataset:
         pass
 
     @staticmethod
-    def from_dataframe(dataframe, input_key, target_key, **kwargs):
-        return DataframeDataset.from_slices(dataframe[input_key], dataframe[target_key], **kwargs)
+    def from_dataframe(dataframe, input_key, target_key, transform, **kwargs):
+        return DataframeDataset.from_slices(dataframe[input_key], dataframe[target_key], transform, **kwargs)
 
     @staticmethod
-    def from_slices(audio_paths, audio_transcriptions, **kwargs):
+    def from_slices(audio_paths, audio_transcriptions, transform, **kwargs):
         AUTOTUNE = kwargs.get("AUTOTUNE", tf.data.AUTOTUNE)
         shuffle = kwargs.get("shuffle", False)
         BATCH_SIZE = kwargs.get("batch_size", 32)
+        audio_transform = kwargs.get("audio_transform", None)
+        trans_transform = kwargs.get("trans_transform", None)
 
         audio_ds = tf.data.Dataset.from_tensor_slices(audio_paths)
-        audio_ds = DataframeDataset._transform_audio(audio_ds, **kwargs)
-
+        audio_ds = audio_ds.map(audio_transform, AUTOTUNE) if audio_transform else audio_ds
         trans_ds = tf.data.Dataset.from_tensor_slices(audio_transcriptions)
-        trans_ds = DataframeDataset._transform_transcriptions(trans_ds, **kwargs)
+        trans_ds = trans_ds.map(trans_transform, AUTOTUNE) if trans_transform else trans_ds
 
-        ds = tf.data.Dataset.zip((audio_ds, trans_ds)).batch(BATCH_SIZE).cache().prefetch(AUTOTUNE)
+        ds = tf.data.Dataset.zip((audio_ds, trans_ds))
+        ds = ds.map(transform) if transform else ds
+        ds = ds.batch(BATCH_SIZE).cache().prefetch(AUTOTUNE)
+
         if shuffle:
             ds = ds.shuffle(AUTOTUNE)
 
@@ -29,35 +33,7 @@ class DataframeDataset:
 
     @staticmethod
     def from_file_names(file_names, transcriptions, **kwargs):
-        #audio_format = DataframeDataset._get_audio_format(file_names[0])
         return DataframeDataset.from_slices(file_names, transcriptions, **kwargs)
-
-    @staticmethod
-    def _transform_audio(audio_ds, **kwargs):
-        AUTOTUNE = kwargs.get("AUTOTUNE", tf.data.AUTOTUNE)
-        #audio_format = kwargs.get("audio_format", None)
-        #                                                      [AudioTransformations.audio_to_spectrogram(**kwargs),
-        # AudioTransformations.normalize(),
-        # AudioTransformations.pad(**kwargs)])
-        transformations = kwargs.get("audio_transformation", None)
-
-        # audio_ds = audio_ds \
-        # .map(AudioTransformations.load_audio(audio_format=audio_format, **kwargs), num_parallel_calls=AUTOTUNE)
-
-        if transformations:
-            audio_ds = audio_ds.map(transformations, num_parallel_calls=AUTOTUNE)
-
-        return audio_ds
-
-    @staticmethod
-    def _transform_transcriptions(trans_ds, **kwargs):
-        AUTOTUNE = kwargs.get("AUTOTUNE", tf.data.AUTOTUNE)
-        transformation = kwargs.get("transcription_transformation", None)
-
-        if transformation:
-            trans_ds = trans_ds.map(transformation, num_parallel_calls=AUTOTUNE)
-
-        return trans_ds
 
     @staticmethod
     def _get_audio_format(file_path):
