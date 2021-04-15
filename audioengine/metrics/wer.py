@@ -29,16 +29,20 @@ class Jiwer:
             with Pool(core_count) as p:
                 results = p.map(self._add_job, jobs)
 
-                for hits, substitutions, deletions, insertions in results:
-                    self._add_metric_values(hits, substitutions, deletions, insertions)
+                for result in results:
+                    if result:
+                        hits, substitutions, deletions, insertions = result
+                        self._add_metric_values(hits, substitutions, deletions, insertions)
 
     def _add_job(self, job):
         sentence, transcript = job
         return self.wer(sentence, transcript)
 
     def add(self, ground_truth, hypothesis):
-        hits, substitutions, deletions, insertions = self.wer(ground_truth, hypothesis)
-        self._add_metric_values(hits, substitutions, deletions, insertions)
+        result = self.wer(ground_truth, hypothesis)
+        if result:
+            hits, substitutions, deletions, insertions = result
+            self._add_metric_values(hits, substitutions, deletions, insertions)
 
     def _add_metric_values(self, hits, substitutions, deletions, insertions):
         self.hits += hits
@@ -50,6 +54,9 @@ class Jiwer:
     def wer(self, ground_truth, hypothesis):
         ground_truth = self.transformation(ground_truth) if self.transformation else ground_truth
         hypothesis = self.transformation(hypothesis) if self.transformation else hypothesis
+
+        if len(ground_truth) == 0:
+            return None
 
         return Jiwer.compute_measurements(ground_truth, hypothesis)
 
