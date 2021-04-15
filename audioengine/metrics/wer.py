@@ -22,7 +22,7 @@ class Jiwer:
         """
         jobs = zip(ground_truths, references)
 
-        if core_count:
+        if not core_count:
             for ground_truth, hypothesis in jobs:
                 self.add(ground_truth, hypothesis)
         else:
