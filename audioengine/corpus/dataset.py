@@ -1,5 +1,6 @@
 from audioengine.corpus.commonvoice import CommonVoice
 
+
 class Dataset:
     def __init__(self, backend):
         """
@@ -34,6 +35,7 @@ if __name__ == "__main__":
     from torchvision import transforms
     from audioengine.transformations.backend.pytorch.audiotransformations import *
     from audioengine.transformations.backend.pytorch.texttransformations import *
+
     linux_path = "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de"
     windows_path = r"C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de"
     path = windows_path
@@ -42,4 +44,4 @@ if __name__ == "__main__":
     for x in ds:
         print(x)
         break
-    #print(ds)
+    # print(ds)

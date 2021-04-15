@@ -1,9 +1,4 @@
-import logging
-
 import tensorflow as tf
-from audioengine.corpus.commonvoice import CommonVoice
-from audioengine.transformations.backend.tensorflow.audiotransformations import AudioTransformations
-from audioengine.transformations.backend.tensorflow.texttransformations import TextTransformations
 
 
 class DataframeDataset:
@@ -40,7 +35,7 @@ class DataframeDataset:
     @staticmethod
     def _transform_audio(audio_ds, **kwargs):
         AUTOTUNE = kwargs.get("AUTOTUNE", tf.data.AUTOTUNE)
-        audio_format = kwargs.get("audio_format", None)
+        #audio_format = kwargs.get("audio_format", None)
         #                                                      [AudioTransformations.audio_to_spectrogram(**kwargs),
         # AudioTransformations.normalize(),
         # AudioTransformations.pad(**kwargs)])
