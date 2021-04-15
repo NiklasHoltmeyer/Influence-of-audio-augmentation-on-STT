@@ -14,3 +14,12 @@ class Regexp:
         for pattern, replacement in self.patterns:
             data["sentence"] = re.sub(pattern, replacement, data["sentence"])
         return data
+
+
+class ToLower:
+    def __init(self, key):
+        self.key = key
+
+    def __call__(self, data):
+        data[self.key] = data[self.key].lower()
+        return data

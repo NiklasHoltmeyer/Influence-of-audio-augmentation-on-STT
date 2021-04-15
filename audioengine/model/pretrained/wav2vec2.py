@@ -1,7 +1,7 @@
 import torch
 
 from audioengine.transformations.backend.pytorch.audiotransformations import LoadAudio
-from audioengine.transformations.backend.pytorch.texttransformations import Regexp
+from audioengine.transformations.backend.pytorch.texttransformations import Regexp, ToLower
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
 
@@ -23,15 +23,11 @@ class wav2vec2:
         transcriptions = self.processor.batch_decode(pred_ids)
         return transcriptions
 
-    def transformations(self):
-        def to_lower(data):
-            data["sentence"] = data["sentence"].lower().replace("’", "'")
-            return data
-
-        transformations = [to_lower]
+    def transformations(self, input_sample_rate=48_000, output_sample_rate=16_000):
+        transformations = [ToLower("sentence")]
 
         chars_to_ignore_regex = self._chars_to_remove()
-        regexp_subs = [(chars_to_ignore_regex, '')] if chars_to_ignore_regex else []
+        regexp_subs = [("’", "'"), (chars_to_ignore_regex, '')] if chars_to_ignore_regex else []
 
         replacements = self._chars_to_replace()
         if replacements:
@@ -43,13 +39,13 @@ class wav2vec2:
             regexp_layer = Regexp(regexp_subs)
             transformations.append(regexp_layer)
 
-        transformations.append(LoadAudio(48_000, 16_000))
+        transformations.append(LoadAudio(input_sample_rate, output_sample_rate))
         return transformations
 
     def _load_pretrained(self):
         processor = Wav2Vec2Processor.from_pretrained(self.model_name)
         model = Wav2Vec2ForCTC.from_pretrained(self.model_name)
-        model.to("cuda")
+        model.to(self.device)
         return model, processor
 
     def __str__(self):

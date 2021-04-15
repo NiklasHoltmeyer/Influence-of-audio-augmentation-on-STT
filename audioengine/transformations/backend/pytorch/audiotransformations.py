@@ -1,10 +1,12 @@
 import torchaudio
 
 class LoadAudio(object):
-    def __init__(self, input_sr=None, output_sr=None):
+    def __init__(self, input_sr=None, output_sr=None, to_numpy=True):
         self.sr = output_sr
         self.sr_default = input_sr
         self.resampler = torchaudio.transforms.Resample(input_sr, output_sr) if input_sr and output_sr else None
+        self.to_numpy = to_numpy
+
 
     def __call__(self, data):
         waveform, _ = torchaudio.load(data['path'])
@@ -15,7 +17,7 @@ class LoadAudio(object):
         else:
             data["sampling_rate"] = self.sr_default
 
-        data["speech"] = waveform.squeeze(0).numpy()
+        data["speech"] = waveform.squeeze(0).numpy() if self.to_numpy else waveform.squeeze(0)
         return data
 
 

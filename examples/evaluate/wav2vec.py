@@ -18,9 +18,6 @@ def validate_model(model_name):
     dataset = Dataset("torch").CommonVoice("/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de", shuffle=False,
                                            transform=transform, type="test")
 
-    print("Dataset", dataset)
-    print("Device", w2c.device)
-
     core_count = os.cpu_count()
 
     dataloader = DataLoader(dataset, batch_size=16, num_workers=os.cpu_count(),
@@ -37,7 +34,6 @@ def validate_model(model_name):
         if idx % 13 == 0:
             wer.add_batch(sentence_stacked, transcriptions_stacked, core_count)
             sentence_stacked, transcriptions_stacked = [], []
-            break
 
     return wer.to_tsv(prefix=model_name)
 
