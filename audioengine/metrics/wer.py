@@ -29,13 +29,13 @@ class Jiwer:
             with Pool(core_count) as p:
                 results = p.map(self.wer, jobs)
                 for hits, substitutions, deletions, insertions in results:
-                    self.add(hits, substitutions, deletions, insertions)
+                    self._add(hits, substitutions, deletions, insertions)
 
     def add(self, ground_truth, hypothesis):
         hits, substitutions, deletions, insertions = self.wer(ground_truth, hypothesis)
-        self.add(hits, substitutions, deletions, insertions)
+        self._add(hits, substitutions, deletions, insertions)
 
-    def add(self, hits, substitutions, deletions, insertions):
+    def _add(self, hits, substitutions, deletions, insertions):
         self.hits += hits
         self.substitutions += substitutions
         self.deletions += deletions
