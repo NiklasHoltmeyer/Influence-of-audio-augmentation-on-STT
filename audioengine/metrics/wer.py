@@ -53,6 +53,22 @@ class Jiwer:
               float(self.hits + self.substitutions + self.deletions)
         return wer
 
+    def to_tsv(self, sep="\t", prefix="", suffix=""):
+        values = [
+            prefix, str(self.calc()), str(self.hits), str(self.substitutions), str(self.deletions),
+            str(self.insertions), str(self.sentences_compared), suffix
+        ]
+
+        return sep.join(values).strip()
+
+    def to_tsv_header(self, sep="\t", prefix="", suffix=""):
+        values = [
+            prefix, "Wer", "Hits", "Substitutions", "Deletions",
+            "Insertions", "Sentences Compared", suffix
+        ]
+
+        return sep.join(values).strip()
+
     @staticmethod
     def compute_measurements(ground_truth, measurements):
         compute_measures = jiwer.compute_measures(ground_truth, measurements)
@@ -81,4 +97,8 @@ class Wer:
 
 
 if __name__ == "__main__":
-    wer = Wer()
+    wer = Jiwer()
+    wer.add("test 1", "test fest")
+    print(wer.to_tsv_header())
+    print(wer.to_tsv())
+

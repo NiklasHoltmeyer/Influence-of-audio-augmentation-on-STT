@@ -1,4 +1,4 @@
-from audioengine.corpus.backend.Tensorflow.dataframedataset import DataframeDataset
+from audioengine.corpus.backend.tensorflow.dataframedataset import DataframeDataset
 import tensorflow as tf
 
 class TensorflowDataset:

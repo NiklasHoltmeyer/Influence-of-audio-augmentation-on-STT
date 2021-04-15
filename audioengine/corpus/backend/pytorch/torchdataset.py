@@ -1,6 +1,6 @@
 from torch.utils.data import DataLoader
 
-from audioengine.corpus.backend.PyTorch.dataframedataset import DataframeDataset
+from audioengine.corpus.backend.pytorch.dataframedataset import DataframeDataset
 
 
 class TorchDataset:

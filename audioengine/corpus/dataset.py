@@ -23,10 +23,10 @@ class Dataset:
 
     def __load_backend(self, backend):
         if "torch" in backend:
-            from audioengine.corpus.backend.PyTorch.torchdataset import TorchDataset
+            from audioengine.corpus.backend.pytorch.torchdataset import TorchDataset
             return TorchDataset()
         if "tensorflow" in backend or "tf" in backend:
-            from audioengine.corpus.backend.Tensorflow.tensorflowdataset import TensorflowDataset
+            from audioengine.corpus.backend.tensorflow.tensorflowdataset import TensorflowDataset
             return TensorflowDataset()
         raise Exception(f"Unknown Backend {backend}. \n Supported Backends: pytorch, tensorflow")
 
