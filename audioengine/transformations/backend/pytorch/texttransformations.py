@@ -17,9 +17,16 @@ class Regexp:
 
 
 class ToLower:
-    def __init(self, key):
+    def __init__(self, key):
         self.key = key
 
     def __call__(self, data):
         data[self.key] = data[self.key].lower()
         return data
+
+
+if __name__ == "__main__":
+    data = {
+        "sentence": "aSsSSdsdsSD"
+    }
+    print(ToLower("sentence")(data))
