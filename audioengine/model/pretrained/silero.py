@@ -1,9 +1,5 @@
 import torch
 
-
-# from audioengine.transformations.backend.pytorch.audiotransformations import LoadAudio
-# from audioengine.transformations.backend.pytorch.texttransformations import Regexp
-# from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 from audioengine.transformations.backend.pytorch.audiotransformations import LoadAudio
 from audioengine.transformations.backend.pytorch.texttransformations import ToLower
 
