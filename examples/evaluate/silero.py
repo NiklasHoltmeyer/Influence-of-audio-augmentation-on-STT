@@ -16,7 +16,9 @@ import os
 
 
 def validate_model(model_language):
-    silero = Silero(model_language)
+    #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
+    silero = Silero(model_language, device=device)
     transform = transforms.Compose(silero.transformations())
     dataset = Dataset("torch").CommonVoice("/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
                                            shuffle=False, transform=transform, type="test")
@@ -60,3 +62,11 @@ parser.add_argument('--model_language', '-l', required=True,
 
 args = parser.parse_args()
 model_language = args.model_language
+
+try:
+    print(validate_model(model_language))
+except Exception as e:
+    error = "\t".join(["Silero-"+model_language, "error", str(e)])
+    print(error)
+
+

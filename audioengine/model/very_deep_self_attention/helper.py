@@ -53,7 +53,7 @@ def path_to_audio_wav(path):
 def path_to_audio_mp3(path):
     # spectrogram using stft
     audio = tf.io.read_file(path)
-    audio, _ = tfio.audio.decode_mp3(audio, 1)
+    audio = tfio.audio.decode_mp3(audio, 1)
     audio = tf.squeeze(audio, axis=-1)
     stfts = tf.signal.stft(audio, frame_length=200, frame_step=80, fft_length=256)
     x = tf.math.pow(tf.abs(stfts), 0.5)
