@@ -5,7 +5,7 @@ from tensorflow.keras import layers
 class VectorizeChar:
     def __init__(self, max_len=50):
         self.vocab = (
-                [self.unknown_key, self.sos, self.eos, " "] +
+                ["-", "#", "<", ">"] +
                 [chr(i + 96) for i in range(1, 27)] +
                 list(".,?!öäüß-")
         )
