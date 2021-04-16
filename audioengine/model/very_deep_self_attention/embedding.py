@@ -3,11 +3,11 @@ from tensorflow.keras import layers
 
 
 class VectorizeChar:
-    def __init__(self, max_len=50):
+    def __init__(self, max_len):
         self.vocab = (
-                ["-", "#", "<", ">"] +
-                [chr(i + 96) for i in range(1, 27)] #+
-                #list(".,?!öäüß-")
+                ["-", "#", "<", ">"]
+                + [chr(i + 96) for i in range(1, 27)]  # +
+                + [" ", ".", ",", "?"]
         )
         self.max_len = max_len
         self.char_to_idx = {}
@@ -16,6 +16,7 @@ class VectorizeChar:
 
     def __call__(self, text):
         text = text.lower()
+        text = text.replace("ö", "oe").replace("ä", "ae").replace("ü", "ue").replace("ß", "ss")
         text = text[: self.max_len - 2]
         text = "<" + text + ">"
         pad_len = self.max_len - len(text)

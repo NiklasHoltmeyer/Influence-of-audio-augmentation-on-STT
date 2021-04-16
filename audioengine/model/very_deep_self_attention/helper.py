@@ -69,8 +69,8 @@ def path_to_audio_mp3(path):
 
 
 def get_data_from_df(df, input_key="path", output_key="sentence"):
-    paths = df.pop("path").values.astype("str")
-    texts = df.pop("sentence").values.astype("str")
+    paths = df.pop("path").values.astype("str")[:5]
+    texts = df.pop("sentence").values.astype("str")[:5]
     data = [{'audio': item[0], 'text': item[1]} for item in zip(paths, texts)]
     return data
 
@@ -142,4 +142,4 @@ def train_model(train_data, test_data, max_target_len, audio_format, batch_size,
 
     optimizer = keras.optimizers.Adam(learning_rate)
     model.compile(optimizer=optimizer, loss=loss_fn)
-    return model.fit(ds, validation_data=val_ds, callbacks=callbacks, epochs=epochs)
+    return model.fit(ds, validation_data=val_ds, callbacks=callbacks, epochs=epochs, workers=8)
