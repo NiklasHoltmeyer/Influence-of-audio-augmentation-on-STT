@@ -41,7 +41,7 @@ class Silero:
     def __str__(self):
         infos = {
             "model_name": "Silero-"+self.language,
-            "backend": "pytorch"
+            "backend__": "pytorch"
         }
         return str(infos)
 

@@ -16,11 +16,11 @@ class Callbacks:
             patience=early_stopping_patience,
             restore_best_weights=True)
 
-        #self.reduceLRonPlateau = ReduceLROnPlateau(monitor='val_loss', patience=early_stopping_patience,
-         #                                          cooldown=0)
+        # self.reduceLRonPlateau = ReduceLROnPlateau(monitor='val_loss', patience=early_stopping_patience,
+        #                                          cooldown=0)
 
         self.model_checkpoint = lambda checkpoint_path: ModelCheckpoint(
-            filepath=checkpoint_path,#+ "/cp-{epoch:04d}.ckpt",
+            filepath=checkpoint_path,  # + "/cp-{epoch:04d}.ckpt",
             save_weights_only=True,
             verbose=1,
             save_best_only=True)  # every poch # batch_size*5 = every 5th epoch)
@@ -28,18 +28,13 @@ class Callbacks:
         self.csv_logger = lambda filePath: CSVLogger(filePath, separator=';', append=True)
 
     def make(self, base_path, model_name):
-        checkpoint_path = self.create_checkpoint_path(str(Path(base_path, "cp").resolve()), model_name)
-        csv_path = str(Path(base_path, model_name+".csv").resolve())
+        checkpoint_path = Callbacks.create_logging_path(str(Path(base_path, "cp").resolve()), model_name)
+        csv_path = str(Path(base_path, model_name + ".csv").resolve())
         return [self.earlyStopping, self.model_checkpoint(checkpoint_path), self.csv_logger(csv_path)]
 
-    def create_checkpoint_path(self, model_folder_path, model_dir_name):
+    @staticmethod
+    def create_logging_path(model_folder_path, model_dir_name):
         path = Path(model_folder_path, model_dir_name)
         path.mkdir(parents=True, exist_ok=True)
 
         return str(path.resolve())
-
-#    def create_model_path(self, model_path, model_dir_name):
-#        path = Path(model_path, model_dir_name)
-#        path.mkdir(parents=True, exist_ok=True)
-#        filePath = Path(path, "{}.tf".format(model_dir_name))
-#        return str(filePath.resolve())

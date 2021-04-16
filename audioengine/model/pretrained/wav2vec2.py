@@ -51,7 +51,7 @@ class wav2vec2:
     def __str__(self):
         infos = {
             "model_name": self.model_name,
-            "backend": "pytorch"
+            "backend__": "pytorch"
         }
         return str(infos)
 
