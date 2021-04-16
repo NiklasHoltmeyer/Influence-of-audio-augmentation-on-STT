@@ -2,6 +2,7 @@ import tensorflow as tf
 import tensorflow_io as tfio
 import logging
 
+
 class AudioTransformations:
     @staticmethod
     def load_audio(**kwargs):
