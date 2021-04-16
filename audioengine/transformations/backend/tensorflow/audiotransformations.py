@@ -16,9 +16,9 @@ class AudioTransformations:
 
         audio_decoder = AudioTransformations.decode_audio(**kwargs)
 
-        def __call__(audio_path):
+        def __call__(audio_path, y):
             audio_binary = tf.io.read_file(audio_path)
-            return audio_decoder(audio_binary)
+            return audio_decoder(audio_binary), y
 
         return __call__
 
@@ -28,20 +28,17 @@ class AudioTransformations:
         frame_step = kwargs.get("frame_step", 80)
         fft_length = kwargs.get("fft_length", 256)
 
-        def __call__(audio):
+        def __call__(audio, y):
             stfts = tf.signal.stft(audio, frame_length=frame_length, frame_step=frame_step, fft_length=fft_length)
-            return tf.math.pow(tf.abs(stfts), 0.5)
+            return tf.math.pow(tf.abs(stfts), 0.5), y
 
         return __call__
 
     @staticmethod
-    def normalize():
-        def __call__(x):
-            means = tf.math.reduce_mean(x, 1, keepdims=True)
-            stddevs = tf.math.reduce_std(x, 1, keepdims=True)
-            return (x - means) / stddevs
-
-        return __call__
+    def normalize(x, y):
+        means = tf.math.reduce_mean(x, 1, keepdims=True)
+        stddevs = tf.math.reduce_std(x, 1, keepdims=True)
+        return ((x - means) / stddevs), y
 
     @staticmethod
     def pad(**kwargs):
@@ -49,9 +46,9 @@ class AudioTransformations:
 
         logging.getLogger("audioengine-corpus").debug(f"pad_len {pad_len}")
 
-        def __call__(x):
+        def __call__(x, y):
             paddings = tf.constant([[0, pad_len], [0, 0]])
-            return tf.pad(x, paddings, "CONSTANT")[:pad_len, :]
+            return (tf.pad(x, paddings, "CONSTANT")[:pad_len, :]), y
 
         return __call__
 
@@ -98,5 +95,3 @@ class AudioTransformations:
     def _decode_mp3(**kwargs):
         shape = kwargs.get("shape", None)
         return lambda audio_binary: tfio.audio.decode_mp3(audio_binary, shape=shape)
-
-
