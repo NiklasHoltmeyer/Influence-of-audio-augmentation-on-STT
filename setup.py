@@ -26,7 +26,7 @@ setup(
         "scikit-learn",
         "tensorflow-io", 
         "swifter",
-        "pandas",
+        "pandas==1.2.3",
         "tensorflow",
         "tqdm",
         "sklearn",
