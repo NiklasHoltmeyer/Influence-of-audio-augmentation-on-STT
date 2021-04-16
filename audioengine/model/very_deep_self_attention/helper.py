@@ -69,8 +69,8 @@ def path_to_audio_mp3(path):
 
 
 def get_data_from_df(df, input_key="path", output_key="sentence"):
-    paths = df.pop("path").values.astype("str")[:5]
-    texts = df.pop("sentence").values.astype("str")[:5]
+    paths = df.pop(input_key).values.astype("str")
+    texts = df.pop(output_key).values.astype("str")
     data = [{'audio': item[0], 'text': item[1]} for item in zip(paths, texts)]
     return data
 
