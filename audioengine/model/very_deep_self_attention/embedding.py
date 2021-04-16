@@ -6,8 +6,8 @@ class VectorizeChar:
     def __init__(self, max_len=50):
         self.vocab = (
                 ["-", "#", "<", ">"] +
-                [chr(i + 96) for i in range(1, 27)] +
-                list(".,?!öäüß-")
+                [chr(i + 96) for i in range(1, 27)] #+
+                #list(".,?!öäüß-")
         )
         self.max_len = max_len
         self.char_to_idx = {}

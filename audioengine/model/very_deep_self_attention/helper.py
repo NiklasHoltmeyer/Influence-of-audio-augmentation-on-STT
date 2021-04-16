@@ -1,10 +1,9 @@
 import os
-import random
 from glob import glob
+
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
 import tensorflow_io as tfio
+from tensorflow import keras
 
 from audioengine.model.very_deep_self_attention.embedding import VectorizeChar
 from audioengine.model.very_deep_self_attention.transformer import DisplayOutputs, Transformer, CustomSchedule
@@ -52,7 +51,6 @@ def path_to_audio_wav(path):
 
 def path_to_audio_mp3(path):
     # spectrogram using stft
-    return path
     audio = tf.io.read_file(path)
     audio = tfio.audio.decode_mp3(audio)
     audio = tf.squeeze(audio, axis=-1)
