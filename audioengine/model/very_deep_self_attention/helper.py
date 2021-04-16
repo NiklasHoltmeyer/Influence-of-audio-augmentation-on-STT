@@ -50,7 +50,7 @@ def path_to_audio_wav(path):
     return x
 
 
-def path_to_audio_mp3_test(path):
+def path_to_audio_mp3(path):
     # spectrogram using stft
     return path
     audio = tf.io.read_file(path)
