@@ -31,11 +31,9 @@ class TensorflowDataset:
 
     @staticmethod
     def compose_transformations(transformations, **kwargs):
-        AUTOTUNE = kwargs.get("AUTOTUNE", tf.data.AUTOTUNE)
-
-        def __call__(dataset):
+        def __call__(x, y):
             for transformation in transformations:
-                dataset = dataset.map(transformation, num_parallel_calls=AUTOTUNE)
-            return dataset
+                x, y = transformation(x, y)
+            return x, y
 
         return __call__
