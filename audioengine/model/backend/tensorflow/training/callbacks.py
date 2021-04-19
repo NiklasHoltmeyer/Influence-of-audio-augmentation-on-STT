@@ -42,7 +42,7 @@ class Callbacks:
     @staticmethod
     def load_model_from_cp(model, checkpoint_path):
         latest_cp = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path)
-        return model.load(latest_cp)
+        return model.load_weights(latest_cp)
 
 
 
