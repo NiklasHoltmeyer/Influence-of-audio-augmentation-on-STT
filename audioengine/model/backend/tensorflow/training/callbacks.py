@@ -2,7 +2,7 @@ from pathlib import Path
 
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.python.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, CSVLogger
-
+import tensorflow as tf
 
 class Callbacks:
     def __init__(self, batch_size, **kwargs):
@@ -38,3 +38,11 @@ class Callbacks:
         path.mkdir(parents=True, exist_ok=True)
 
         return str(path.resolve())
+
+    @staticmethod
+    def load_model_from_cp(model, checkpoint_path):
+        latest_cp = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path)
+        return model.load(latest_cp)
+
+
+

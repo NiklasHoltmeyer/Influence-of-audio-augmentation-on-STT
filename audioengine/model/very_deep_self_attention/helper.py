@@ -5,6 +5,7 @@ import tensorflow as tf
 import tensorflow_io as tfio
 from tensorflow import keras
 
+from audioengine.model.backend.tensorflow.training.callbacks import Callbacks
 from audioengine.model.very_deep_self_attention.embedding import VectorizeChar
 from audioengine.model.very_deep_self_attention.transformer import DisplayOutputs, Transformer, CustomSchedule
 
@@ -106,7 +107,19 @@ def create_tf_dataset(data, audio_format, vectorizer, batch_size=4):
     return ds
 
 
-def train_model(train_data, test_data, max_target_len, audio_format, batch_size, epochs, callbacks=[]):
+def create_model(max_target_len):
+    return Transformer(
+        num_hid=200,
+        num_head=2,
+        num_feed_forward=400,
+        target_maxlen=max_target_len,
+        num_layers_enc=4,
+        num_layers_dec=1,
+        num_classes=34,
+    )
+
+
+def create_model_training(train_data, test_data, max_target_len, audio_format, batch_size, epochs, callbacks=[]):
     vectorizer = VectorizeChar(max_target_len)
     idx_to_char = vectorizer.get_vocabulary()
 
@@ -117,15 +130,7 @@ def train_model(train_data, test_data, max_target_len, audio_format, batch_size,
     display_cb = DisplayOutputs(batch, idx_to_char, target_start_token_idx=2, target_end_token_idx=3)
     callbacks.append(display_cb)
 
-    model = Transformer(
-        num_hid=200,
-        num_head=2,
-        num_feed_forward=400,
-        target_maxlen=max_target_len,
-        num_layers_enc=4,
-        num_layers_dec=1,
-        num_classes=34,
-    )
+    model = create_model(max_target_len)
 
     loss_fn = tf.keras.losses.CategoricalCrossentropy(
         from_logits=True, label_smoothing=0.1,
@@ -142,4 +147,15 @@ def train_model(train_data, test_data, max_target_len, audio_format, batch_size,
 
     optimizer = keras.optimizers.Adam(learning_rate)
     model.compile(optimizer=optimizer, loss=loss_fn)
-    return model.fit(ds, validation_data=val_ds, callbacks=callbacks, epochs=epochs, workers=8)
+    return model, callbacks, ds, val_ds
+
+
+def create_model_test(test_data, max_target_len, audio_format, batch_size, cp_path):
+    vectorizer = VectorizeChar(max_target_len)
+    idx_to_char = vectorizer.get_vocabulary()
+
+    val_ds = create_tf_dataset(test_data, audio_format, vectorizer, batch_size)
+
+    model = Callbacks.load_model_from_cp(model=create_model(max_target_len), checkpoint_path=cp_path)
+
+    return model, idx_to_char, val_ds
