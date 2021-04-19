@@ -107,8 +107,8 @@ def create_tf_dataset(data, audio_format, vectorizer, batch_size=4):
     return ds
 
 
-def create_model(max_target_len):
-    return Transformer(
+def create_model(max_target_len, steps_per_epoch):
+    model = Transformer(
         num_hid=200,
         num_head=2,
         num_feed_forward=400,
@@ -117,6 +117,24 @@ def create_model(max_target_len):
         num_layers_dec=1,
         num_classes=34,
     )
+
+
+    loss_fn = tf.keras.losses.CategoricalCrossentropy(
+        from_logits=True, label_smoothing=0.1,
+    )
+
+    learning_rate = CustomSchedule(
+        init_lr=0.00001,
+        lr_after_warmup=0.001,
+        final_lr=0.00001,
+        warmup_epochs=15,
+        decay_epochs=85,
+        steps_per_epoch=steps_per_epoch,
+    )
+
+    optimizer = keras.optimizers.Adam(learning_rate)
+    model.compile(optimizer=optimizer, loss=loss_fn)
+    return model
 
 
 def create_model_training(train_data, test_data, max_target_len, audio_format, batch_size, epochs, callbacks=[]):
@@ -130,23 +148,7 @@ def create_model_training(train_data, test_data, max_target_len, audio_format, b
     display_cb = DisplayOutputs(batch, idx_to_char, target_start_token_idx=2, target_end_token_idx=3)
     callbacks.append(display_cb)
 
-    model = create_model(max_target_len)
-
-    loss_fn = tf.keras.losses.CategoricalCrossentropy(
-        from_logits=True, label_smoothing=0.1,
-    )
-
-    learning_rate = CustomSchedule(
-        init_lr=0.00001,
-        lr_after_warmup=0.001,
-        final_lr=0.00001,
-        warmup_epochs=15,
-        decay_epochs=85,
-        steps_per_epoch=len(ds),
-    )
-
-    optimizer = keras.optimizers.Adam(learning_rate)
-    model.compile(optimizer=optimizer, loss=loss_fn)
+    model = create_model(max_target_len, len(ds))
     return model, callbacks, ds, val_ds
 
 
@@ -156,6 +158,6 @@ def create_model_test(test_data, max_target_len, audio_format, batch_size, cp_pa
 
     val_ds = create_tf_dataset(test_data, audio_format, vectorizer, batch_size)
 
-    model = Callbacks.load_model_from_cp(model=create_model(max_target_len), checkpoint_path=cp_path)
+    model = Callbacks.load_model_from_cp(model=create_model(max_target_len, len(val_ds)), checkpoint_path=cp_path)
 
     return model, idx_to_char, val_ds
