@@ -7,6 +7,7 @@ from audioengine.metrics.wer import Jiwer
 import os
 from tqdm import tqdm
 from audioengine.metrics.wer import Jiwer
+import time
 
 ## Load-Model
 
@@ -18,7 +19,8 @@ test_df = common_voice.load_dataframe(type="test")
 input_key, output_key = "path", "sentence"
 
 test_data = get_data_from_df(test_df, input_key, output_key)
-
+print(len(test_data))
+exit(0)
 batch_size = 32
 max_target_len = 172
 checkpoint_dir = "/share/train/deepselfatt/16042021_15_33_31/cp/"
@@ -60,7 +62,7 @@ test = None
 wer = Jiwer()
 sentence_stacked = []
 transcriptions_stacked = []
-
+start_time = time.time()
 for idx, batch in enumerate(tqdm(val_ds)):
     targets, predictions = batch_predict(model, batch)
     transcriptions_stacked.extend(predictions)
@@ -70,5 +72,5 @@ for idx, batch in enumerate(tqdm(val_ds)):
         wer.add_batch(sentence_stacked, transcriptions_stacked, core_count)
         sentence_stacked, transcriptions_stacked = [], []
 
-result_tsv = wer.to_tsv(prefix="Very_Deep_Self_attention 72Ep")
+result_tsv = wer.to_tsv(prefix="Very_Deep_Self_attention 72Ep", suffix=str(time.time() - start_time))
 print(result_tsv)

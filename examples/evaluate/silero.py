@@ -13,7 +13,7 @@ from audioengine.model.pretrained.wav2vec2 import wav2vec2
 from audioengine.corpus.backend.pytorch.dataframedataset import DataframeDataset
 from torch.utils.data import DataLoader
 import os
-
+import time
 
 def validate_model(model_language):
     #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -31,16 +31,17 @@ def validate_model(model_language):
     wer = Jiwer()
     sentence_stacked = []
     transcriptions_stacked = []
+    start_time = time.time()
     for idx, (speeches, sentences) in enumerate(tqdm(dataloader)):
         transcriptions = silero.predict(speeches)
         transcriptions_stacked.extend(transcriptions)
         sentence_stacked.extend(sentences)
 
-        if idx % 13 == 0:
+        if idx % 71 == 0:
             wer.add_batch(sentence_stacked, transcriptions_stacked, core_count)
             sentence_stacked, transcriptions_stacked = [], []
 
-    return wer.to_tsv(prefix="Silero-" + model_language)
+    return wer.to_tsv(prefix="Silero-" + model_language, suffix=str(time.time()-start_time))
 
 
 def in_list(_list, exception_text):
@@ -52,16 +53,16 @@ def in_list(_list, exception_text):
     return __call__
 
 
-supported_models = ['de', 'es', 'en']
-parser_supported_models_str = ["\t" + model for model in supported_models]
-parser_supported_models_str = "Supported Models: \r\n" + "\r\n".join(parser_supported_models_str)
-
-parser = argparse.ArgumentParser(description="Evaluate Silero", formatter_class=RawTextHelpFormatter)
-parser.add_argument('--model_language', '-l', required=True,
-                    help=parser_supported_models_str, type=in_list(supported_models, "\r\nInvalid Model Language: "))
-
-args = parser.parse_args()
-model_language = args.model_language
+#supported_models = ['de', 'es', 'en']
+#parser_supported_models_str = ["\t" + model for model in supported_models]
+#parser_supported_models_str = "Supported Models: \r\n" + "\r\n".join(parser_supported_models_str)
+#
+#parser = argparse.ArgumentParser(description="Evaluate Silero", formatter_class=RawTextHelpFormatter)
+#parser.add_argument('--model_language', '-l', required=True,
+#                    help=parser_supported_models_str, type=in_list(supported_models, "\r\nInvalid Model Language: "))
+#
+#args = parser.parse_args()
+model_language = "de"#args.model_language
 
 try:
     print(validate_model(model_language))

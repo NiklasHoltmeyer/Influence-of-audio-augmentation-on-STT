@@ -25,6 +25,15 @@ class ToLower:
         return data
 
 
+class ToUpper:
+    def __init__(self, key):
+        self.key = key
+
+    def __call__(self, data):
+        data[self.key] = data[self.key].upper()
+        return data
+
+
 if __name__ == "__main__":
     data = {
         "sentence": "aSsSSdsdsSD"

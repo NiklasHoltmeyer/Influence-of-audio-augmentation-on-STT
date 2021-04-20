@@ -9,11 +9,19 @@ from audioengine.model.pretrained.wav2vec2 import wav2vec2
 from audioengine.corpus.backend.pytorch.dataframedataset import DataframeDataset
 from torch.utils.data import DataLoader
 import os
+import time
+
+from audioengine.transformations.backend.pytorch.texttransformations import ToUpper
 
 
 def validate_model(model_name):
     w2c = wav2vec2(model_name)
-    transform = transforms.Compose(w2c.transformations())
+    transformations = w2c.transformations()
+
+    if model_name == "flozi00/wav2vec-xlsr-german":
+        transformations[0] =ToUpper("sentence")
+
+    transform = transforms.Compose(transformations)
 
     dataset = Dataset("torch").CommonVoice("/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de", shuffle=False,
                                            transform=transform, type="test")
@@ -26,16 +34,17 @@ def validate_model(model_name):
     wer = Jiwer()
     sentence_stacked = []
     transcriptions_stacked = []
+    start_time = time.time()
     for idx, (speeches, sentences) in enumerate(tqdm(dataloader)):
         transcriptions = w2c.predict(speeches)
         transcriptions_stacked.extend(transcriptions)
         sentence_stacked.extend(sentences)
 
-        if idx % 13 == 0:
+        if idx % 97 == 0: #97 71
             wer.add_batch(sentence_stacked, transcriptions_stacked, core_count)
             sentence_stacked, transcriptions_stacked = [], []
 
-    return wer.to_tsv(prefix=model_name)
+    return wer.to_tsv(prefix=model_name, suffix=str(time.time()-start_time))
 
 def in_list(_list, exception_text):
     def __call__(item):
@@ -55,14 +64,16 @@ parser_supported_models_str = ["\t" + model for model in supported_models]
 parser_supported_models_str = "Supported Models: \r\n" + "\r\n".join(parser_supported_models_str)
 
 
-parser = argparse.ArgumentParser(description="Evaluate Wav2Vec", formatter_class=RawTextHelpFormatter)
-parser.add_argument('--model_name', '-m', required=True,
-                    help=parser_supported_models_str, type=in_list(supported_models, "\r\nInvalid Model Name: "))
+#parser = argparse.ArgumentParser(description="Evaluate Wav2Vec", formatter_class=RawTextHelpFormatter)
+#parser.add_argument('--model_name', '-m', required=True,
+#                    help=parser_supported_models_str, type=in_list(supported_models, "\r\nInvalid Model Name: "))
 
-args = parser.parse_args()
-model_name = args.model_name
-try:
-    print(validate_model(model_name))
-except Exception as e:
-    error = "\t".join([model_name, "error", str(e)])
-    print(error)
+#args = parser.parse_args()
+#model_name = args.model_name
+#model_name = "flozi00/wav2vec-xlsr-german"
+for model_name in supported_models:
+    try:
+        print(validate_model(model_name))
+    except Exception as e:
+        error = "\t".join([model_name, "error", str(e)])
+        print(error)

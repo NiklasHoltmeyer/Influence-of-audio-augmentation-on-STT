@@ -21,8 +21,7 @@ max_target_len_train = get_longest_string(train_df, output_key)
 max_target_len_test = get_longest_string(test_df, output_key)
 max_target_len = max(max_target_len_train, max_target_len_test)
 
-# print(max_target_len) #157
-# max_target_len = 157
+max_target_len = 157
 
 train_data = get_data_from_df(train_df, input_key, output_key)
 test_data = get_data_from_df(test_df, input_key, output_key)
