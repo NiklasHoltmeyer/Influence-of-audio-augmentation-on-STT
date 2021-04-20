@@ -1,3 +1,5 @@
+from torchvision.transforms import transforms
+
 from audioengine.model.pretrained.silero import Silero
 
 from audioengine.model.pretrained.wav2vec2 import wav2vec2
@@ -11,7 +13,12 @@ class STTService:
 
     def __init__(self, **kwargs):
         """ Use STTService.instance(**kwargs) instead of STTService(**kwargs)"""
+        input_sample_rate = kwargs.get("input_sample_rate", 48_000)
+        output_sample_rate = kwargs.get("output_sample_rate", 16_000)
+
         self.model, self.model_name, self.language = self.load_model(**kwargs)
+        self.transformations = self.model.transformations(input_sample_rate=input_sample_rate, output_sample_rate=output_sample_rate)
+        self.transform = transforms.Compose(self.transformations)
 
     def load_model(self, **kwargs):
         model_type = kwargs.get("model_type", "wav2vec2")
@@ -25,11 +32,13 @@ class STTService:
         if model_type not in cls_mapping.keys():
             raise Exception("Unknown Model-Type")
 
-        model = cls_mapping[model_type] #()
+        model = cls_mapping[model_type]()
 
         return model, model_name, language
 
     def predict(self, speeches):
+        """ predict """
+        self.transformations
         return self.model.predict(speeches)
 
 

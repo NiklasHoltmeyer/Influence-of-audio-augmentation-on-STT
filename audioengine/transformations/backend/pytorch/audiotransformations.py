@@ -20,7 +20,6 @@ class LoadAudio(object):
         data["speech"] = waveform.squeeze(0).numpy() if self.to_numpy else waveform.squeeze(0)
         return data
 
-
 ##class Spectrogram:
 ##    def __init__(self, n_fft: int = 400,
 ##                 win_length: Optional[int] = None,
