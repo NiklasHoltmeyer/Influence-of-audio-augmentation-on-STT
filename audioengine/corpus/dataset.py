@@ -14,10 +14,10 @@ class Dataset:
         self.backend = self.__load_backend(backend)
 
     def CommonVoice(self, base_path, **kwargs):
-        return self._from_AudioDataset(CommonVoice(base_path, **kwargs))
+        return self._from_AudioDataset(CommonVoice(base_path, **kwargs), **kwargs)
 
     def VoxForge(self, base_path, **kwargs):
-        return self._from_AudioDataset(VoxForge(base_path, **kwargs))
+        return self._from_AudioDataset(VoxForge(base_path, **kwargs), **kwargs)
 
     def _from_AudioDataset(self, audio_ds, input_key="path", target_key="sentence", **kwargs):
         audio_format = audio_ds.audio_format
