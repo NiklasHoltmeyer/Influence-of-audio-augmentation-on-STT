@@ -27,6 +27,15 @@ class VoxForge(AudioDataset):
                 _split = line.split()
                 audio_path = _split[0]
                 audio_path = str(Path(self.path, audio_path + ".wav").resolve())
+
+                #/share/datasets/voxforge_todo/anonymhatschie-20140526-wth/mfc/de3-47.wav
+                #->
+                #/share/datasets/voxforge_todo/anonymhatschie-20140526-wth/wav/de3-47.wav
+
+                audio_splitted = audio_path.split("/")
+                audio_splitted[-2] = "wav"
+                audio_path = "/".join(audio_splitted)
+
                 text = " ".join(_split[1:]).lower()
                 data.append((audio_path, text))
         return data
