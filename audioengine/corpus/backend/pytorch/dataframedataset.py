@@ -50,13 +50,14 @@ class DataframeDataset(Dataset):
     def __iter__(self):
         worker_info = torch.utils.data.get_worker_info()
         if worker_info is None:
-            return iter(range(self.__len__()))
+            return map(self.__getitem__, range(self.__len__()))
 
         per_worker = int(math.ceil((self.__len__()) / float(worker_info.num_workers)))
         worker_id = worker_info.id
         iter_start = worker_id * per_worker
         iter_end = min(iter_start + per_worker, self.__len__())
-        return iter(range(iter_start, iter_end))
+        return map(self.__getitem__, range(iter_start, iter_end))
+        # return iter(range(iter_start, iter_end))
 
     @staticmethod
     def collate_fn(input_key, output_key):
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     import pandas as pd
     from torch.utils.data import DataLoader
 
-    data = [("x1", "y2", "A3"), ("x11", "y2", "b3"), ("x111", "y2", "c3"), ("x1111", "y2", "d3")]
+    data = [("ax", "ay", "asd"), ("bx", "by", "b3"), ("cx", "cy", "c3"), ("dx", "dy", "d3")]
     df = pd.DataFrame(data, columns=['input', 'target', 'random'])
     print(df.head())
 
@@ -94,10 +95,12 @@ if __name__ == "__main__":
         print(idx, "->", data)
         # pass
     print("*"*23)
-    for idx in ds:
-        print(idx)
-
+    for d in iter(ds):
+        print("dö", d)
+    print("xo"*12)
     print(list(torch.utils.data.DataLoader(ds, num_workers=3)))
+    print("ox" * 12)
+    print(list(torch.utils.data.DataLoader(ds)))
 #    for idx, (x, y) in enumerate(loader):
 #        print("x", x, "\t", "y", y)
 
