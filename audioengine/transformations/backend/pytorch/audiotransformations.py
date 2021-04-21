@@ -20,6 +20,20 @@ class LoadAudio(object):
         data["speech"] = waveform.squeeze(0).numpy() if self.to_numpy else waveform.squeeze(0)
         return data
 
+class PreprocessTransformer:
+    def __init__(self, processor, sampling_rate):
+        self.processor = processor
+        self.sampling_rate = sampling_rate
+
+    def __call__(self, batch):
+        batch["input_values"] = self.processor(batch["speech"], return_tensors="pt", sampling_rate=16_000, padding=True).input_values
+        #inputs = self.processor(speeches, sampling_rate=sampling_rate, return_tensors="pt", padding=padding)
+        with self.processor.as_target_processor():
+            batch["labels"] = self.processor(batch["sentence"],return_tensors="pt", padding=True).input_ids
+        return batch
+
+
+
 ##class Spectrogram:
 ##    def __init__(self, n_fft: int = 400,
 ##                 win_length: Optional[int] = None,

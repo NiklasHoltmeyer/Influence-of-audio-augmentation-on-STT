@@ -28,7 +28,7 @@ class DataframeDataset(Dataset):
             'features': self.features,
             'num_rows': len(self)
         }
-        return info
+        return "Dataset("+ str(info) + ")"
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):

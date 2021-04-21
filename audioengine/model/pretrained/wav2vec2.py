@@ -1,5 +1,6 @@
 import torch
 
+from audioengine.model.finetuning.helper.wav2vec2 import DataCollatorCTCWithPadding
 from audioengine.transformations.backend.pytorch.audiotransformations import LoadAudio
 from audioengine.transformations.backend.pytorch.texttransformations import Regexp, ToLower
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
@@ -47,6 +48,9 @@ class wav2vec2:
         model = Wav2Vec2ForCTC.from_pretrained(self.model_name)
         model.to(self.device)
         return model, processor
+
+    def data_collator(self):
+        return DataCollatorCTCWithPadding(processor=self.processor, padding=True)
 
     def __str__(self):
         infos = {
