@@ -34,7 +34,7 @@ class VoxForge(AudioDataset):
     def _load_data(self):
         """ [(path, transcription), (path, transcription), ...] """
         prompts = self._list_prompts()
-        data = np.array([self.load_prompt(p) for p in prompts])
+        data = np.array([self._load_prompt(p) for p in prompts])
         flattend = data.reshape(-1, data.shape[-1])
         return flattend
 
