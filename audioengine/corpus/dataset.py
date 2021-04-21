@@ -1,4 +1,5 @@
 from audioengine.corpus.commonvoice import CommonVoice
+from audioengine.corpus.voxforge import VoxForge
 from audioengine.transformations.backend.tensorflow.audiotransformations import AudioTransformations
 
 
@@ -13,11 +14,14 @@ class Dataset:
         self.backend = self.__load_backend(backend)
 
     def CommonVoice(self, base_path, **kwargs):
-        cv = CommonVoice(base_path)
-        audio_format = cv.audio_format
-        dataframe = cv.load_dataframe(**kwargs)
-        input_key = "path"
-        target_key = "sentence"
+        return self._from_AudioDataset(CommonVoice(base_path, **kwargs))
+
+    def VoxForge(self, base_path, **kwargs):
+        return self._from_AudioDataset(VoxForge(base_path, **kwargs))
+
+    def _from_AudioDataset(self, audio_ds, input_key, target_key, **kwargs):
+        audio_format = audio_ds.audio_format
+        dataframe = audio_ds.load_dataframe(**kwargs)
         features = [input_key, target_key, "speech"]
         return self.backend.from_dataframe(dataframe, input_key, target_key, audio_format=audio_format,
                                            features=features, **kwargs)
@@ -48,10 +52,13 @@ if __name__ == "__main__":
         AudioTransformations.pad(pad_len=2754)
     ]
 
+
     def map_audio(x, y):
         for trans in audio_transformations:
             x = trans(x)
         return x, y
+
+
     transform = AudioTransformations.load_audio(audio_format="mp3")
 
     ds = Dataset("tf").CommonVoice(windows_path, batch_size=1)

@@ -7,7 +7,7 @@ from audioengine.corpus.audiodataset import AudioDataset
 
 class VoxForge(AudioDataset):
     def __init__(self, path, **kwargs):
-        super(VoxForge, self).__init__(audio_format="mp3", sample_rate=48_000, **kwargs)
+        super(VoxForge, self).__init__(audio_format="wav", sample_rate=48_000, **kwargs)
         self.path = path
 
     def load_dataframe(self, **kwargs):
