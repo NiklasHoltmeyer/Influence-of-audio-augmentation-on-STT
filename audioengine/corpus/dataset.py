@@ -19,7 +19,7 @@ class Dataset:
     def VoxForge(self, base_path, **kwargs):
         return self._from_AudioDataset(VoxForge(base_path, **kwargs))
 
-    def _from_AudioDataset(self, audio_ds, input_key, target_key, **kwargs):
+    def _from_AudioDataset(self, audio_ds, input_key="path", target_key="sentence", **kwargs):
         audio_format = audio_ds.audio_format
         dataframe = audio_ds.load_dataframe(**kwargs)
         features = [input_key, target_key, "speech"]
