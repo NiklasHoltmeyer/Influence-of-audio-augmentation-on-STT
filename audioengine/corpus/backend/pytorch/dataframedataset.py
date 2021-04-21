@@ -8,6 +8,7 @@ class DataframeDataset(Dataset):
     """
 
     def __init__(self, data_frame, input_key, target_key, transform=None, features=None):
+        super(DataframeDataset).__init__()
         self.data_frame = data_frame
         self.input_key = input_key
         self.target_key = target_key
@@ -44,6 +45,9 @@ class DataframeDataset(Dataset):
 
         return data
 
+    def __iter__(self):
+        return iter(range(self.__len__()))
+
     @staticmethod
     def collate_fn(input_key, output_key):
         def __call__(batch):
@@ -79,6 +83,9 @@ if __name__ == "__main__":
         data = ds[idx]
         print(idx, "->", data)
         # pass
+    print("*"*23)
+    for idx in ds:
+        print(idx)
 #    for idx, (x, y) in enumerate(loader):
 #        print("x", x, "\t", "y", y)
 
