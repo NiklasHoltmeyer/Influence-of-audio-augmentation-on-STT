@@ -5,10 +5,10 @@ class LoadandResampleAudio:
     def __init__(self, processor, **kwargs):
         self.processor = processor
         self.speech_key = kwargs.get("speech_key", "speech")
-        self.sentence_key = kwargs.get("sentence_key", "sentence")
+#        self.sentence_key = kwargs.get("sentence_key", "sentence")
 
         self.sample_rate_in = kwargs.get("sample_rate_in", None)
-        self.sample_rate_out = kwargs.get("sample_rate_in", None)
+        self.sample_rate_out = kwargs.get("sample_rate_out", None)
 
         self.resampler = torchaudio.transforms.Resample(self.sample_rate_in,
                                                         self.sample_rate_out) if self.sample_rate_in and self.sample_rate_out else None
@@ -21,10 +21,10 @@ class LoadandResampleAudio:
 
         if self.resampler:
             waveform = self.resampler(waveform)
-            batch["speech"] = waveform[0].numpy()
+            batch[self.speech_key] = waveform[0].numpy()
             batch["sampling_rate"] = self.sample_rate_out
         else:
-            batch["speech"] = waveform[0].numpy()
+            batch[self.speech_key] = waveform[0].numpy()
             batch["sampling_rate"] = sampling_rate
 
         return batch
