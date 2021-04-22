@@ -1,3 +1,4 @@
+from audioengine.model.pretrained.wav2vec2 import wav2vec2
 from transformers import TrainingArguments, Trainer
 
 from audioengine.model.finetuning.helper.wav2vec2 import compute_metrics
@@ -21,10 +22,10 @@ def load_training_arguments(output_dir, **kwargs):
     )
 
 
-def load_trainer(model, processor, args, train_dataset=None, eval_dataset=None, **kwargs):
+def load_trainer(model, processor, data_collator, args, train_dataset=None, eval_dataset=None, **kwargs):
     return Trainer(
         model=model,
-        data_collator=model.data_collator(),
+        data_collator=data_collator,
         args=args,
         compute_metrics=kwargs.get("compute_metrics", compute_metrics(processor)),
         train_dataset=train_dataset,

@@ -28,7 +28,7 @@ class PreprocessTransformer:
         self.padding = padding
 
     def __call__(self, batch):
-        batch["input_values"] = self.processor(batch["speech"]).input_values
+        batch["input_values"] = self.processor(batch["speech"], sampling_rate=self.sampling_rate).input_values
         #return_tensors="pt", sampling_rate=self.sampling_rate, padding=self.padding
         with self.processor.as_target_processor():
             batch["labels"] = self.processor(batch["sentence"]).input_ids
