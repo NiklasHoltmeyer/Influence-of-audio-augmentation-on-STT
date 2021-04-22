@@ -1,9 +1,21 @@
 # Source: https://colab.research.google.com/github/patrickvonplaten/notebooks/blob/master/Fine_Tune_XLSR_Wav2Vec2_on_Turkish_ASR_with_%F0%9F%A4%97_Transformers.ipynb#scrollTo=lbQf5GuZyQ4_
-import torch
 
-from dataclasses import dataclass, field
+import collections
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
-from transformers import Wav2Vec2Processor
+
+import numpy as np
+import torch
+import transformers
+from datasets import load_metric
+from torch import nn
+from torch.cuda.amp import autocast
+from tqdm.auto import tqdm
+from transformers import (
+    Trainer,
+    Wav2Vec2Processor,
+)
+from transformers.trainer_pt_utils import LengthGroupedSampler, DistributedLengthGroupedSampler
 
 
 @dataclass
@@ -67,9 +79,96 @@ class DataCollatorCTCWithPadding:
         batch["labels"] = labels
 
         return batch
+class CTCTrainer(Trainer):
+    def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
+        """
+        Perform a training step on a batch of inputs.
+        Subclass and override to inject custom behavior.
+        Args:
+            model (:obj:`nn.Module`):
+                The model to train.
+            inputs (:obj:`Dict[str, Union[torch.Tensor, Any]]`):
+                The inputs and targets of the model.
+                The dictionary will be unpacked before being fed to the model. Most models expect the targets under the
+                argument :obj:`labels`. Check your model's documentation for all accepted arguments.
+        Return:
+            :obj:`torch.Tensor`: The tensor with training loss on this batch.
+        """
 
-import numpy as np
-from datasets import load_metric
+        model.train()
+        inputs = self._prepare_inputs(inputs)
+
+        if self.use_amp:
+            with autocast():
+                loss = self.compute_loss(model, inputs)
+        else:
+            loss = self.compute_loss(model, inputs)
+
+        if self.args.n_gpu > 1:
+            if model.module.config.ctc_loss_reduction == "mean":
+                loss = loss.mean()
+            elif model.module.config.ctc_loss_reduction == "sum":
+                loss = loss.sum() / (inputs["labels"] >= 0).sum()
+            else:
+                raise ValueError(f"{model.config.ctc_loss_reduction} is not valid. Choose one of ['mean', 'sum']")
+
+        if self.args.gradient_accumulation_steps > 1:
+            loss = loss / self.args.gradient_accumulation_steps
+
+        if self.use_amp:
+            self.scaler.scale(loss).backward()
+        # elif self.use_apex:
+        #     with amp.scale_loss(loss, self.optimizer) as scaled_loss:
+        #         scaled_loss.backward()
+        elif self.deepspeed:
+            self.deepspeed.backward(loss)
+        else:
+            loss.backward()
+
+        return loss.detach()
+
+# add less aggressive smoothing to progress bar for better estimate
+class CustomProgressBarCallback(transformers.trainer_callback.ProgressCallback):
+    def on_train_begin(self, args, state, control, **kwargs):
+        if state.is_local_process_zero:
+            self.training_bar = tqdm(total=state.max_steps, smoothing=0.1)
+        self.current_step = 0
+
+# solution from https://discuss.huggingface.co/t/spanish-asr-fine-tuning-wav2vec2/4586/6
+class GroupedLengthsTrainer(CTCTrainer):
+    # length_field_name should possibly be part of TrainingArguments instead
+    def __init__(self, train_seq_lengths: List[int], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.train_seq_lengths = train_seq_lengths
+
+    def _get_train_sampler(self) -> Optional[torch.utils.data.sampler.Sampler]:
+        if isinstance(self.train_dataset, torch.utils.data.IterableDataset) or not isinstance(
+                self.train_dataset, collections.abc.Sized
+        ):
+            return None
+
+        # Build the sampler.
+        if self.args.group_by_length:
+            # lengths = self.train_dataset[self.length_field_name] if self.length_field_name is not None else None
+            model_input_name = self.tokenizer.model_input_names[0] if self.tokenizer is not None else None
+            if self.args.world_size <= 1:
+                return LengthGroupedSampler(
+                    self.train_dataset, self.args.train_batch_size, lengths=self.train_seq_lengths,
+                    model_input_name=model_input_name
+                )
+            else:
+                return DistributedLengthGroupedSampler(
+                    self.train_dataset,
+                    self.args.train_batch_size,
+                    num_replicas=self.args.world_size,
+                    rank=self.args.process_index,
+                    lengths=self.train_seq_lengths,
+                    model_input_name=model_input_name,
+                )
+
+        else:
+            return super()._get_train_sampler()
+
 
 wer_metric = load_metric("wer")
 
