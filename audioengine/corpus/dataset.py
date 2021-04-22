@@ -1,3 +1,4 @@
+from audioengine.corpus.backend.pytorch.huggingfacedataset import HuggingfaceDataset
 from audioengine.corpus.commonvoice import CommonVoice
 from audioengine.corpus.voxforge import VoxForge
 from audioengine.transformations.backend.tensorflow.audiotransformations import AudioTransformations
@@ -33,6 +34,8 @@ class Dataset:
         if "tensorflow" in backend or "tf" in backend:
             from audioengine.corpus.backend.tensorflow.tensorflowdataset import TensorflowDataset
             return TensorflowDataset()
+        if "huggingface" in backend:
+            return HuggingfaceDataset()
         raise Exception(f"Unknown Backend {backend}. \n Supported Backends: pytorch, tensorflow")
 
 
