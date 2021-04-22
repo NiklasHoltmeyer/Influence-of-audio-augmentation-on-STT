@@ -45,24 +45,10 @@ if __name__ == "__main__":
     windows_path = r"C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de"
     path = windows_path
 
-    audio_transformations = [
-        AudioTransformations.load_audio(audio_format="mp3"),
-        AudioTransformations.audio_to_spectrogram(),
-        AudioTransformations.normalize(),
-        AudioTransformations.pad(pad_len=2754)
-    ]
+    ds = Dataset("torch").CommonVoice(linux_path, batch_size=1, load_max_input_length=True)
+    print(ds)
+    print(ds.max_input_length)
 
-
-    def map_audio(x, y):
-        for trans in audio_transformations:
-            x = trans(x)
-        return x, y
-
-
-    transform = AudioTransformations.load_audio(audio_format="mp3")
-
-    ds = Dataset("tf").CommonVoice(windows_path, batch_size=1)
-    ds = ds.map(map_audio)
-    for x, y in ds.take(1):
-        print(x)
-        break
+#load_max_input_length
+#max_input_length
+#

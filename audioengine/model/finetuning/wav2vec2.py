@@ -1,83 +1,49 @@
-from audioengine.corpus.backend.pytorch.dataframedataset import DataframeDataset
-from audioengine.model.pretrained.wav2vec2 import wav2vec2
-from audioengine.corpus.dataset import Dataset
-from torchvision import transforms
-from torch.utils.data import DataLoader
-import os
+from transformers import TrainingArguments, Trainer
 
-from datasets import load_dataset, load_metric
-import numpy as np
-common_voice_test = load_dataset("common_voice", "tr", split="test")
-common_voice_test = common_voice_test.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "segment", "up_votes"])
-
-import re
-chars_to_ignore_regex = '[\,\?\.\!\-\;\:\"\“\%\‘\”\�]'
-
-def remove_special_characters(batch):
-    batch["sentence"] = re.sub(chars_to_ignore_regex, '', batch["sentence"]).lower() + " "
-    return batch
-
-def extract_all_chars(batch):
-  all_text = " ".join(batch["sentence"])
-  vocab = list(set(all_text))
-  return {"vocab": [vocab], "all_text": [all_text]}
-
-vocab_test = common_voice_test.map(extract_all_chars, batched=True, batch_size=-1, keep_in_memory=True, remove_columns=common_voice_test.column_names)
-vocab_list = list(set(vocab_test["vocab"][0]) | set(vocab_test["vocab"][0]))
-vocab_dict = {v: k for k, v in enumerate(vocab_list)}
-
-vocab_dict["|"] = vocab_dict[" "]
-del vocab_dict[" "]
-
-vocab_dict["[UNK]"] = len(vocab_dict)
-vocab_dict["[PAD]"] = len(vocab_dict)
-
-import json
-with open('vocab.json', 'w') as vocab_file:
-    json.dump(vocab_dict, vocab_file)
-
-from transformers import Wav2Vec2CTCTokenizer
-
-tokenizer = Wav2Vec2CTCTokenizer("./vocab.json", unk_token="[UNK]", pad_token="[PAD]", word_delimiter_token="|")
+from audioengine.model.finetuning.helper.wav2vec2 import compute_metrics
 
 
-from transformers import Wav2Vec2Processor
-from transformers import Wav2Vec2FeatureExtractor
-
-feature_extractor = Wav2Vec2FeatureExtractor(feature_size=1, sampling_rate=16000, padding_value=0.0, do_normalize=True, return_attention_mask=True)
-processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
-
-import torchaudio
-
-def speech_file_to_array_fn(batch):
-    speech_array, sampling_rate = torchaudio.load(batch["path"])
-    batch["speech"] = speech_array[0].numpy()
-    batch["sampling_rate"] = sampling_rate
-    batch["target_text"] = batch["sentence"]
-    return batch
-
-common_voice_test = common_voice_test.map(speech_file_to_array_fn, remove_columns=common_voice_test.column_names)
-
-
-import librosa
-import numpy as np
-
-def resample(batch):
-    batch["speech"] = librosa.resample(np.asarray(batch["speech"]), 48_000, 16_000)
-    batch["sampling_rate"] = 16_000
-    return batch
-
-common_voice_test = common_voice_test.map(resample, num_proc=4)
+def load_training_arguments(output_dir, **kwargs):
+    return TrainingArguments(
+        output_dir=output_dir,
+        group_by_length=kwargs.get("group_by_length", True),
+        per_device_train_batch_size=kwargs.get("per_device_train_batch_size", 32),
+        evaluation_strategy=kwargs.get("evaluation_strategy", "steps"),
+        num_train_epochs=kwargs.get("num_train_epochs", 30),
+        fp16=kwargs.get("fp16", True),
+        save_steps=kwargs.get("save_steps", 500),
+        eval_steps=kwargs.get("eval_steps", 500),
+        logging_steps=kwargs.get("logging_steps", 500),
+        learning_rate=kwargs.get("learning_rate", 1e-4),
+        weight_decay=kwargs.get("weight_decay", 0.005),
+        warmup_steps=kwargs.get("warmup_steps", 1000),
+        save_total_limit=kwargs.get("save_total_limit", 2),
+    )
 
 
-def prepare_dataset(batch):
-    # check that all files have the correct sampling rate
-    assert (
-            len(set(batch["sampling_rate"])) == 1
-    ), f"Make sure all inputs have the same sampling rate of {processor.feature_extractor.sampling_rate}."
+def load_trainer(model, processor, args, train_dataset=None, eval_dataset=None, **kwargs):
+    return Trainer(
+        model=model,
+        data_collator=model.data_collator(),
+        args=args,
+        compute_metrics=kwargs.get("compute_metrics", compute_metrics(processor)),
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        tokenizer=processor.feature_extractor,
+    )
 
-    batch["input_values"] = processor(batch["speech"], sampling_rate=batch["sampling_rate"][0]).input_values
+# wer_metric = load_metric("wer")
 
-    with processor.as_target_processor():
-        batch["labels"] = processor(batch["target_text"]).input_ids
-    return batch
+# def compute_metrics(pred):
+#    pred_logits = pred.predictions
+#    pred_ids = np.argmax(pred_logits, axis=-1)
+
+#    pred.label_ids[pred.label_ids == -100] = processor.tokenizer.pad_token_id
+
+#    pred_str = processor.batch_decode(pred_ids)
+#    # we do not want to group tokens when computing the metrics
+#    label_str = processor.batch_decode(pred.label_ids, group_tokens=False)
+
+#    wer = wer_metric.compute(predictions=pred_str, references=label_str)
+
+#    return {"wer": wer}
