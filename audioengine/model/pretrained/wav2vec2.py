@@ -24,10 +24,14 @@ class wav2vec2:
         transcriptions = self.processor.batch_decode(pred_ids)
         return transcriptions
 
-    def transformations(self, input_sample_rate=48_000, output_sample_rate=16_000):
+    def transformations(self, input_sample_rate=48_000, output_sample_rate=16_000, **kwargs):
         transformations = [ToLower("sentence")]
 
-        chars_to_ignore_regex = self._chars_to_remove()
+        chars_to_ignore_regex = kwargs.get("chars_to_ignore_regex", self._chars_to_remove())
+
+        if not chars_to_ignore_regex:
+            raise Exception("Unknown Chars to Ignore.")
+
         regexp_subs = [("’", "'"), (chars_to_ignore_regex, '')] if chars_to_ignore_regex else []
 
         replacements = self._chars_to_replace()
