@@ -9,13 +9,13 @@ class LoadAudio(object):
         self.to_numpy = to_numpy
 
     def __call__(self, data):
-        waveform, _ = torchaudio.load(data['path'])
+        waveform, sample_rate = torchaudio.load(data['path'])
         waveform = waveform
         if self.resampler:
             waveform = self.resampler(waveform)
             data["sampling_rate"] = self.sr
         else:
-            data["sampling_rate"] = self.sr_default
+            data["sampling_rate"] = self.sample_rate
 
         data["speech"] = waveform.squeeze(0).numpy() if self.to_numpy else waveform.squeeze(0)
         return data
@@ -29,12 +29,22 @@ class PreprocessTransformer:
 
     def __call__(self, batch):
         batch["input_values"] = self.processor(batch["speech"], sampling_rate=self.sampling_rate).input_values
-        #return_tensors="pt", sampling_rate=self.sampling_rate, padding=self.padding
+        # return_tensors="pt", sampling_rate=self.sampling_rate, padding=self.padding
         with self.processor.as_target_processor():
             batch["labels"] = self.processor(batch["sentence"]).input_ids
-            #batch["labels"] = self.processor(batch["sentence"], return_tensors="pt", padding=self.padding).input_ids
+            # batch["labels"] = self.processor(batch["sentence"], return_tensors="pt", padding=self.padding).input_ids
         return batch
 
+
+import soundfile as sf
+
+
+def read_batch_file(path_key="path"):
+    def __call__(batch):
+        batch["speech"], batch["sampling_rate"] = sf.read(batch["file"])
+        return batch
+
+    return __call__
 ##class Spectrogram:
 ##    def __init__(self, n_fft: int = 400,
 ##                 win_length: Optional[int] = None,
