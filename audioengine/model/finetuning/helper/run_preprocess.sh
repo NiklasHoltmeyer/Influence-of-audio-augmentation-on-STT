@@ -1,6 +1,6 @@
 python3 preprocess_dataset.py --model_name_or_path="maxidl/wav2vec2-large-xlsr-german" \
 --dataset_config_name="de" \
---output_dir=./test \
+--output_dir=/share/train/w2v/ \
 --preprocessing_num_workers="8" \
 --overwrite_output_dir \
 --num_train_epochs="1" \
