@@ -8,16 +8,17 @@ def load_training_arguments(output_dir, **kwargs):
     return TrainingArguments(
         output_dir=output_dir,
         group_by_length=kwargs.get("group_by_length", True),
-        per_device_train_batch_size=kwargs.get("per_device_train_batch_size", 32),
+        per_device_train_batch_size=kwargs.get("per_device_train_batch_size", 16),
+        gradient_accumulation_steps=kwargs.get("gradient_accumulation_steps", 2),
         evaluation_strategy=kwargs.get("evaluation_strategy", "steps"),
         num_train_epochs=kwargs.get("num_train_epochs", 30),
         fp16=kwargs.get("fp16", True),
-        save_steps=kwargs.get("save_steps", 500),
-        eval_steps=kwargs.get("eval_steps", 500),
-        logging_steps=kwargs.get("logging_steps", 500),
-        learning_rate=kwargs.get("learning_rate", 1e-4),
+        save_steps=kwargs.get("save_steps", 400),
+        eval_steps=kwargs.get("eval_steps", 400),
+        logging_steps=kwargs.get("logging_steps", 400),
+        learning_rate=kwargs.get("learning_rate", 3e-4),
         weight_decay=kwargs.get("weight_decay", 0.005),
-        warmup_steps=kwargs.get("warmup_steps", 1000),
+        warmup_steps=kwargs.get("warmup_steps", 500),
         save_total_limit=kwargs.get("save_total_limit", 2),
     )
 
