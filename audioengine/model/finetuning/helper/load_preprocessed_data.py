@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from audioengine.model.finetuning.helper.argument_parser import argument_parser
-from audioengine.model.finetuning.helper.ParquetDataset import *
+from audioengine.model.finetuning.helper.parquetdataset import ParquetDataset
 
 def load_datasets(data_args):
     train_dataset = ParquetDataset(data_args, split='train')
@@ -21,7 +21,4 @@ def get_preprocessor_path(training_args):
 
 if __name__ == "__main__":
     import sys
-
-    from audioengine.model.finetuning.helper.ParquetDataset import ParquetDataset
-
     model_args, data_args, training_args = argument_parser(sys.argv)

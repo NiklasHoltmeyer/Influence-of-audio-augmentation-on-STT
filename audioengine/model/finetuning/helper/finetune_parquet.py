@@ -8,7 +8,7 @@ from transformers import (
 )
 from transformers.trainer_utils import is_main_process, get_last_checkpoint
 
-from audioengine.model.finetuning.helper.ParquetDataset import ParquetDataset
+from audioengine.model.finetuning.helper.parquetdataset import ParquetDataset
 from audioengine.model.finetuning.helper.argument_parser import argument_parser
 from audioengine.model.finetuning.helper.wav2vec2 import CustomProgressBarCallback, DataCollatorCTCWithPadding
 from audioengine.model.finetuning.wav2vec2 import load_grouped_trainer
