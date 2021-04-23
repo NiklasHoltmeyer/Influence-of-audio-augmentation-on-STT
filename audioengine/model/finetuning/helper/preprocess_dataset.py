@@ -1,35 +1,24 @@
 # Adopted/copied from: https://github.com/maxidl/wav2vec2/blob/c7ae26d36bb09062cad08be8702d7d68d5444f01/prepare_dataset.py
 
 import json
-import os
 import re
-from pathlib import Path
 import sys
+from pathlib import Path
 
-from tqdm.auto import tqdm
+import pyarrow.parquet as pq
 import torch
 import torchaudio
-import pandas as pd
-import pyarrow.parquet as pq
-from audioengine.corpus.dataset import Dataset
-import datasets
+from tqdm.auto import tqdm
 from transformers import (
-    HfArgumentParser,
-    TrainingArguments,
     Wav2Vec2CTCTokenizer,
     Wav2Vec2FeatureExtractor,
     Wav2Vec2Processor,
 )
 
-from argument_classes import ModelArguments, DataTrainingArguments
+from audioengine.corpus.dataset import Dataset
+from audioengine.model.finetuning.helper.argument_parser import argument_parser
 
-parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
-if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
-    # If we pass only one argument to the script and it's the path to a json file,
-    # let's parse it to get our arguments.
-    model_args, data_args, training_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
-else:
-    model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+model_args, data_args, training_args = argument_parser(sys.argv)
 
 # data_args.preprocess_dataset_path
 # data_args.dataset_path
