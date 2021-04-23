@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 from audioengine.corpus.audiodataset import AudioDataset
-
+import codecs
 
 class VoxForge(AudioDataset):
     def __init__(self, path, **kwargs):
@@ -28,14 +28,14 @@ class VoxForge(AudioDataset):
 
     def _load_prompt(self, prompt_path):
         data = []
-        with open(prompt_path, "r") as file:
+        with open(prompt_path, 'r', encoding='utf-8') as file:
             for line in file:
                 _split = line.split()
                 audio_path = _split[0]
                 audio_path = str(Path(self.path, audio_path + ".wav").resolve())
 
                 #/share/datasets/voxforge_todo/anonymhatschie-20140526-wth/mfc/de3-47.wav
-                #->
+                    #->
                 #/share/datasets/voxforge_todo/anonymhatschie-20140526-wth/wav/de3-47.wav
 
                 audio_splitted = audio_path.split("/")
@@ -49,9 +49,15 @@ class VoxForge(AudioDataset):
     def _load_data(self):
         """ [(path, transcription), (path, transcription), ...] """
         prompts = self._list_prompts()
-        data = np.array([self._load_prompt(p) for p in prompts])
-        flattend = data.reshape(-1, data.shape[-1])
-        return flattend
+        data = []
+        for p in prompts:
+            for item in self._load_prompt(p):
+                data.append(item)
+        return np.array(data)
+
+if __name__ == "__main__":
+    vf = VoxForge("/share/datasets/vf_de")
+    vf.load_dataframe()
 
 
 
