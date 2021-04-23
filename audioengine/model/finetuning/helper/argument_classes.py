@@ -16,6 +16,7 @@ class ModelArguments:
     model_name_or_path: str = field(
         metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
     )
+
     cache_dir: Optional[str] = field(
         default=None,
         metadata={"help": "Where do you want to store the pretrained models downloaded from huggingface.co"},
@@ -69,6 +70,15 @@ class DataTrainingArguments:
     dataset_config_name: Optional[str] = field(
         default=None, metadata={"help": "The configuration name of the dataset to use (via the datasets library)."}
     )
+
+    preprocess_dataset_path: Optional[str] = field(
+        default=None, metadata={"help": "Path to Dataset (before Preprocessing)"}
+    )
+
+    dataset_path: Optional[str] = field(
+        default=None, metadata={"help": "Path to Dataset (before Preprocessing)"}
+    )
+
     train_split_name: Optional[str] = field(
         default="train+validation",
         metadata={

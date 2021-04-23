@@ -1,25 +1,30 @@
+from multiprocessing import Pool
+from tqdm.auto import tqdm
 import torch
 from pathlib import Path
 import pandas as pd
-from multiprocessing import Pool
-from tqdm.auto import tqdm
 
 
-class CustomWav2Vec2Dataset(torch.utils.data.Dataset):
+class ParquetDataset(torch.utils.data.Dataset):
 
-    def __init__(self, dataset_config_name, dataloader_num_workers, split='train'):
+    def __init__(self, data_args, split='train'):
         super().__init__()
         assert split in {'train', 'eval'}
         self.split = split
-        self.path = Path(f'./{dataset_config_name}.{split}.parquet')
+        resampled_data_dir = Path(data_args.dataset_path)
+        self.path = Path(f'{resampled_data_dir}/{data_args.dataset_config_name}.{split}.parquet')
+
+        assert self.path.exists()
+
         df = pd.read_parquet(self.path)
         self.labels = [x.tolist() for x in df['labels'].tolist()]
         self.paths = df['path'].tolist()
         self.max_input_length_quantile = .98
         self.max_input_length = None
+        self.dataloader_num_workers = data_args.preprocessing_num_workers
 
         if split == 'train':
-            with Pool(dataloader_num_workers) as p:
+            with Pool(self.dataloader_num_workers) as p:
                 self.input_seq_lengths = list(
                     tqdm(p.imap(get_input_len, self.paths), total=len(self.paths), miniters=100,
                          desc='getting train input lengths'))

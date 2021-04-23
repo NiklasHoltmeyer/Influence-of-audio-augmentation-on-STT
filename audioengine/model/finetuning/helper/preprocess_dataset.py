@@ -23,10 +23,6 @@ from transformers import (
 
 from argument_classes import ModelArguments, DataTrainingArguments
 
-resampled_path = "/share/datasets/voxforge16khzn"
-train_dataset, eval_dataset = Dataset("huggingface").VoxForge("/share/datasets/voxforge_todo"), Dataset(
-    "huggingface").VoxForge("/share/datasets/voxforge_todo")
-
 parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
 if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
     # If we pass only one argument to the script and it's the path to a json file,
@@ -35,6 +31,8 @@ if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
 else:
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
+# data_args.preprocess_dataset_path
+# data_args.dataset_path
 # increasing number of threads for torchaudio resample
 print(f'Using {data_args.preprocessing_num_workers} threads')
 torch.set_num_threads(data_args.preprocessing_num_workers)
@@ -42,6 +40,19 @@ torch.set_num_threads(data_args.preprocessing_num_workers)
 chars_to_ignore_regex = f'[{"".join(data_args.chars_to_ignore)}]'
 print("Chars to Ignore", chars_to_ignore_regex)
 print("Workers", data_args.preprocessing_num_workers)
+
+assert data_args.dataset_path
+assert data_args.preprocess_dataset_path
+
+def load_datasets():
+    dataset_path = data_args.preprocess_dataset_path
+    if "common" in dataset_path.lower() or "cv" in dataset_path.lower():
+        return Dataset("huggingface").CommonVoice(data_args.preprocess_dataset_path)
+    if "voxforge" in dataset_path.lower() or "vf" in dataset_path.lower():
+        return Dataset("huggingface").VoxForge(data_args.preprocess_dataset_path)
+
+
+train_dataset, eval_dataset = load_datasets(), load_datasets() #<- todo splitten eval/train
 
 
 def remove_special_characters(batch):
@@ -77,7 +88,10 @@ del vocab_dict[" "]
 vocab_dict["[UNK]"] = len(vocab_dict)
 vocab_dict["[PAD]"] = len(vocab_dict)
 
-resampled_data_dir = Path(resampled_path)
+print(data_args.dataset_path)
+print(type(data_args.dataset_path))
+
+resampled_data_dir = Path(data_args.dataset_path)
 resampled_data_dir.mkdir(exist_ok=True)
 vocab_path = Path(str(resampled_data_dir) + '/vocab.json').resolve()
 
@@ -163,8 +177,8 @@ eval_dataset = eval_dataset.map(
     num_proc=data_args.preprocessing_num_workers,
 )
 
-pq.write_table(train_dataset.data, f'./{data_args.dataset_config_name}.train.parquet')
-pq.write_table(eval_dataset.data, f'./{data_args.dataset_config_name}.eval.parquet')
+pq.write_table(train_dataset.data, f'{resampled_data_dir}/{data_args.dataset_config_name}.train.parquet')
+pq.write_table(eval_dataset.data, f'{resampled_data_dir}/{data_args.dataset_config_name}.eval.parquet')
 
 # save processor for training
 processor.save_pretrained(training_args.output_dir)
