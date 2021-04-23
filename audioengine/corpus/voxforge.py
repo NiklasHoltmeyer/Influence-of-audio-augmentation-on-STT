@@ -28,22 +28,23 @@ class VoxForge(AudioDataset):
 
     def _load_prompt(self, prompt_path):
         data = []
+        base_folder = prompt_path.parent.parent
+        wav_folder = Path(base_folder, "wav").resolve()
         with open(prompt_path, 'r', encoding='utf-8') as file:
             for line in file:
                 _split = line.split()
                 audio_path = _split[0]
                 audio_path = str(Path(self.path, audio_path + ".wav").resolve())
 
-                #/share/datasets/voxforge_todo/anonymhatschie-20140526-wth/mfc/de3-47.wav
-                    #->
-                #/share/datasets/voxforge_todo/anonymhatschie-20140526-wth/wav/de3-47.wav
-
                 audio_splitted = audio_path.split("/")
-                audio_splitted[-2] = "wav"
-                audio_path = "/".join(audio_splitted)
+                file_name = audio_splitted[-1]
+                audio_path = Path(wav_folder, file_name)
+
+                if not audio_path.exists():
+                    raise Exception(f"Invalid Audio Path: {audio_path}")
 
                 text = " ".join(_split[1:]).lower()
-                data.append((audio_path, text))
+                data.append((str(audio_path.resolve()), text))
         return data
 
     def _load_data(self):

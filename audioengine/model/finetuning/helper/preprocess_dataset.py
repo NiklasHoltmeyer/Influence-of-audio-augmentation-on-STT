@@ -33,13 +33,12 @@ print("Workers", data_args.preprocessing_num_workers)
 assert data_args.dataset_path
 assert data_args.preprocess_dataset_path
 
-def load_datasets(validation_split=0.5):
+def load_datasets(validation_split=0.2):
     dataset_path = data_args.preprocess_dataset_path
     if "common" in dataset_path.lower() or "cv" in dataset_path.lower():
         return Dataset("huggingface").CommonVoice(data_args.preprocess_dataset_path, validation_split=validation_split)
     if "voxforge" in dataset_path.lower() or "vf" in dataset_path.lower():
         return Dataset("huggingface").VoxForge(data_args.preprocess_dataset_path, validation_split=validation_split)
-
 
 train_dataset, eval_dataset = load_datasets()
 
@@ -76,9 +75,6 @@ del vocab_dict[" "]
 vocab_dict["[UNK]"] = len(vocab_dict)
 vocab_dict["[PAD]"] = len(vocab_dict)
 
-print(data_args.dataset_path)
-print(type(data_args.dataset_path))
-
 resampled_data_dir = Path(data_args.dataset_path)
 resampled_data_dir.mkdir(exist_ok=True)
 vocab_path = Path(str(resampled_data_dir) + '/vocab.json').resolve()
@@ -103,7 +99,7 @@ feature_extractor = Wav2Vec2FeatureExtractor(
 )
 processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
 
-resampler = torchaudio.transforms.Resample(48_000, 16_000)
+resampler = torchaudio.transforms.Resample(16_000, 16_000)
 
 
 def load_resample_save(f):
@@ -111,7 +107,7 @@ def load_resample_save(f):
     new_path = resampled_data_dir / f'{f.stem}_resampled16k.pt'
     if not new_path.exists():
         speech_array, sampling_rate = torchaudio.load(f)
-        speech_array_resampled = resampler(speech_array) if sampling_rate != 16_000 else speech_array #todo
+        speech_array_resampled = resampler(speech_array)
         input_values = processor(speech_array_resampled, sampling_rate=16_000).input_values
         input_values = torch.from_numpy(input_values).float().flatten()
         torch.save(input_values, new_path)

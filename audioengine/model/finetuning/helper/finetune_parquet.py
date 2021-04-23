@@ -51,13 +51,15 @@ def main():
     train_dataset = ParquetDataset(data_args, split='train')
     eval_dataset = ParquetDataset(data_args, split='eval')
 
+    logger.info(f"Split Train[{len(train_dataset)}], Eval[{len(eval_dataset)}]")
+
     logger.warning(f"Load Processor {training_args.output_dir}")
     #processor = Wav2Vec2Processor.from_pretrained(training_args.output_dir)
 
     logger.warning(f"Load Model {model_args.model_name_or_path}")
     logger.warning(f"* Cache_Dir {model_args.cache_dir}")
     model = Wav2Vec2ForCTC.from_pretrained(model_args.model_name_or_path)
-    model.to("cuda")
+#    model.to("cuda:0")
     processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
 
 #    model = Wav2Vec2ForCTC.from_pretrained(
@@ -125,4 +127,4 @@ def main():
     return results
 
 if __name__ == "__main__":
-    main()
+    print(main())
