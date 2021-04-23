@@ -6,7 +6,7 @@ import swifter
 import os
 from audioengine.corpus.util.text import Text
 from audioengine.corpus.util.interceptors import time_logger
-
+from sklearn.model_selection import train_test_split
 
 class AudioDataset(metaclass=ABCMeta):
 
@@ -17,14 +17,14 @@ class AudioDataset(metaclass=ABCMeta):
 
     @time_logger(logger=logging.getLogger("audioengine-corpus"),
                  name="  -load DF", padding_length=50)
-    def load_dataframe(self, path, shuffle=True, drop_cols=None, rename_cols=None, **kwargs):
+    def load_dataframe(self, path, drop_cols=None, rename_cols=None, **kwargs):
         data_frame = Text.read_csv(path, **kwargs).fillna("")
-
+        shuffle = kwargs.get("shuffle", False)
         if drop_cols:
             data_frame.drop(drop_cols, inplace=True, axis=1, errors='ignore')
 
         if shuffle:
-            data_frame = data_frame.sample(frac=1) if shuffle else data_frame
+            data_frame = data_frame.sample(frac=1)
 
         if rename_cols:
             data_frame = data_frame.rename(columns=rename_cols)

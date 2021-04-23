@@ -33,16 +33,15 @@ print("Workers", data_args.preprocessing_num_workers)
 assert data_args.dataset_path
 assert data_args.preprocess_dataset_path
 
-def load_datasets():
+def load_datasets(validation_split=0.5):
     dataset_path = data_args.preprocess_dataset_path
     if "common" in dataset_path.lower() or "cv" in dataset_path.lower():
-        return Dataset("huggingface").CommonVoice(data_args.preprocess_dataset_path)
+        return Dataset("huggingface").CommonVoice(data_args.preprocess_dataset_path, validation_split=validation_split)
     if "voxforge" in dataset_path.lower() or "vf" in dataset_path.lower():
-        return Dataset("huggingface").VoxForge(data_args.preprocess_dataset_path)
+        return Dataset("huggingface").VoxForge(data_args.preprocess_dataset_path, validation_split=validation_split)
 
 
-train_dataset, eval_dataset = load_datasets(), load_datasets() #<- todo splitten eval/train
-
+train_dataset, eval_dataset = load_datasets()
 
 def remove_special_characters(batch):
     batch["sentence"] = re.sub(chars_to_ignore_regex, '', batch["sentence"]).lower() + " "
@@ -112,7 +111,7 @@ def load_resample_save(f):
     new_path = resampled_data_dir / f'{f.stem}_resampled16k.pt'
     if not new_path.exists():
         speech_array, sampling_rate = torchaudio.load(f)
-        speech_array_resampled = resampler(speech_array)
+        speech_array_resampled = resampler(speech_array) if sampling_rate != 16_000 else speech_array #todo
         input_values = processor(speech_array_resampled, sampling_rate=16_000).input_values
         input_values = torch.from_numpy(input_values).float().flatten()
         torch.save(input_values, new_path)
@@ -149,6 +148,7 @@ def tokenize_targets(batch):
 
 
 print('preparing dataset: train')
+
 train_dataset = train_dataset.map(
     tokenize_targets,
     remove_columns=[col for col in train_dataset.column_names if col != 'path'],

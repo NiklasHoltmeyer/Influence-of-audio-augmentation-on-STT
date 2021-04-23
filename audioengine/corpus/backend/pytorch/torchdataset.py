@@ -17,10 +17,6 @@ class TorchDataset:
         Returns:
             DataLoader
         """
-        batch_size = kwargs.get("batch_size", 32)
-        shuffle = kwargs.get("shuffle", False)
-        num_workers = kwargs.get("num_workers", False)
-
         ds = DataframeDataset(data_frame, input_key, target_key, transform, features=features, **kwargs)
         return ds
         #return DataLoader(ds, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)

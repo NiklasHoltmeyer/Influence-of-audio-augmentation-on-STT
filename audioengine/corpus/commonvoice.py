@@ -23,11 +23,12 @@ class CommonVoice(AudioDataset):
         #rename_cols = {"path": "audio_path", "sentence": "transcript", "text": "transcript"}
         rename_cols = None
 
-        data_frame = super().load_dataframe(tsv_path, drop_cols=drop_cols, rename_cols=rename_cols, sep="\t", encoding="utf-8", **kwargs)
+        dataframe = super().load_dataframe(tsv_path, drop_cols=drop_cols, rename_cols=rename_cols, sep="\t", encoding="utf-8", **kwargs)
         full_path_fn = lambda f: str(Path(self.wav_folder_path, f))
-        data_frame.path = data_frame.path.map(full_path_fn)
+        dataframe.path = dataframe.path.map(full_path_fn)
 
-        return data_frame
+
+        return dataframe
 
     def get_path(self, name):
         mapping = {

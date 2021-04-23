@@ -12,7 +12,13 @@ class VoxForge(AudioDataset):
 
     def load_dataframe(self, **kwargs):
         data = self._load_data()
+        shuffle = kwargs.get("shuffle", False)
+
         df = pd.DataFrame(data, columns=['path', 'sentence'])
+
+        if shuffle:
+            df = df.sample(frac=1)
+
         return df
 
     def _list_prompts(self):
