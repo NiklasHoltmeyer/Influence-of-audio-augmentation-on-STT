@@ -15,7 +15,7 @@ class VoxForge(AudioDataset):
         shuffle = kwargs.get("shuffle", False)
 
         df = pd.DataFrame(data, columns=['path', 'sentence'])
-        print("KWARGS", shuffle)
+
         if shuffle:
             df = df.sample(frac=1)
 
