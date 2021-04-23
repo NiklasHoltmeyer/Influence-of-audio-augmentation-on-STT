@@ -79,6 +79,8 @@ class DataCollatorCTCWithPadding:
         batch["labels"] = labels
 
         return batch
+
+
 class CTCTrainer(Trainer):
     def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
         """
@@ -127,12 +129,14 @@ class CTCTrainer(Trainer):
 
         return loss.detach()
 
+
 # add less aggressive smoothing to progress bar for better estimate
 class CustomProgressBarCallback(transformers.trainer_callback.ProgressCallback):
     def on_train_begin(self, args, state, control, **kwargs):
         if state.is_local_process_zero:
             self.training_bar = tqdm(total=state.max_steps, smoothing=0.1)
         self.current_step = 0
+
 
 # solution from https://discuss.huggingface.co/t/spanish-asr-fine-tuning-wav2vec2/4586/6
 class GroupedLengthsTrainer(CTCTrainer):
@@ -172,6 +176,7 @@ class GroupedLengthsTrainer(CTCTrainer):
 
 wer_metric = load_metric("wer")
 
+
 def compute_metrics(processor):
     def __call__(pred):
         pred_logits = pred.predictions
@@ -186,4 +191,5 @@ def compute_metrics(processor):
         wer = wer_metric.compute(predictions=pred_str, references=label_str)
 
         return {"wer": wer}
+
     return __call__

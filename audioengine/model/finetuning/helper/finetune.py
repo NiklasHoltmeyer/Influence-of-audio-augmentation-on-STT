@@ -31,6 +31,7 @@ from transformers.trainer_utils import get_last_checkpoint, is_main_process
 from transformers.trainer_pt_utils import LengthGroupedSampler, DistributedLengthGroupedSampler
 
 from argument_classes import ModelArguments, DataTrainingArguments
+from audioengine.model.finetuning.helper.load_preprocessed_data import load_datasets
 
 logger = logging.getLogger(__name__)
 
@@ -257,48 +258,6 @@ def main():
     set_seed(training_args.seed)
 
 
-class CustomWav2Vec2Dataset(torch.utils.data.Dataset):
-
-    def __init__(self, path, dataloader_num_workers, split='train'):
-        super().__init__()
-        assert split in {'train', 'eval'}
-        self.split = split
-        self.path = path
-        df = pd.read_parquet(self.path)
-        self.labels = [x.tolist() for x in df['labels'].tolist()]
-        self.paths = df['path'].tolist()
-        self.max_input_length_quantile = .98
-        self.max_input_length = None
-        self.dataloader_num_workers = dataloader_num_workers
-
-        if split == 'train':
-            with Pool(self.dataloader_num_workers) as p:
-                self.input_seq_lengths = list(
-                    tqdm(p.imap(get_input_len, self.paths), total=len(self.paths), miniters=100,
-                         desc='getting train input lengths'))
-            self.max_input_length = torch.tensor(self.input_seq_lengths).float().quantile(
-                self.max_input_length_quantile).int().item()
-
-    def __len__(self):
-        return len(self.paths)
-
-    def __getitem__(self, idx):
-        inputs = load_speech(self.paths[idx])
-        if self.split == 'train':
-            inputs = inputs[:self.max_input_length]
-        label = self.labels[idx]
-        return {'input_values': inputs, 'labels': label}
-
-
-def load_speech(f):
-    return torch.load(f).squeeze().tolist()
-
-
-def get_input_len(f):
-    t = torch.load(f).squeeze().tolist()
-    return len(t)
-
-
 def main():
     # See all possible arguments in src/transformers/training_args.py
     # or by passing the --help flag to this script.
@@ -354,18 +313,10 @@ def main():
 
     # Set seed before initializing model.
     set_seed(training_args.seed)
-    resampled_data_dir = Path(data_args.dataset_path)
-    # vocab_path = Path(str(resampled_data_dir) + '/vocab.json').resolve()
-    train_parquet_path = Path(f'{resampled_data_dir}/{data_args.dataset_config_name}.train.parquet')
-    eval_parquet_path = Path(f'{resampled_data_dir}/{data_args.dataset_config_name}.eval.parquet')
-    assert train_parquet_path.exists()
-    assert eval_parquet_path.exists()
-
     # Get the datasets:
-    train_dataset = CustomWav2Vec2Dataset(train_parquet_path, split='train',
-                                          dataloader_num_workers=8)
-    eval_dataset = CustomWav2Vec2Dataset(eval_parquet_path, split='eval',
-                                         dataloader_num_workers=8)
+
+    train_dataset, eval_dataset = load_datasets(data_args)
+
     processor = Wav2Vec2Processor.from_pretrained(training_args.output_dir)
 
     model = Wav2Vec2ForCTC.from_pretrained(
