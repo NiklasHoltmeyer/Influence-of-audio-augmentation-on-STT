@@ -1,7 +1,7 @@
 import transformers
 from transformers import TrainingArguments, Trainer
 
-from audioengine.model.finetuning.helper.wav2vec2 import compute_metrics, GroupedLengthsTrainer, \
+from audioengine.model.finetuning.wav2vec2.wav2vec2_trainer import compute_metrics, GroupedLengthsTrainer, \
     CustomProgressBarCallback
 
 

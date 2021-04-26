@@ -9,8 +9,11 @@ class DataframeDataset:
         BATCH_SIZE = kwargs.get("batch_size", 32)
 
         x, y = dataframe.pop(input_key).values, dataframe.pop(target_key).values
-        dataset = tf.data.Dataset.from_tensor_slices((x, y))\
-            .map(transform, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).cache().prefetch(AUTOTUNE)
+        dataset = tf.data.Dataset.from_tensor_slices((x, y))
+        if transform:
+            dataset = dataset.map(transform, num_parallel_calls=AUTOTUNE)
+
+        dataset = dataset.batch(BATCH_SIZE).cache().prefetch(AUTOTUNE)
 
         return dataset.shuffle(AUTOTUNE) if shuffle else dataset
 

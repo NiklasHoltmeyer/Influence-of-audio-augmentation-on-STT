@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from audioengine.model.finetuning.helper.argument_parser import argument_parser
-from audioengine.model.finetuning.helper.parquetdataset import ParquetDataset
+from audioengine.model.finetuning.wav2vec2.argument_parser import argument_parser
+from audioengine.model.finetuning.wav2vec2.parquetdataset import ParquetDataset
 
 def load_datasets(data_args):
     train_dataset = ParquetDataset(data_args, split='train')

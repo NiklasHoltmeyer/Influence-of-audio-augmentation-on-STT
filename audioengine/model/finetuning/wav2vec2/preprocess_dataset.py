@@ -16,7 +16,7 @@ from transformers import (
 )
 
 from audioengine.corpus.dataset import Dataset
-from audioengine.model.finetuning.helper.argument_parser import argument_parser
+from audioengine.model.finetuning.wav2vec2.argument_parser import argument_parser
 
 model_args, data_args, training_args = argument_parser(sys.argv)
 

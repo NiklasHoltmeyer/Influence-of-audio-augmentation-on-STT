@@ -4,7 +4,7 @@ from transformers import (
     HfArgumentParser,
     TrainingArguments, )
 
-from audioengine.model.finetuning.helper.argument_classes import ModelArguments, DataTrainingArguments
+from audioengine.model.finetuning.wav2vec2.argument_classes import ModelArguments, DataTrainingArguments
 
 
 def argument_parser(argv):
