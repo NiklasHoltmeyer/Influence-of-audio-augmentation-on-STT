@@ -5,10 +5,10 @@ python3 run_finetuning.py \
 --preprocessing_num_workers="8" \
 --overwrite_output_dir \
 --num_train_epochs="1" \
---per_device_train_batch_size="1" \
---per_device_eval_batch_size="1" \
---learning_rate="1e-5" \
---warmup_steps="500" \
+--per_device_train_batch_size="4" \
+--per_device_eval_batch_size="4" \
+--learning_rate="1e-6" \
+--warmup_steps="0" \
 --evaluation_strategy="steps" \
 --save_steps="400" \
 --eval_steps="400" \
@@ -23,7 +23,6 @@ python3 run_finetuning.py \
 --gradient_checkpointing="1" \
 --eval_accumulation_steps="2" \
 --fp16 \
---do_train \
 --do_eval \
 --dataloader_num_workers="8" \
 --group_by_length \
