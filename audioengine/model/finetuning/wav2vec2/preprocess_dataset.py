@@ -99,14 +99,12 @@ feature_extractor = Wav2Vec2FeatureExtractor(
 )
 processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
 
-resampler = torchaudio.transforms.Resample(16_000, 16_000)
-
-
 def load_resample_save(f):
     f = Path(f)
     new_path = resampled_data_dir / f'{f.stem}_resampled16k.pt'
     if not new_path.exists():
         speech_array, sampling_rate = torchaudio.load(f)
+        resampler = torchaudio.transforms.Resample(sampling_rate, 16_000)
         speech_array_resampled = resampler(speech_array)
         input_values = processor(speech_array_resampled, sampling_rate=16_000).input_values
         input_values = torch.from_numpy(input_values).float().flatten()
@@ -164,6 +162,7 @@ eval_dataset = eval_dataset.map(
 
 pq.write_table(train_dataset.data, f'{resampled_data_dir}/{data_args.dataset_config_name}.train.parquet')
 pq.write_table(eval_dataset.data, f'{resampled_data_dir}/{data_args.dataset_config_name}.eval.parquet')
+print(f"Saved Pq`s to: {resampled_data_dir}")
 
 # save processor for training
 processor.save_pretrained(training_args.output_dir)
