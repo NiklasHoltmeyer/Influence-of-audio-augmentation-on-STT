@@ -11,9 +11,10 @@ from transformers.trainer_utils import is_main_process, get_last_checkpoint
 from audioengine.model.finetuning.helper.parquetdataset import ParquetDataset
 from audioengine.model.finetuning.helper.argument_parser import argument_parser
 from audioengine.model.finetuning.helper.wav2vec2 import CustomProgressBarCallback, DataCollatorCTCWithPadding
-from audioengine.model.finetuning.wav2vec2 import load_grouped_trainer
+from audioengine.model.finetuning.wav2vec2 import load_grouped_trainer, load_trainer
 
 logger = logging.getLogger(__name__)
+
 
 def main():
     model_args, data_args, training_args = argument_parser(sys.argv)
@@ -54,28 +55,25 @@ def main():
     logger.info(f"Split Train[{len(train_dataset)}], Eval[{len(eval_dataset)}]")
 
     logger.warning(f"Load Processor {training_args.output_dir}")
-    #processor = Wav2Vec2Processor.from_pretrained(training_args.output_dir)
+    # processor = Wav2Vec2Processor.from_pretrained(training_args.output_dir)
 
     logger.warning(f"Load Model {model_args.model_name_or_path}")
     logger.warning(f"* Cache_Dir {model_args.cache_dir}")
-    model = Wav2Vec2ForCTC.from_pretrained(model_args.model_name_or_path)
-#    model.to("cuda:0")
     processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
-
-#    model = Wav2Vec2ForCTC.from_pretrained(
-#        model_args.model_name_or_path,
-#        cache_dir=model_args.cache_dir,
-#        activation_dropout=model_args.activation_dropout,
-#        attention_dropout=model_args.attention_dropout,
-#        hidden_dropout=model_args.hidden_dropout,
-#        feat_proj_dropout=model_args.feat_proj_dropout,
-#        mask_time_prob=model_args.mask_time_prob,
-#        gradient_checkpointing=model_args.gradient_checkpointing,
-#        layerdrop=model_args.layerdrop,
-#        ctc_loss_reduction="mean",
-#        pad_token_id=processor.tokenizer.pad_token_id,
-#        vocab_size=len(processor.tokenizer),
-#    )
+    model = Wav2Vec2ForCTC.from_pretrained(
+        model_args.model_name_or_path,
+        cache_dir=model_args.cache_dir,
+        activation_dropout=model_args.activation_dropout,
+        attention_dropout=model_args.attention_dropout,
+        hidden_dropout=model_args.hidden_dropout,
+        feat_proj_dropout=model_args.feat_proj_dropout,
+        mask_time_prob=model_args.mask_time_prob,
+        gradient_checkpointing=model_args.gradient_checkpointing,
+        layerdrop=model_args.layerdrop,
+        ctc_loss_reduction="mean",
+        pad_token_id=processor.tokenizer.pad_token_id,
+        vocab_size=len(processor.tokenizer),
+    )
 
     data_collator = DataCollatorCTCWithPadding(processor=processor, padding=True)
 
@@ -84,14 +82,8 @@ def main():
     if model_args.freeze_feature_extractor:
         model.freeze_feature_extractor()
 
-#    training_args = load_training_arguments(training_args.output_dir,
-#                                            per_device_train_batch_size=training_args.per_device_train_batch_size,
-#                                            per_device_eval_batch_size=training_args.per_device_eval_batch_size,
-#                                            num_train_epochs=training_args.num_train_epochs,
-#                                            logging_dir=training_args.logging_dir,
-#                                            dataloader_num_workers=training_args.dataloader_num_workers)
-
     trainer = load_grouped_trainer(model, processor, data_collator, training_args, train_dataset, eval_dataset)
+    #load_trainer load_grouped_trainer
     trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
     trainer.add_callback(CustomProgressBarCallback)
 
@@ -114,7 +106,7 @@ def main():
 
     # Evaluation
     results = {}
-    if training_args.do_eval:
+    if not training_args.do_eval:
         logger.info("*** Evaluate ***")
         metrics = trainer.evaluate()
         max_val_samples = data_args.max_val_samples if data_args.max_val_samples is not None else len(eval_dataset)
@@ -125,6 +117,7 @@ def main():
     logger.info("eval_result:")
     logger.info(results)
     return results
+
 
 if __name__ == "__main__":
     print(main())
