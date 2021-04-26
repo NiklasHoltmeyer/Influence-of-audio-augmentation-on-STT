@@ -59,21 +59,29 @@ def main():
 
     logger.warning(f"Load Model {model_args.model_name_or_path}")
     logger.warning(f"* Cache_Dir {model_args.cache_dir}")
-    processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
-    model = Wav2Vec2ForCTC.from_pretrained(
-        model_args.model_name_or_path,
-        cache_dir=model_args.cache_dir,
-        activation_dropout=model_args.activation_dropout,
-        attention_dropout=model_args.attention_dropout,
-        hidden_dropout=model_args.hidden_dropout,
-        feat_proj_dropout=model_args.feat_proj_dropout,
-        mask_time_prob=model_args.mask_time_prob,
-        gradient_checkpointing=model_args.gradient_checkpointing,
-        layerdrop=model_args.layerdrop,
-        ctc_loss_reduction="mean",
-        pad_token_id=processor.tokenizer.pad_token_id,
-        vocab_size=len(processor.tokenizer),
-    )
+    if not training_args.do_train: #load_last fine_tuned
+        logger.debug(f"Loading Fine-Tuned {training_args.output_dir}")
+        processor = Wav2Vec2Processor.from_pretrained(training_args.output_dir) #eval last fined_tuned_model
+        model = Wav2Vec2ForCTC.from_pretrained( #eval last fined_tuned_model
+            training_args.output_dir,
+        )
+    else: #fine_tune
+        logger.debug(f"Loading Pre-trained {model_args.model_name_or_path}")
+        processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
+        model = Wav2Vec2ForCTC.from_pretrained(  #fine_tune
+           model_args.model_name_or_path,
+           cache_dir=model_args.cache_dir,
+           activation_dropout=model_args.activation_dropout,
+           attention_dropout=model_args.attention_dropout,
+           hidden_dropout=model_args.hidden_dropout,
+           feat_proj_dropout=model_args.feat_proj_dropout,
+           mask_time_prob=model_args.mask_time_prob,
+           gradient_checkpointing=model_args.gradient_checkpointing,
+           layerdrop=model_args.layerdrop,
+           ctc_loss_reduction="mean",
+           pad_token_id=processor.tokenizer.pad_token_id,
+           vocab_size=len(processor.tokenizer),
+        )
 
     data_collator = DataCollatorCTCWithPadding(processor=processor, padding=True)
 
@@ -86,6 +94,8 @@ def main():
 
     logger.info("Training-Args:")
     logger.info(training_args)
+
+    results = {}
 
     if training_args.do_train:
         if last_checkpoint is not None:
@@ -100,10 +110,10 @@ def main():
         trainer.save_model()
         logger.info("train_result:")
         logger.info(train_result)
+        results["train_result"] = train_result
 
     # Evaluation
-    results = {}
-    if not training_args.do_eval:
+    if training_args.do_eval:
         logger.info("*** Evaluate ***")
         metrics = trainer.evaluate()
         max_val_samples = data_args.max_val_samples if data_args.max_val_samples is not None else len(eval_dataset)
@@ -111,8 +121,9 @@ def main():
 
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
+        results["eval_metrics"] = metrics
     logger.info("eval_result:")
-    logger.info(results)
+    logger.info(results["eval_metrics"])
     return results
 
 

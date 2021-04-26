@@ -14,8 +14,8 @@ import time
 from audioengine.transformations.backend.pytorch.texttransformations import ToUpper
 
 
-def validate_model(model_name):
-    w2c = wav2vec2(model_name)
+def validate_model(model_name, based_on = None):
+    w2c = wav2vec2(model_name, based_on=based_on)
     transformations = w2c.transformations()
 
     if model_name == "flozi00/wav2vec-xlsr-german":
@@ -24,8 +24,7 @@ def validate_model(model_name):
     transform = transforms.Compose(transformations)
 
     dataset = Dataset("torch").CommonVoice("/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de", shuffle=False,
-                                           transform=transform, type="test")
-
+                                           transform=transform, type="test", validation_split=None)
     core_count = os.cpu_count()
 
     dataloader = DataLoader(dataset, batch_size=16, num_workers=os.cpu_count(),
@@ -44,7 +43,7 @@ def validate_model(model_name):
             wer.add_batch(sentence_stacked, transcriptions_stacked, core_count)
             sentence_stacked, transcriptions_stacked = [], []
 
-    return wer.to_tsv(prefix=model_name, suffix=str(time.time()-start_time))
+    return wer.to_tsv(prefix=model_name, suffix=str(time.time()-start_time)).replace(".", ",")
 
 def in_list(_list, exception_text):
     def __call__(item):
@@ -52,6 +51,12 @@ def in_list(_list, exception_text):
             raise ArgumentTypeError(exception_text + item)
         return item
     return __call__
+
+based_on = "maxidl/wav2vec2-large-xlsr-german"
+model_name = "/share/w2v/wav2vec2-large-xlsr-german-sm"
+print(validate_model(model_name, based_on))
+
+exit(0)
 
 
 supported_models = ['facebook/wav2vec2-large-xlsr-53-german',

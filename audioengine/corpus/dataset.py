@@ -26,9 +26,14 @@ class Dataset:
         audio_format = audio_ds.audio_format
         dataframe = audio_ds.load_dataframe(**kwargs)
 
+        features = [input_key, target_key, "speech"]
+
+        if not validation_split:
+            return self.backend.from_dataframe(dataframe, input_key, target_key, audio_format=audio_format,
+                                               features=features, **kwargs)
+
         train_df, val_df = train_test_split(dataframe, test_size=validation_split)
 
-        features = [input_key, target_key, "speech"]
         train_ds = self.backend.from_dataframe(train_df, input_key, target_key, audio_format=audio_format,
                                                features=features, **kwargs)
         val_ds = self.backend.from_dataframe(val_df, input_key, target_key, audio_format=audio_format,

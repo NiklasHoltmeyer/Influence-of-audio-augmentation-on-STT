@@ -37,8 +37,8 @@ def load_trainer(model, processor, data_collator, args, train_dataset=None, eval
         eval_dataset=eval_dataset,
         tokenizer=processor.feature_extractor,
     )
-    trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
-    trainer.add_callback(CustomProgressBarCallback)
+#    trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
+#    trainer.add_callback(CustomProgressBarCallback)
     return trainer
 
 

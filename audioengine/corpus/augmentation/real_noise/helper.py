@@ -19,7 +19,7 @@ logger = defaultLogger()
 
 @time_logger(name="Augment Dataframe",
              header="Augment Dataframe", padding_length=50)
-def augment_dataframe(signal_df, noise_df, **settings):
+def augment_dataframe(signal_df: object, noise_df: object, **settings: object) -> object:
     shuffle = settings.get("shuffle", True)
     data_augmented, data_clean = init_df(signal_df, **settings)
 
@@ -106,11 +106,12 @@ def merge_sounds(**settings):
 
     def __call__(item):
         snr = round(uniform(_range[0], _range[1]), 4)
+        pad_idx = item.name
         yp, _ = IO.load(item["path"], sample_rate=target_sample_rate)
         yn, _ = IO.load(item["path_noise"], sample_rate=target_sample_rate)
         item["snr"] = snr
         target_path = item["path_augmented"]
-        y_augmented = Effect.add_noise(yp, yn, snr=snr, pad_idx=-2)
+        y_augmented = Effect.add_noise(yp, yn, snr=snr, pad_idx=pad_idx)
         IO.save_wav(y_augmented, target_path, target_sample_rate)
         return item
 
@@ -136,3 +137,20 @@ def clean_df_add_cols(df):
     df["path_noise"] = [-1] * len_clean
     df = df[["sentence", "path", "snr", "duration", 'path_source', 'path_noise']]
     return df
+
+
+def save_df(df, **settings):
+    sep = settings.get("sep", ";")
+    encoding = settings.get("encoding", "utf-8")
+    target_path = settings.get("target_path", None)
+    target_file_name = settings.get("target_file_name", None)
+
+    assert target_path and target_file_name, "Specify target_path and/or target_file_name"
+
+    assert Path(target_path).exists(), f"Output-Dir doesnt exists: {target_path}."
+    # at this point the target_path should have been created.
+    absolute_path = str(Path(target_path, target_file_name).resolve())
+
+    logger.debug(f"Saving the Results to: {absolute_path}")
+
+    df.to_csv(absolute_path, sep=sep, encoding=encoding, index=False)

@@ -2,7 +2,11 @@ from functools import wraps
 import time
 from math import ceil
 
-def time_logger(logger, **kwargs):
+from audioengine.logging.logging import defaultLogger
+
+
+def time_logger(**kwargs):
+    logger = defaultLogger()
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **inner_kwargs):

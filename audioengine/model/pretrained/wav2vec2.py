@@ -7,9 +7,10 @@ from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
 
 class wav2vec2:
-    def __init__(self, model_name, device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")):
+    def __init__(self, model_name, based_on=None, device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")):
         self.model_name = model_name
         self.device = device
+        self.based_on = based_on
 
         self.model, self.processor = self._load_pretrained()
 
@@ -72,6 +73,8 @@ class wav2vec2:
             "marcel/wav2vec2-large-xlsr-german-demo": '[\,\?\.\!\-\;\:\"\“\%\”\�\カ\æ\無\ན\カ\臣\ѹ\…\«\»\ð\ı\„\幺\א\ב\比\ш\ע\)\ứ\в\œ\ч\+\—\ш\‚\נ\м\ń\乡\$\=\ש\ф\支\(\°\и\к\̇]',
             'MehdiHosseiniMoghadam/wav2vec2-large-xlsr-53-German': '[\,\?\.\!\-\;\:\"\“\%\‘\”\�]'
         }
+        if self.based_on:
+            return mappings.get(self.based_on, None)
         return mappings.get(self.model_name, None)
 
     def _chars_to_replace(self, _else=None):
@@ -102,6 +105,8 @@ class wav2vec2:
             "marcel/wav2vec2-large-xlsr-german-demo": substitutions_marcel,
         }
 
+        if self.based_on:
+            return mappings.get(self.based_on, _else)
         return mappings.get(self.model_name, _else)
 
     @staticmethod
