@@ -4,7 +4,7 @@ import numpy as np
 
 class Effect:
     @staticmethod
-    def add_noise(y: np.ndarray, y_noise: np.ndarray, ratio: float, clip_noise: bool = True, **kwargs: object) -> np.ndarray:
+    def add_noise(y: np.ndarray, y_noise: np.ndarray, snr: float, pad_idx: int=1) -> np.ndarray:
         """
 Apply Noise-Signal to Signal.
         Args:
@@ -12,44 +12,47 @@ Apply Noise-Signal to Signal.
                 Base-Signal
             y_noise: numpy.darray
                 Noise-Signal
-            ratio: int
-                Ratio
-            clip_noise: bool
-                True: Cut y_noise to fit y
-                    len(y_t) = len(y)
-                False: Pad y or y_noise
-                    len(y_t) = max(len(y), len(y_noise))
+            snr: int
+                Signal-Noise_ration
+            pad_idx: Int
+                pad_predefined =["constant" , "edge", "linear_ramp", "maximum", "mean", "median", "minimum", "reflect", "symmetric", "wrap"]
+                Default = 1 -> Edge
             **kwargs: **kwargs
                 Additional Parameter
         Returns:
-            y_t = y + y_noise * ratio
+            y_t = y*snr + y_noise * (1-snr)
                 : numpy.darray [Time-Series]
         """
-        signal_length_dif = y.shape[0] - y_noise.shape[0]
-        if signal_length_dif > 0:
-            y_noise = np.pad(y_noise, (0, signal_length_dif), 'constant', constant_values=(0, 0))
-        elif signal_length_dif < 0:
-            if clip_noise:
-                y_noise = y_noise[:y.shape[0]]
-            else:
-                y = np.pad(y, (0, -signal_length_dif), 'constant', constant_values=(0, 0))
+        s_len, n_len = len(y), len(y_noise)
+        dif = s_len - n_len
 
-        return y + ratio * y_noise
+        if dif < 0:
+            beg = int(-dif / 2)
+            end = -((-1 * dif) - beg)
+            y_noise_padded = y_noise[beg:end]
+        elif dif > 0:
+            pad_fn = pad_predefined[pad_idx % 10]
+            beg = int(dif / 2)
+            end = dif - beg
+            y_noise_padded = np.pad(y_noise, (beg, end), pad_fn)
+        else:
+            y_noise_padded = y_noise
+        return y * snr + (1 - snr) * y_noise_padded
 
     @staticmethod
-    def add_noise_random(y: np.ndarray, ratio: float) -> np.ndarray:
+    def add_noise_random(y: np.ndarray, snr: int) -> np.ndarray:
         """
 Add Random Noise to Signal.
         Args:
             y: np.ndarray
                 Signal
-            ratio: float
-                Ratio
+            snr: int
+                Signal-Noise_ration
         Returns:
             y_t = y + ratio * y_rnd_noise
         """
         noise = np.random.randn(len(y))
-        return y + ratio * noise
+        return y*snr + noise*(1-snr)
 
     @staticmethod
     def time_stretch(y: np.ndarray, rate: float, **kwargs: object) -> np.ndarray:
@@ -90,3 +93,5 @@ See :func:`my text <librosa.effects.pitch_shift>`
 #                                           bins_per_octave=kwargs.get("bins_per_octave", 12),
 #                                           res_type=kwargs.get("res_type", 'kaiser_best'),
                                            **kwargs)
+pad_predefined = ["constant", "edge", "linear_ramp", "maximum", "mean",
+                  "median", "minimum", "reflect", "symmetric", "wrap"]
