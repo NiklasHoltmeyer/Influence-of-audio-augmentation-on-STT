@@ -8,6 +8,7 @@ from pathlib import Path
 import pyarrow.parquet as pq
 import torch
 import torchaudio
+from audioengine.model.finetuning.wav2vec2.parquetdataset import ParquetDataset
 from tqdm.auto import tqdm
 from transformers import (
     Wav2Vec2CTCTokenizer,
@@ -160,9 +161,15 @@ eval_dataset = eval_dataset.map(
     num_proc=data_args.preprocessing_num_workers,
 )
 
-pq.write_table(train_dataset.data, f'{resampled_data_dir}/{data_args.dataset_config_name}.train.parquet')
+train_pq_path = f'{resampled_data_dir}/{data_args.dataset_config_name}.train.parquet'
+pq.write_table(train_dataset.data, train_pq_path)
 pq.write_table(eval_dataset.data, f'{resampled_data_dir}/{data_args.dataset_config_name}.eval.parquet')
 print(f"Saved Pq`s to: {resampled_data_dir}")
 
+print("Prepare: input_seq_lengths")
+ds = ParquetDataset(train_pq_path, split="train")
+#def __init__(self, data_args, split='train'):
+
 # save processor for training
+print("Saving Processor")
 processor.save_pretrained(training_args.output_dir)
