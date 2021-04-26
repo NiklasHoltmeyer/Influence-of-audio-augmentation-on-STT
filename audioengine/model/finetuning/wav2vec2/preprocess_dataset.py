@@ -161,13 +161,12 @@ eval_dataset = eval_dataset.map(
     num_proc=data_args.preprocessing_num_workers,
 )
 
-train_pq_path = f'{resampled_data_dir}/{data_args.dataset_config_name}.train.parquet'
-pq.write_table(train_dataset.data, train_pq_path)
+pq.write_table(train_dataset.data, f'{resampled_data_dir}/{data_args.dataset_config_name}.train.parquet')
 pq.write_table(eval_dataset.data, f'{resampled_data_dir}/{data_args.dataset_config_name}.eval.parquet')
 print(f"Saved Pq`s to: {resampled_data_dir}")
 
 print("Prepare: input_seq_lengths")
-ds = ParquetDataset(train_pq_path, split="train")
+ds = ParquetDataset(data_args, split="train")
 #def __init__(self, data_args, split='train'):
 
 # save processor for training
