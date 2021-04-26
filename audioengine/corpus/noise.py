@@ -14,5 +14,4 @@ class Noise(AudioDataset):
         paths = os.listdir(self.path)  # relative Path
         paths = [str(Path(self.path, p).resolve()) for p in paths]  # absolute Path
 
-        fake_targets = ["_noise_"] * len(paths)
-        return pd.DataFrame({"path": paths, "sentence": fake_targets})
+        return pd.DataFrame({"path": paths})

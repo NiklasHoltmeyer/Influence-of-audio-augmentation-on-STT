@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import librosa
@@ -5,21 +6,30 @@ import pandas as pd
 import swifter
 from sklearn.model_selection import train_test_split
 import numpy as np
+
+from audioengine.corpus.util.interceptors import time_logger
+from audioengine.logging.logging import defaultLogger
 from audioengine.transformations.backend.librosa.effect import Effect
 from audioengine.transformations.backend.librosa.io import IO
 from tqdm.auto import tqdm
 
 ## Pandas-Dataframe
 tqdm.pandas()
+logger = defaultLogger()
 
-
+@time_logger(name="Augment Dataframe",
+             header="Augment Dataframe", padding_length=50)
 def augment_dataframe(signal_df, noise_df, **settings):
     shuffle = settings.get("shuffle", True)
     data_augmented, data_clean = init_df(signal_df, **settings)
+
     noise = init_df(noise_df, skip_split=True, **settings)
+
     data_augmented = add_noise_column(data_augmented, noise)
-    data_augmented["path_augmented"] = data_augmented["path"].apply(get_target_column(**settings))
-    data_augmented = data_augmented.swifter.apply(merge_sounds(**settings), axis=1)
+
+    data_augmented["path_augmented"] = data_augmented["path"].swifter.progress_bar(True, desc="Add new Path").apply(get_target_column(**settings))
+    #data_augmented = data_augmented.swifter.apply(merge_sounds(**settings), axis=1)
+    data_augmented = data_augmented.swifter.progress_bar(True, desc="Merge Sounds").apply(merge_sounds(**settings), axis=1)
 
     rename = {"path": "path_source", "path_augmented": "path"}
     data_augmented.rename(columns=rename, inplace=True)
@@ -31,6 +41,8 @@ def augment_dataframe(signal_df, noise_df, **settings):
         else pd.concat([data_augmented, data_clean]).reset_index(drop=True)
 
 
+@time_logger(name="Load Audio-Durations",
+             header="Audio-Augmentation-Helper", padding_length=50)
 def init_df(df, **kwargs):
     split = kwargs.get("split", 0.5)
     skip_split = kwargs.get("skip_split", False)
@@ -38,32 +50,40 @@ def init_df(df, **kwargs):
     assert 0 <= split <= 1, "Split must be between 0 and 1"
 
     ##del_me
-    df = pd.DataFrame({"path": df.path[:10], "sentence": df.sentence[:10]})
+    if "sentence" in df.keys():
+        df = pd.DataFrame({"path": df.path[:10], "sentence": df.sentence[:10]})
+    else:
+        df = pd.DataFrame({"path": df.path[:10]})
     ##del ende
 
+    logger.debug("Parallel Apply Load_Duration")
     if skip_split:
-        df["duration"] = df['path'].swifter.apply(IO.load_duration)
-        return df.sort_values(by=['duration'])  # .reset_index(inplace=True)
+        logger.debug(f"Files: {len(df['path'])}")
+        df["duration"] = df['path'].swifter.progress_bar(True, desc="Load_Duration").apply(IO.load_duration)
+        return df.sort_values(by=['duration']).reset_index(drop=True)
 
     data_augmented, data_clean = train_test_split(df, test_size=1 - split, random_state=42)
+    logger.debug(f"Files: {len(data_augmented['path'])}")
+    data_augmented["duration"] = data_augmented['path'].swifter.\
+        progress_bar(True, desc="Load_Duration").apply(IO.load_duration)
 
-    data_augmented["duration"] = data_augmented['path'].swifter.apply(IO.load_duration)
-
-    # data_augmented, data_clean = data_augmented.reset_index(inplace=True), data_clean.reset_index(inplace=True)
-
-    return data_augmented, data_clean
+    return data_augmented.reset_index(drop=True), data_clean.reset_index(drop=True)
 
 
 def add_noise_column(signal_df, noise_df):
     len_dif = len(signal_df) - len(noise_df)
 
     if len_dif < 0:  # -> s_df < n_df
+        logger.debug("Remove Noise-Samples")
         noise_df = noise_df[: len(signal_df)]["path"]
     elif len_dif > 0:  # -> s_df > n_df
+        pad_fn = 'symmetric'
+        logger.debug(f"Pad Noise-Samples ({pad_fn})")
         beg = int(len_dif / 2)
         end = len_dif - beg
-        noise_df = np.pad(noise_df["path"], (beg, end), 'symmetric')
+        noise_df = np.pad(noise_df["path"], (beg, end), pad_fn)
     else:
+        logger.debug(f"Signales and Noises are of the same Shape")
         noise_df = noise_df["path"]
 
     # assert len(signal_df) == len(noise_df), "Padding (Dataframes) failed"
@@ -101,8 +121,8 @@ def get_target_column(**settings):
     target_path = settings.get("target_path", None)
     assert target_path, "Please specify target_path"
 
-    def __call__(item):
-        target_name = Path(item).name.replace(".mp3", ".wav")
+    def __call__(src_path):
+        target_name = Path(src_path).name.replace(".mp3", ".wav")
         return str(Path(target_path, target_name).resolve())
 
     return __call__

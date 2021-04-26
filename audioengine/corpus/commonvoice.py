@@ -12,8 +12,7 @@ class CommonVoice(AudioDataset):
         self.path = path
         self.wav_folder_path = str(Path(self.path, "clips"))
 
-    @time_logger(logger=logging.getLogger("audioengine-corpus"),
-                 name="CV-load DF",
+    @time_logger(name="CV-load DF",
                  header="CommonVoice", padding_length=50)
     def load_dataframe(self, **kwargs):
         type = kwargs.get("type", "dev")  # test, dev, train, validated, ...

@@ -15,8 +15,7 @@ class AudioDataset(metaclass=ABCMeta):
         self.sample_rate = sample_rate
         self.audio_format = kwargs.get("audio_format", "wav")
 
-    @time_logger(logger=logging.getLogger("audioengine-corpus"),
-                 name="  -load DF", padding_length=50)
+    @time_logger(name="  -load DF", padding_length=50)
     def load_dataframe(self, path, drop_cols=None, rename_cols=None, **kwargs):
         data_frame = Text.read_csv(path, **kwargs).fillna("")
         shuffle = kwargs.get("shuffle", False)
