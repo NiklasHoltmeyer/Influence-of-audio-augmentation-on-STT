@@ -83,9 +83,6 @@ def main():
         model.freeze_feature_extractor()
 
     trainer = load_trainer(model, processor, data_collator, training_args, train_dataset, eval_dataset)
-    #load_trainer load_grouped_trainer
-    trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
-    trainer.add_callback(CustomProgressBarCallback)
 
     logger.info("Training-Args:")
     logger.info(training_args)

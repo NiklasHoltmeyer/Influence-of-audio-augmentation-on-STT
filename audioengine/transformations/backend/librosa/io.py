@@ -7,15 +7,15 @@ import os
 
 class IO:
     @staticmethod
-    def load_wav(file: str, sample_rate: int = 48_000, mono_channel: bool = False) -> np.ndarray:
+    def load(file: str, sample_rate: int = None, mono_channel: bool = False) -> np.ndarray:
         """
-Load and Resample (WAV) Audiofile
+Load and Resample Audiofile
         Args:
             file: string, int, pathlib.Path or file-like object
                 Path to (input) WAV-File
             sample_rate: int
                 The sample rate of the audio data.
-                Default: 48_000 [Hz]
+                Default: None -> native SR
             mono_channel: bool
                 Force Convert Audio from n to 1 Channel.
                 Default: False
@@ -70,9 +70,19 @@ Convert MP3 File to WAV File
         audio = AudioSegment.from_mp3(src)
         audio.export(tmp_dst, format="wav")  # mp3->wav
 
-        y, sr = IO.load_wav(tmp_dst, sample_rate, mono_channel)  # wav-> wav(sample_rate, channel, clean?, ...)
+        y, sr = IO.load(tmp_dst, sample_rate, mono_channel)  # wav-> wav(sample_rate, channel, clean?, ...)
         IO.save_wav(y, dst, sample_rate)
 
         os.remove(tmp_dst)
 
         return dst
+
+    @staticmethod
+    def load_sample_rate(path):
+        return librosa.get_samplerate(path)
+
+    @staticmethod
+    def load_duration(path, sample_rate=None):
+        y, sr = IO.load(path, sample_rate)
+        duration = librosa.get_duration(y=y, sr=sr)
+        return duration
