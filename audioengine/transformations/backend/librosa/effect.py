@@ -16,7 +16,7 @@ Apply Noise-Signal to Signal.
                 Signal-Noise_ration
             pad_idx: Int
                 pad_predefined =["constant" , "edge", "linear_ramp", "maximum", "mean", "median", "minimum", "reflect", "symmetric", "wrap"]
-                Default = 1 -> Edge
+                Default = 1 -> Edge (see https://numpy.org/doc/stable/reference/generated/numpy.pad.html)
             **kwargs: **kwargs
                 Additional Parameter
         Returns:
