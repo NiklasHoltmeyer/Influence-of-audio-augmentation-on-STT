@@ -86,3 +86,9 @@ Convert MP3 File to WAV File
         y, sr = IO.load(path, sample_rate)
         duration = librosa.get_duration(y=y, sr=sr)
         return duration
+
+    @staticmethod
+    def load_duration_and_sr(path):
+        y, sr = IO.load(path, None) # sr -> None = native
+        duration = librosa.get_duration(y=y, sr=sr)
+        return duration, sr
