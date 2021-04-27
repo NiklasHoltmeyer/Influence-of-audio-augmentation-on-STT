@@ -49,12 +49,12 @@ def init_df(df, **kwargs):
 
     assert 0 <= split <= 1, "Split must be between 0 and 1"
 
-    ##del_me
-    if "sentence" in df.keys():
-        df = pd.DataFrame({"path": df.path[:10], "sentence": df.sentence[:10]})
-    else:
-        df = pd.DataFrame({"path": df.path[:10]})
-    ##del ende
+    ###del_me
+    #if "sentence" in df.keys():
+    #    df = pd.DataFrame({"path": df.path[:10], "sentence": df.sentence[:10]})
+    #else:
+    #    df = pd.DataFrame({"path": df.path[:10]})
+    ###del ende
 
     logger.debug("Parallel Apply Load_Duration")
     if skip_split:
@@ -110,9 +110,9 @@ def merge_sounds(**settings):
         yp, _ = IO.load(item["path"], sample_rate=target_sample_rate)
         yn, _ = IO.load(item["path_noise"], sample_rate=target_sample_rate)
         item["snr"] = snr
-        target_path = item["path_augmented"]
+        _target_path = item["path_augmented"]
         y_augmented = Effect.add_noise(yp, yn, snr=snr, pad_idx=pad_idx)
-        IO.save_wav(y_augmented, target_path, target_sample_rate)
+        IO.save_wav(y_augmented, _target_path, target_sample_rate)
         return item
 
     return __call__

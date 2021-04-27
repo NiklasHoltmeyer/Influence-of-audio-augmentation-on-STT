@@ -24,12 +24,14 @@ def load_dataframes(**settings):
     noise_df = Noise(noise_path).load_dataframe()
 
     if "cv" in signal_path or "commonvoice" in signal_path:
+        logging.debug("Signal-Dataset: CommonVoice")
         ds_type = settings.get("signal_split")
         signal_df = CommonVoice(signal_path).load_dataframe(type=ds_type)
 
         return signal_df, noise_df
 
     if "vf" in signal_path or "voxforge" in signal_path:
+        logging.debug("Signal-Dataset: VoxForge")
         signal_df = VoxForge(signal_path).load_dataframe()
         return signal_df, noise_df
 
@@ -39,16 +41,16 @@ def load_dataframes(**settings):
 def main():
     logger = defaultLogger()
 
-    ds_type = "dev"  # common_voice
+    ds_type = "train"  # common_voice
 
     settings = {
         "shuffle": True,
         "split": 0.5,
-        "signal_path": "C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de",
-        "noise_path": "C:\workspace\datasets\FSD50K\FSD50K.dev_audio\FSD50K.dev_audio",
+        "signal_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
+        "noise_path": "/share/datasets/FSD50K",
         "signal_split": ds_type,
         "target_sample_rate": 16_000,
-        "target_path": "C:\workspace\datasets\cv_augmented\clips",
+        "target_path": "/share/datasets/cv_augmented/clips",
         "target_file_name": f"..\{ds_type}.tsv",
         "sep": "\t"
     }
