@@ -124,6 +124,16 @@ def main():
         results["eval_metrics"] = metrics
     logger.info("eval_result:")
     logger.info(results["eval_metrics"])
+
+    args = {
+        "model_args": model_args,
+        "data_args": data_args,
+        "training_args": "training_args"
+    }
+
+    logger.info("args:")
+    logger.info(args)
+
     return results
 
 
