@@ -3,8 +3,10 @@ from sklearn.model_selection import train_test_split
 from audioengine.corpus.backend.pytorch.huggingfacedataset import HuggingfaceDataset
 from audioengine.corpus.commonvoice import CommonVoice
 from audioengine.corpus.voxforge import VoxForge
+from audioengine.logging.logging import defaultLogger
 from audioengine.transformations.backend.tensorflow.audiotransformations import AudioTransformations
 
+logger = defaultLogger()
 
 class Dataset:
     def __init__(self, backend):
@@ -22,11 +24,21 @@ class Dataset:
     def VoxForge(self, base_path, **kwargs):
         return self._from_AudioDataset(VoxForge(base_path, **kwargs), **kwargs)
 
-    def _from_AudioDataset(self, audio_ds, validation_split, input_key="path", target_key="sentence", **kwargs):
+    def _from_AudioDataset(self, audio_ds, input_key="path", target_key="sentence", **kwargs):
         audio_format = audio_ds.audio_format
         dataframe = audio_ds.load_dataframe(**kwargs)
+        fixed_length = kwargs.get("fixed_length", None)
+        validation_split = kwargs.get("validation_split", None)
 
         features = [input_key, target_key, "speech"]
+
+        if fixed_length:
+            if not kwargs.get("shuffle"):
+                logger.warning("Shuffle is disabled, while fixed_length is enabled.")
+            _items = min(fixed_length, len(dataframe))
+            dataframe = dataframe[: _items]
+            return self.backend.from_dataframe(dataframe, input_key, target_key, audio_format=audio_format,
+                                               features=features, **kwargs)
 
         if not validation_split:
             return self.backend.from_dataframe(dataframe, input_key, target_key, audio_format=audio_format,
@@ -59,9 +71,10 @@ if __name__ == "__main__":
 
     linux_path = "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de"
     windows_path = r"C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de"
-    path = "/share/datasets/voxforge_todo"
+    path = linux_path
 
-    train_ds, val_ds = Dataset("torch").VoxForge(path, validation_split=0.2, batch_size=1)
+    #train_ds, val_ds = Dataset("torch").CommonVoice(path, validation_split=0.2, batch_size=1)
+    train_ds, val_ds = Dataset("torch").CommonVoice(path, batch_size=1, validation_split=0.2)
     print(len(train_ds))
     print(len(val_ds))
 
