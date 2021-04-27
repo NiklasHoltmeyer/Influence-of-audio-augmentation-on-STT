@@ -60,7 +60,7 @@ def main():
     logger.warning(f"Load Model {model_args.model_name_or_path}")
     logger.warning(f"* Cache_Dir {model_args.cache_dir}")
 
-    if training_args.do_train: #load_last fine_tuned
+    if False: #not training_args.do_train: #load_last fine_tuned
         logger.debug(f"Loading Fine-Tuned {training_args.output_dir}")
         processor = Wav2Vec2Processor.from_pretrained(training_args.output_dir) #eval last fined_tuned_model
         model = Wav2Vec2ForCTC.from_pretrained( #eval last fined_tuned_model
