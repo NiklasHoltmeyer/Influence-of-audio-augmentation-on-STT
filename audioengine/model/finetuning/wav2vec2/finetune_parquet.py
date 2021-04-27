@@ -59,7 +59,6 @@ def main():
 
     logger.warning(f"Load Model {model_args.model_name_or_path}")
     logger.warning(f"* Cache_Dir {model_args.cache_dir}")
-    training_args.do_train = False
 
     if training_args.do_train: #load_last fine_tuned
         logger.debug(f"Loading Fine-Tuned {training_args.output_dir}")
