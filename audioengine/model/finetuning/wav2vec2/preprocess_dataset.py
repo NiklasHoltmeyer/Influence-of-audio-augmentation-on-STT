@@ -33,7 +33,6 @@ print("Workers", data_args.preprocessing_num_workers)
 
 assert data_args.dataset_path, "Please set Flag dataset_path"
 assert data_args.preprocess_dataset_train_path, "Please set Flag preprocess_dataset_train_path"
-
 assert data_args.preprocess_dataset_eval_path, "Please set Flag preprocess_dataset_eval_path"
 
 def _get_dataset(**kwargs):
@@ -43,33 +42,39 @@ def _get_dataset(**kwargs):
     if "voxforge" in dataset_path.lower() or "vf" in dataset_path.lower():
         return Dataset("huggingface").VoxForge(**kwargs)
 
+
 def load_same_dataset(validation_split):
     dataset_path = data_args.preprocess_dataset_train_path
     if "common" in dataset_path.lower() or "cv" in dataset_path.lower():
         return _get_dataset(base_path=data_args.preprocess_dataset_train_path, validation_split=validation_split,
-                                                  type="train", shuffle=True)
+                            type="train", shuffle=True)
     if "voxforge" in dataset_path.lower() or "vf" in dataset_path.lower():
         return _get_dataset(base_path=data_args.preprocess_dataset_train_path,
                             validation_split=validation_split, shuffle=True)
 
+
 def load_diffrent_datasets(validation_split):
     train_ds = _get_dataset(base_path=data_args.preprocess_dataset_train_path,
-                            shuffle=True, validation_split=None) # None -> all
+                            shuffle=True, validation_split=None, type="train")  # None -> all
     fixed_length = int(len(train_ds) * validation_split)
     eval_ds = _get_dataset(base_path=data_args.preprocess_dataset_eval_path,
-                           shuffle=True, fixed_length=fixed_length) # None -> all
+                           shuffle=True, fixed_length=fixed_length, type="test")  # None -> all
     return train_ds, eval_ds
+
 
 def load_datasets(validation_split=0.2):
     if data_args.preprocess_dataset_eval_path.lower() == "same":
         return load_same_dataset(validation_split)
     return load_diffrent_datasets(validation_split)
 
+
 train_dataset, eval_dataset = load_datasets()
+
 
 def remove_special_characters(batch):
     batch["sentence"] = re.sub(chars_to_ignore_regex, '', batch["sentence"]).lower() + " "
     return batch
+
 
 def extract_all_chars(batch):
     all_text = " ".join(batch["sentence"])
@@ -122,6 +127,7 @@ feature_extractor = Wav2Vec2FeatureExtractor(
     feature_size=1, sampling_rate=16_000, padding_value=0.0, do_normalize=True, return_attention_mask=True
 )
 processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
+
 
 def load_resample_save(f):
     f = Path(f)
@@ -190,7 +196,7 @@ print(f"Saved Pq`s to: {resampled_data_dir}")
 
 print("Prepare: input_seq_lengths")
 ds = ParquetDataset(data_args, split="train")
-#def __init__(self, data_args, split='train'):
+# def __init__(self, data_args, split='train'):
 
 # save processor for training
 print("Saving Processor")

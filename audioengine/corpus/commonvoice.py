@@ -4,6 +4,8 @@ import logging
 from audioengine.corpus.util.interceptors import time_logger
 from pathlib import Path
 
+from audioengine.logging.logging import defaultLogger
+
 
 class CommonVoice(AudioDataset):
 
@@ -11,6 +13,7 @@ class CommonVoice(AudioDataset):
         super(CommonVoice, self).__init__(audio_format="mp3", sample_rate=48_000, **kwargs)
         self.path = path
         self.wav_folder_path = str(Path(self.path, "clips"))
+        self.logger = defaultLogger()
 
     @time_logger(name="CV-load DF",
                  header="CommonVoice", padding_length=50)
@@ -18,14 +21,16 @@ class CommonVoice(AudioDataset):
         type = kwargs.get("type", "dev")  # test, dev, train, validated, ...
         tsv_path = self.get_path(type)
 
+        self.logger.info(f"Loading CommonVoice-Split {type}")
+
         drop_cols = ["client_id", 'up_votes', "down_votes", "age", "gender", "accent", "locale", "segment"]
-        #rename_cols = {"path": "audio_path", "sentence": "transcript", "text": "transcript"}
+        # rename_cols = {"path": "audio_path", "sentence": "transcript", "text": "transcript"}
         rename_cols = None
 
-        dataframe = super().load_dataframe(tsv_path, drop_cols=drop_cols, rename_cols=rename_cols, sep="\t", encoding="utf-8", **kwargs)
+        dataframe = super().load_dataframe(tsv_path, drop_cols=drop_cols, rename_cols=rename_cols, sep="\t",
+                                           encoding="utf-8", **kwargs)
         full_path_fn = lambda f: str(Path(self.wav_folder_path, f))
         dataframe.path = dataframe.path.map(full_path_fn)
-
 
         return dataframe
 

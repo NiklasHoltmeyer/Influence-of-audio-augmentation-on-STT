@@ -34,6 +34,7 @@ setup(
         "torch",
         "datasets", #hugging_face
         "jiwer",
-        "transformers"
+        "transformers",
+        "wandb"
     ],
 )

@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import wandb
 
 import transformers
 from transformers import (
@@ -99,6 +100,14 @@ def main():
     results = {}
 
     if training_args.do_train:
+        if "all" in training_args.report_to or "wandb" in training_args.report_to:
+            wandb.login()
+            lr = training_args.learning_rate
+            bs = training_args.per_device_train_batch_size
+            ep = training_args.num_train_epochs
+            training_args.run_name = f"{ep}_{lr}_{bs}"
+            logger.info(f"WANDB Run Name: {training_args.run_name}")
+
         if last_checkpoint is not None:
             checkpoint = last_checkpoint
         elif os.path.isdir(model_args.model_name_or_path):

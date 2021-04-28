@@ -5,11 +5,16 @@ import numpy as np
 from audioengine.corpus.audiodataset import AudioDataset
 import codecs
 
+from audioengine.corpus.util.interceptors import time_logger
+
+
 class VoxForge(AudioDataset):
     def __init__(self, path, **kwargs):
         super(VoxForge, self).__init__(audio_format="wav", sample_rate=48_000, **kwargs)
         self.path = path
 
+    @time_logger(name="VF-load DF",
+                 header="VoxForge", padding_length=50)
     def load_dataframe(self, **kwargs):
         data = self._load_data()
         shuffle = kwargs.get("shuffle", False)
