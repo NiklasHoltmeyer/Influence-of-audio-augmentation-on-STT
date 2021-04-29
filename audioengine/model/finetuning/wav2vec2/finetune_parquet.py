@@ -85,7 +85,8 @@ def main():
     if model_args.freeze_feature_extractor:
         model.freeze_feature_extractor()
 
-    trainer = load_trainer(model, processor, data_collator, training_args, train_dataset, eval_dataset)
+    trainer = load_trainer(model, processor, data_collator,
+                           training_args, train_dataset, eval_dataset, n_workers=data_args.preprocessing_num_workers)
 
     logger.info("Training-Args:")
     logger.info(training_args)
@@ -94,13 +95,14 @@ def main():
 
     if training_args.do_train:
         if "all" in training_args.report_to or "wandb" in training_args.report_to:
-            wandb.login()
-            lr = "{:.2e}".format(training_args.learning_rate)
-            bs = training_args.per_device_train_batch_size
-            ep = training_args.num_train_epochs
-            training_args.run_name = f"{ep}_{lr}_{bs}"
-
-            logger.info(f"WANDB Run Name: {training_args.run_name}")
+            # wandb.login()
+            # lr = "{:.2e}".format(training_args.learning_rate)
+            # bs = training_args.per_device_train_batch_size
+            # ep = training_args.num_train_epochs
+            # training_args.run_name = f"{ep}_{lr}_{bs}"
+            #
+            training_args.run_name = "nope"
+            # logger.info(f"WANDB Run Name: {training_args.run_name}")
         else:
             wandb.init(mode="disabled")
 

@@ -26,7 +26,8 @@ class Jiwer:
             for ground_truth, hypothesis in jobs:
                 self.add(ground_truth, hypothesis)
         else:
-            with Pool(core_count) as p:
+            threads = min(len(ground_truths), core_count)
+            with Pool(threads) as p:
                 results = p.map(self._add_job, jobs)
 
                 for result in results:
@@ -61,8 +62,9 @@ class Jiwer:
         return Jiwer.compute_measurements(ground_truth, hypothesis)
 
     def calc(self):
-        wer = float(self.substitutions + self.deletions + self.insertions) / \
-              float(self.hits + self.substitutions + self.deletions)
+        a = float(self.substitutions + self.deletions + self.insertions)
+        b = float(self.hits + self.substitutions + self.deletions)
+        wer = 1e100 if b == 0 else a/b
         return wer
 
     def to_tsv(self, sep="\t", prefix="", suffix=""):
