@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC, ABCMeta
+from multiprocessing import Pool
 
 from tqdm.auto import tqdm
 import logging
@@ -7,6 +8,9 @@ import os
 from audioengine.corpus.util.text import Text
 from audioengine.corpus.util.interceptors import time_logger
 from sklearn.model_selection import train_test_split
+
+from audioengine.transformations.backend.librosa.io import IO
+
 
 class AudioDataset(metaclass=ABCMeta):
 
@@ -20,6 +24,8 @@ class AudioDataset(metaclass=ABCMeta):
         data_frame = Text.read_csv(path, **kwargs).fillna("")
         shuffle = kwargs.get("shuffle", False)
         fixed_length = kwargs.get("fixed_length", None)
+        min_duration = kwargs.get("min_duration", None)
+        max_duration = kwargs.get("max_duration", None)
 
         if drop_cols:
             data_frame.drop(drop_cols, inplace=True, axis=1, errors='ignore')
@@ -29,6 +35,17 @@ class AudioDataset(metaclass=ABCMeta):
 
         if rename_cols:
             data_frame = data_frame.rename(columns=rename_cols)
+
+        if min_duration or max_duration:
+            threads = min(os.cpu_count(), len(data_frame))
+            with Pool(threads) as p:
+                data_frame["duration"] = p.map(IO.load_duration, data_frame["path"])
+
+            min_duration = max(0, min_duration)
+            if max_duration:
+                data_frame = data_frame[data_frame["duration"].between(min_duration, max_duration)]
+            else:
+                data_frame = data_frame[data_frame["duration"] <= min_duration]
 
         if fixed_length:
             if not kwargs.get("shuffle"):

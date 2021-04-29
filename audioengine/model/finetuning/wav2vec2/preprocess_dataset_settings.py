@@ -9,21 +9,27 @@ def preprocess_settings():
         "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
         "shuffle": True,
         "validation_split": None,  # -> all entries
-        "type": "test"
+        "type": "test",
     }
+
+
 
     cv_train_fixed_length = {
         "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
         "shuffle": True,
         "validation_split": None,  # -> all entries
         "fixed_length": 24683 / 2,  # -> 75% vf + 25% cv_train
-        "type": "train"
+        "type": "train",
+        "min_duration":"0.25",
+        "max_duration":"6.00"
     }
 
     vf_full = {
         "base_path": "/share/datasets/vf_de",
         "shuffle": True,
-        "validation_split": None,  # -> all entries
+        "validation_split": None,  # -> all entries,
+        "min_duration": "0.25",
+        "max_duration": "6.00"
     }
 
     test_settings = {
