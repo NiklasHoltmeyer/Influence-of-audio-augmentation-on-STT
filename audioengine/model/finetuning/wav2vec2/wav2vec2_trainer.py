@@ -175,9 +175,9 @@ class GroupedLengthsTrainer(CTCTrainer):
             return super()._get_train_sampler()
 
 
-# wer_metric = load_metric("wer")
+wer_metric = load_metric("wer")
 
-def compute_metrics(processor, core_count):
+def compute_metrics(processor):
     def __call__(pred):
         pred_logits = pred.predictions
         pred_ids = np.argmax(pred_logits, axis=-1)
@@ -188,10 +188,7 @@ def compute_metrics(processor, core_count):
         # we do not want to group tokens when computing the metrics
         label_str = processor.batch_decode(pred.label_ids, group_tokens=False)
 
-        # wer = wer_metric.compute(predictions=pred_str, references=label_str)
-        _wer = Jiwer()
-        _wer.add_batch(pred_str, label_str, core_count=core_count)
-        wer = _wer.calc()
+        wer = wer_metric.compute(predictions=pred_str, references=label_str)
 
         return {"wer": wer}
 

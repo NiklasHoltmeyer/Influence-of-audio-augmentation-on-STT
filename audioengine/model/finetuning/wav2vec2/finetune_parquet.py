@@ -12,7 +12,7 @@ from transformers.trainer_utils import is_main_process, get_last_checkpoint
 from audioengine.model.finetuning.wav2vec2.parquetdataset import ParquetDataset
 from audioengine.model.finetuning.wav2vec2.argument_parser import argument_parser
 from audioengine.model.finetuning.wav2vec2.wav2vec2_trainer import CustomProgressBarCallback, DataCollatorCTCWithPadding
-from audioengine.model.finetuning.wav2vec2.wav2vec2 import load_trainer
+from audioengine.model.finetuning.wav2vec2.wav2vec2 import load_trainer, load_grouped_trainer
 
 logger = logging.getLogger(__name__)
 
@@ -85,8 +85,10 @@ def main():
     if model_args.freeze_feature_extractor:
         model.freeze_feature_extractor()
 
-    trainer = load_trainer(model, processor, data_collator,
-                           training_args, train_dataset, eval_dataset, n_workers=data_args.preprocessing_num_workers)
+    trainer = load_grouped_trainer(model, processor, data_collator,
+                                   training_args, train_dataset, eval_dataset,
+                                   n_workers=data_args.preprocessing_num_workers)
+    # load_trainer load_grouped_trainer
 
     logger.info("Training-Args:")
     logger.info(training_args)

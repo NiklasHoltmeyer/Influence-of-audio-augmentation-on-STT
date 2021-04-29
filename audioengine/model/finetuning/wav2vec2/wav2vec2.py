@@ -32,13 +32,13 @@ def load_trainer(model, processor, data_collator, args, train_dataset=None, eval
         model=model,
         data_collator=data_collator,
         args=args,
-        compute_metrics=kwargs.get("compute_metrics", compute_metrics(processor, kwargs.get("n_workers", 2))),
+        compute_metrics=compute_metrics(processor),
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         tokenizer=processor.feature_extractor,
     )
-#    trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
-#    trainer.add_callback(CustomProgressBarCallback)
+    #    trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
+    #    trainer.add_callback(CustomProgressBarCallback)
     return trainer
 
 
@@ -51,8 +51,7 @@ def load_grouped_trainer(model, processor, data_collator, args, train_dataset=No
         eval_dataset=eval_dataset,
         tokenizer=processor.feature_extractor,
         train_seq_lengths=train_dataset.input_seq_lengths,
-        compute_metrics = kwargs.get("compute_metrics", compute_metrics(processor, kwargs.get("n_workers", 2))),
-
+        compute_metrics=compute_metrics(processor),
     )
     trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
     trainer.add_callback(CustomProgressBarCallback)
