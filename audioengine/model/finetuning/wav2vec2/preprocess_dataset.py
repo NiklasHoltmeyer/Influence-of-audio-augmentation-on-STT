@@ -47,6 +47,7 @@ ds_settings_path = f"{resampled_data_dir}/dataset_split.json"
 save_settings(ds_settings_path, preprocess_settings, [("train_info", train_info),
                                                       ("eval_info", eval_info)])
 
+
 def remove_special_characters(batch):
     batch["text"] = re.sub(chars_to_ignore_regex, "", batch["sentence"]).lower() + " "
     return batch
@@ -64,31 +65,31 @@ def extract_all_chars(batch):
     return {"vocab": [vocab], "all_text": [all_text]}
 
 
-#vocab_train = train_dataset.map(
+# vocab_train = train_dataset.map(
 #    extract_all_chars,
 #    batched=True,
 #    batch_size=-1,
 #    keep_in_memory=True,
 #    remove_columns=train_dataset.column_names,
-#)
-#vocab_test = eval_dataset.map(
+# )
+# vocab_test = eval_dataset.map(
 #    extract_all_chars,
 #    batched=True,
 #    batch_size=-1,
 #    keep_in_memory=True,
 #    remove_columns=eval_dataset.column_names,
-#)
+# )
 #
-#vocab_list = list(set(vocab_train["vocab"][0]) | set(vocab_test["vocab"][0]))
-#vocab_dict = {v: k for k, v in enumerate(vocab_list)}
-#vocab_dict["|"] = vocab_dict[" "]
-#del vocab_dict[" "]
-#vocab_dict["[UNK]"] = len(vocab_dict)
-#vocab_dict["[PAD]"] = len(vocab_dict)
+# vocab_list = list(set(vocab_train["vocab"][0]) | set(vocab_test["vocab"][0]))
+# vocab_dict = {v: k for k, v in enumerate(vocab_list)}
+# vocab_dict["|"] = vocab_dict[" "]
+# del vocab_dict[" "]
+# vocab_dict["[UNK]"] = len(vocab_dict)
+# vocab_dict["[PAD]"] = len(vocab_dict)
 
 vocab_path = Path(str(resampled_data_dir) + '/vocab.json').resolve()
 
-#with open(vocab_path, 'w') as vocab_file:
+# with open(vocab_path, 'w') as vocab_file:
 #    json.dump(vocab_dict, vocab_file)
 
 if data_args.max_train_samples is not None:
@@ -97,17 +98,18 @@ if data_args.max_train_samples is not None:
 if data_args.max_val_samples is not None:
     eval_dataset = eval_dataset.select(range(data_args.max_val_samples))
 
-#tokenizer = Wav2Vec2CTCTokenizer(
+# tokenizer = Wav2Vec2CTCTokenizer(
 #    vocab_path,
 #    unk_token="[UNK]",
 #    pad_token="[PAD]",
 #    word_delimiter_token="|",
-#)
+# )
 ##feature_extractor = Wav2Vec2FeatureExtractor(
 ##    feature_size=1, sampling_rate=16_000, padding_value=0.0, do_normalize=True, return_attention_mask=True
-#)
-#processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
+# )
+# processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
 processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
+
 
 def load_resample_save(f):
     f = Path(f)
@@ -127,14 +129,14 @@ new_eval_paths = [load_resample_save(f) for f in tqdm(eval_dataset['path'], mini
 
 # update paths and sampling rate
 train_dataset = train_dataset.map(
-    lambda x: {'path': new_train_paths, 'sampling_rate':[16_000] * len(train_dataset), 'target_text': x['text']},
+    lambda x: {'path': new_train_paths, 'sampling_rate': [16_000] * len(train_dataset), 'target_text': x['text']},
     batched=True,
     batch_size=-1,
     keep_in_memory=True,
     remove_columns=train_dataset.column_names,
 )
 eval_dataset = eval_dataset.map(
-    lambda x: {'path': new_eval_paths, 'sampling_rate':[16_000] * len(eval_dataset), 'target_text': x['text']},
+    lambda x: {'path': new_eval_paths, 'sampling_rate': [16_000] * len(eval_dataset), 'target_text': x['text']},
     batched=True,
     batch_size=-1,
     keep_in_memory=True,
@@ -179,5 +181,5 @@ print("eval_info:", eval_info)
 # def __init__(self, data_args, split='train'):
 
 # save processor for training
-#print(f"Saving Processor to {training_args.output_dir}")
-#processor.save_pretrained(training_args.output_dir)
+# print(f"Saving Processor to {training_args.output_dir}")
+# processor.save_pretrained(training_args.output_dir)

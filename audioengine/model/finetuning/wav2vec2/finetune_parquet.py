@@ -78,7 +78,6 @@ def main():
         vocab_size=len(processor.tokenizer),
     )
 
-
     data_collator = DataCollatorCTCWithPadding(processor=processor, padding=True)
 
     logger.info(f"Freeze_Feature_Exctrator: {model_args.freeze_feature_extractor}")
