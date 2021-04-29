@@ -1,9 +1,9 @@
 # Adopted/copied from: https://github.com/maxidl/wav2vec2/blob/c7ae26d36bb09062cad08be8702d7d68d5444f01/prepare_dataset.py
 
-import json
 import re
 import sys
 from pathlib import Path
+import json
 
 import pyarrow.parquet as pq
 import torch
@@ -18,6 +18,7 @@ from transformers import (
 
 from audioengine.corpus.dataset import Dataset
 from audioengine.model.finetuning.wav2vec2.argument_parser import argument_parser
+from audioengine.model.finetuning.wav2vec2.preprocess_dataset_settings import preprocess_settings, save_settings
 
 model_args, data_args, training_args = argument_parser(sys.argv)
 
@@ -35,81 +36,60 @@ assert data_args.dataset_path, "Please set Flag dataset_path"
 assert data_args.preprocess_dataset_train_path, "Please set Flag preprocess_dataset_train_path"
 assert data_args.preprocess_dataset_eval_path, "Please set Flag preprocess_dataset_eval_path"
 
-def _get_dataset(**kwargs):
-    dataset_path = kwargs.get("base_path")
-    if "common" in dataset_path.lower() or "cv" in dataset_path.lower():
-        return Dataset("huggingface").CommonVoice(**kwargs)
-    if "voxforge" in dataset_path.lower() or "vf" in dataset_path.lower():
-        return Dataset("huggingface").VoxForge(**kwargs)
+resampled_data_dir = Path(data_args.dataset_path)
+resampled_data_dir.mkdir(exist_ok=True)
 
+#
+preprocess_settings = preprocess_settings()
+(train_dataset, train_info), (eval_dataset, eval_info) = Dataset("huggingface").from_settings(preprocess_settings)
 
-def load_same_dataset(validation_split):
-    dataset_path = data_args.preprocess_dataset_train_path
-    if "common" in dataset_path.lower() or "cv" in dataset_path.lower():
-        return _get_dataset(base_path=data_args.preprocess_dataset_train_path, validation_split=validation_split,
-                            type="train", shuffle=True)
-    if "voxforge" in dataset_path.lower() or "vf" in dataset_path.lower():
-        return _get_dataset(base_path=data_args.preprocess_dataset_train_path,
-                            validation_split=validation_split, shuffle=True)
-
-
-def load_diffrent_datasets(validation_split):
-    train_ds = _get_dataset(base_path=data_args.preprocess_dataset_train_path,
-                            shuffle=True, validation_split=None, type="train")  # None -> all
-    fixed_length = int(len(train_ds) * validation_split)
-    eval_ds = _get_dataset(base_path=data_args.preprocess_dataset_eval_path,
-                           shuffle=True, fixed_length=fixed_length, type="test")  # None -> all
-    return train_ds, eval_ds
-
-
-def load_datasets(validation_split=0.2):
-    if data_args.preprocess_dataset_eval_path.lower() == "same":
-        return load_same_dataset(validation_split)
-    return load_diffrent_datasets(validation_split)
-
-
-train_dataset, eval_dataset = load_datasets()
-
+ds_settings_path = f"{resampled_data_dir}/dataset_split.json"
+save_settings(ds_settings_path, preprocess_settings, [("train_info", train_info),
+                                                      ("eval_info", eval_info)])
 
 def remove_special_characters(batch):
-    batch["sentence"] = re.sub(chars_to_ignore_regex, '', batch["sentence"]).lower() + " "
+    batch["text"] = re.sub(chars_to_ignore_regex, "", batch["sentence"]).lower() + " "
     return batch
 
 
+train_dataset = train_dataset.map(remove_special_characters, remove_columns=["sentence"], keep_in_memory=True,
+                                  num_proc=data_args.preprocessing_num_workers)
+eval_dataset = eval_dataset.map(remove_special_characters, remove_columns=["sentence"], keep_in_memory=True,
+                                num_proc=data_args.preprocessing_num_workers)
+
+
 def extract_all_chars(batch):
-    all_text = " ".join(batch["sentence"])
+    all_text = " ".join(batch["text"])
     vocab = list(set(all_text))
     return {"vocab": [vocab], "all_text": [all_text]}
 
 
-vocab_train = train_dataset.map(
-    extract_all_chars,
-    batched=True,
-    batch_size=-1,
-    keep_in_memory=True,
-    remove_columns=train_dataset.column_names,
-)
-vocab_test = train_dataset.map(
-    extract_all_chars,
-    batched=True,
-    batch_size=-1,
-    keep_in_memory=True,
-    remove_columns=eval_dataset.column_names,
-)
+#vocab_train = train_dataset.map(
+#    extract_all_chars,
+#    batched=True,
+#    batch_size=-1,
+#    keep_in_memory=True,
+#    remove_columns=train_dataset.column_names,
+#)
+#vocab_test = eval_dataset.map(
+#    extract_all_chars,
+#    batched=True,
+#    batch_size=-1,
+#    keep_in_memory=True,
+#    remove_columns=eval_dataset.column_names,
+#)
+#
+#vocab_list = list(set(vocab_train["vocab"][0]) | set(vocab_test["vocab"][0]))
+#vocab_dict = {v: k for k, v in enumerate(vocab_list)}
+#vocab_dict["|"] = vocab_dict[" "]
+#del vocab_dict[" "]
+#vocab_dict["[UNK]"] = len(vocab_dict)
+#vocab_dict["[PAD]"] = len(vocab_dict)
 
-vocab_list = list(set(vocab_train["vocab"][0]) | set(vocab_test["vocab"][0]))
-vocab_dict = {v: k for k, v in enumerate(vocab_list)}
-vocab_dict["|"] = vocab_dict[" "]
-del vocab_dict[" "]
-vocab_dict["[UNK]"] = len(vocab_dict)
-vocab_dict["[PAD]"] = len(vocab_dict)
-
-resampled_data_dir = Path(data_args.dataset_path)
-resampled_data_dir.mkdir(exist_ok=True)
 vocab_path = Path(str(resampled_data_dir) + '/vocab.json').resolve()
 
-with open(vocab_path, 'w') as vocab_file:
-    json.dump(vocab_dict, vocab_file)
+#with open(vocab_path, 'w') as vocab_file:
+#    json.dump(vocab_dict, vocab_file)
 
 if data_args.max_train_samples is not None:
     train_dataset = train_dataset.select(range(data_args.max_train_samples))
@@ -117,17 +97,17 @@ if data_args.max_train_samples is not None:
 if data_args.max_val_samples is not None:
     eval_dataset = eval_dataset.select(range(data_args.max_val_samples))
 
-tokenizer = Wav2Vec2CTCTokenizer(
-    vocab_path,
-    unk_token="[UNK]",
-    pad_token="[PAD]",
-    word_delimiter_token="|",
-)
-feature_extractor = Wav2Vec2FeatureExtractor(
-    feature_size=1, sampling_rate=16_000, padding_value=0.0, do_normalize=True, return_attention_mask=True
-)
-processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
-
+#tokenizer = Wav2Vec2CTCTokenizer(
+#    vocab_path,
+#    unk_token="[UNK]",
+#    pad_token="[PAD]",
+#    word_delimiter_token="|",
+#)
+##feature_extractor = Wav2Vec2FeatureExtractor(
+##    feature_size=1, sampling_rate=16_000, padding_value=0.0, do_normalize=True, return_attention_mask=True
+#)
+#processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
+processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
 
 def load_resample_save(f):
     f = Path(f)
@@ -142,20 +122,19 @@ def load_resample_save(f):
     return str(new_path)
 
 
-print('load resample save')
-new_train_paths = [load_resample_save(f) for f in tqdm(train_dataset['path'], miniters=100, desc='train')]
-new_eval_paths = [load_resample_save(f) for f in tqdm(eval_dataset['path'], miniters=100, desc='eval')]
+new_train_paths = [load_resample_save(f) for f in tqdm(train_dataset['path'], miniters=100, desc='resample (train)')]
+new_eval_paths = [load_resample_save(f) for f in tqdm(eval_dataset['path'], miniters=100, desc='resample (eval)')]
 
 # update paths and sampling rate
 train_dataset = train_dataset.map(
-    lambda x: {'path': new_train_paths, 'sampling_rate': [16_000] * len(train_dataset), 'target_text': x['sentence']},
+    lambda x: {'path': new_train_paths, 'sampling_rate':[16_000] * len(train_dataset), 'target_text': x['text']},
     batched=True,
     batch_size=-1,
     keep_in_memory=True,
     remove_columns=train_dataset.column_names,
 )
 eval_dataset = eval_dataset.map(
-    lambda x: {'path': new_eval_paths, 'sampling_rate': [16_000] * len(eval_dataset), 'target_text': x['sentence']},
+    lambda x: {'path': new_eval_paths, 'sampling_rate':[16_000] * len(eval_dataset), 'target_text': x['text']},
     batched=True,
     batch_size=-1,
     keep_in_memory=True,
@@ -172,7 +151,6 @@ def tokenize_targets(batch):
 
 
 print('preparing dataset: train')
-
 train_dataset = train_dataset.map(
     tokenize_targets,
     remove_columns=[col for col in train_dataset.column_names if col != 'path'],
@@ -181,7 +159,6 @@ train_dataset = train_dataset.map(
     num_proc=data_args.preprocessing_num_workers,
 )
 print('preparing dataset: eval')
-
 eval_dataset = eval_dataset.map(
     tokenize_targets,
     remove_columns=[col for col in eval_dataset.column_names if col != 'path'],
@@ -196,8 +173,11 @@ print(f"Saved Pq`s to: {resampled_data_dir}")
 
 print("Prepare: input_seq_lengths")
 ds = ParquetDataset(data_args, split="train")
+
+print("train_info:", train_info)
+print("eval_info:", eval_info)
 # def __init__(self, data_args, split='train'):
 
 # save processor for training
-print("Saving Processor")
-processor.save_pretrained(training_args.output_dir)
+#print(f"Saving Processor to {training_args.output_dir}")
+#processor.save_pretrained(training_args.output_dir)

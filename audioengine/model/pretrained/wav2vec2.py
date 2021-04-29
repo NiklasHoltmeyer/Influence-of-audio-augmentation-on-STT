@@ -1,5 +1,6 @@
 import torch
 
+from audioengine.logging.logging import defaultLogger
 from audioengine.model.finetuning.wav2vec2.wav2vec2_trainer import DataCollatorCTCWithPadding
 from audioengine.transformations.backend.pytorch.audiotransformations import LoadAudio
 from audioengine.transformations.backend.pytorch.texttransformations import Regexp, ToLower
@@ -11,6 +12,9 @@ class wav2vec2:
         self.model_name = model_name
         self.device = device
         self.based_on = based_on
+
+        self.logger = defaultLogger()
+        self.logger.info(f"Wav2Vec Device: {device}")
 
         self.model, self.processor = self._load_pretrained()
 
@@ -49,9 +53,10 @@ class wav2vec2:
         return transformations
 
     def _load_pretrained(self):
-        processor = Wav2Vec2Processor.from_pretrained(self.model_name)
+        proc_name = self.model_name if not self.based_on else self.based_on
+        processor = Wav2Vec2Processor.from_pretrained(proc_name)
         model = Wav2Vec2ForCTC.from_pretrained(self.model_name)
-        model.to(self.device)
+        model = model.to(self.device)
         return model, processor
 
     def data_collator(self):

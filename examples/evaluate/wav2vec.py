@@ -39,6 +39,14 @@ def validate_model(model_name, based_on = None):
         transcriptions_stacked.extend(transcriptions)
         sentence_stacked.extend(sentences)
 
+       # for x, y in zip(sentences, transcriptions):
+       #     print("")
+       #     print(x)
+       #     print(y)
+       #     print("*"*32)
+       #     exit(0)
+
+
         if idx % 97 == 0: #97 71
             wer.add_batch(sentence_stacked, transcriptions_stacked, core_count)
             sentence_stacked, transcriptions_stacked = [], []

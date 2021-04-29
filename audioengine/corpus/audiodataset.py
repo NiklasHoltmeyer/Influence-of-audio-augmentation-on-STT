@@ -19,6 +19,8 @@ class AudioDataset(metaclass=ABCMeta):
     def load_dataframe(self, path, drop_cols=None, rename_cols=None, **kwargs):
         data_frame = Text.read_csv(path, **kwargs).fillna("")
         shuffle = kwargs.get("shuffle", False)
+        fixed_length = kwargs.get("fixed_length", None)
+
         if drop_cols:
             data_frame.drop(drop_cols, inplace=True, axis=1, errors='ignore')
 
@@ -28,7 +30,13 @@ class AudioDataset(metaclass=ABCMeta):
         if rename_cols:
             data_frame = data_frame.rename(columns=rename_cols)
 
-        return data_frame
+        if fixed_length:
+            if not kwargs.get("shuffle"):
+                self.logger.warning("Shuffle is disabled, while fixed_length is enabled.")
+            _items = min(int(fixed_length), len(data_frame))
+            data_frame = data_frame[: _items]
+
+        return data_frame.reset_index(drop=True)
 
     def sanity_check(self, paths):
         for path in paths:
