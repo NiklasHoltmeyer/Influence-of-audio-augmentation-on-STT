@@ -8,7 +8,8 @@ def preprocess_settings():
     cv_test_full = {
         "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
         "shuffle": True,
-        "validation_split": None,  # -> all entries
+        "validation_split": None,
+        "fixed_length": 7404, # -> 20% f. train
         "type": "test",
 #        "min_duration": 0.25,
 #        "max_duration": 6.00

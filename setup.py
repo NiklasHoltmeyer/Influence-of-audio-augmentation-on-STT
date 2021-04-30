@@ -32,7 +32,7 @@ setup(
         "sklearn",
         "torchaudio",
         "torch",
-        "datasets>=1.6.1", #hugging_face
+        "datasets", #hugging_face
         "jiwer>=2.2.0",
         "transformers",
         "wandb"

@@ -18,23 +18,31 @@ class CommonVoice(AudioDataset):
     @time_logger(name="CV-load DF",
                  header="CommonVoice", padding_length=50)
     def load_dataframe(self, **kwargs):
-        type = kwargs.get("type", "dev")  # test, dev, train, validated, ...
-        tsv_path = self.get_path(type)
+        tsv_path = self.load_preprocessed_df(**kwargs)
 
-        self.logger.info(f"Loading CommonVoice-Split {type}")
+        self.logger.info(f'Loading CommonVoice-Split {kwargs.get("type", "dev")}')
 
-        drop_cols = ["client_id", 'up_votes', "down_votes", "age", "gender", "accent", "locale", "segment"]
-        # rename_cols = {"path": "audio_path", "sentence": "transcript", "text": "transcript"}
-        rename_cols = None
-
-        full_path_fn = lambda f: str(Path(self.wav_folder_path, f))
-
-        dataframe = super().load_dataframe(tsv_path, drop_cols=drop_cols, rename_cols=rename_cols, sep="\t",
-                                           encoding="utf-8", full_path_fn=full_path_fn, **kwargs)
-
-        #dataframe.path = dataframe.path.map(full_path_fn)
+        dataframe = super().load_dataframe(tsv_path, sep="\t", encoding="utf-8", **kwargs)
 
         return dataframe
+
+    def load_preprocessed_df(self, **kwargs):
+        # test, dev, train, validated, ...
+        type = kwargs.get("type", "dev")
+        input_path, processed_path = self.get_path(type)
+
+        if not processed_path.exists():
+            drop_cols = ["client_id", 'up_votes', "down_votes", "age", "gender", "accent", "locale", "segment"]
+            rename_cols = None
+            full_path_fn = lambda f: str(Path(self.wav_folder_path, f))
+            dataframe = super().load_dataframe(str(input_path.resolve()),
+                        drop_cols=drop_cols, rename_cols=rename_cols, sep="\t",
+                        encoding="utf-8", full_path_fn=full_path_fn)
+            dataframe = super().add_duration_column(dataframe, desc=f"Preprocess CV-DF-{type}")
+            dataframe.to_csv(processed_path, sep="\t", encoding="utf-8")
+
+        return str(processed_path.resolve())
+
 
     def get_path(self, name):
         mapping = {
@@ -51,10 +59,23 @@ class CommonVoice(AudioDataset):
         value = mapping.get(name, None)
         assert value
 
-        return Path(self.path, value)
+        input_path, processed_path = Path(self.path, value), Path(self.path, "processed_"+value)
+
+        return input_path, processed_path
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    df = CommonVoice(r"C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de").load_dataframe()
+    logging.basicConfig(level=logging.DEBUG)    
+    df = CommonVoice(r"/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de").load_dataframe(type="other")
+    type_all = ["train", "dev", "test", "invalidated", "reported", "other", "validated"]
+
+    from tqdm.auto import tqdm
+    for type in tqdm(type_all): #preprocess all xml's
+        try:
+            df = CommonVoice(r"/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de").load_dataframe(type=type)
+        except Exception as e:
+            print("*"*72)
+            print(e)
+            print("*" * 72)
     print(df.head())
+
