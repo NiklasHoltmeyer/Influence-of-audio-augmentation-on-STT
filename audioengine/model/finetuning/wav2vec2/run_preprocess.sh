@@ -20,13 +20,11 @@
 --layerdrop="0.04"
 --mask_time_prob="0.08"
 --gradient_checkpointing="1"
---eval_accumulation_steps="2"
+--eval_accumulation_steps="20"
 --fp16
 --do_eval
 --dataloader_num_workers="16"
 --group_by_length
---preprocess_dataset_train_path="/share/datasets/vf_de/"
---preprocess_dataset_eval_path="/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de"
---dataset_path="/share/datasets/vf80full_cv20-test_de_processed/"
+--dataset_path="/share/datasets/test_dataset/"
 --max_train_samples=112
 --max_val_samples=48
