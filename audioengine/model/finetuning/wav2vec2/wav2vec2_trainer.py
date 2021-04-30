@@ -177,6 +177,7 @@ class GroupedLengthsTrainer(CTCTrainer):
 
 wer_metric = load_metric("wer")
 
+
 def compute_metrics(processor):
     def __call__(pred):
         pred_logits = pred.predictions
@@ -187,6 +188,30 @@ def compute_metrics(processor):
         pred_str = processor.batch_decode(pred_ids)
         # we do not want to group tokens when computing the metrics
         label_str = processor.batch_decode(pred.label_ids, group_tokens=False)
+
+        try:
+            print("Type", "pred_str", type(pred_str))
+            print("Type", "label_str", type(label_str))
+        except Exception as e:
+            pass
+
+        try:
+            print("pred_str.shape", pred_str.shape)
+            print("label_str.shape", label_str.shape)
+        except Exception as e:
+            pass
+
+        try:
+            print("len(pred_str)", len(pred_str))
+            print("len(label_str)", len(label_str))
+        except Exception as e:
+            pass
+
+        try:
+            print("Type", "pred_str[0]", type(pred_str[0]))
+            print("Type", "label_str[0]", type(label_str[0]))
+        except Exception as e:
+            pass
 
         wer = wer_metric.compute(predictions=pred_str, references=label_str)
 

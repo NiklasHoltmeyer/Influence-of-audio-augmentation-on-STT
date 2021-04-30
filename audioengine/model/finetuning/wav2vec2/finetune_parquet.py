@@ -85,7 +85,7 @@ def main():
     if model_args.freeze_feature_extractor:
         model.freeze_feature_extractor()
 
-    trainer = load_grouped_trainer(model, processor, data_collator,
+    trainer = load_trainer(model, processor, data_collator,
                                    training_args, train_dataset, eval_dataset)
     # load_trainer load_grouped_trainer
 

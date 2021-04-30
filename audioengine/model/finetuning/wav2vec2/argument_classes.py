@@ -71,14 +71,14 @@ class DataTrainingArguments:
         default=None, metadata={"help": "The configuration name of the dataset to use (via the datasets library)."}
     )
 
-    preprocess_dataset_train_path: Optional[str] = field(
-        default=None, metadata={"help": "Path to (Train-)Dataset (before Preprocessing)"}
-    )
-
-    preprocess_dataset_eval_path: Optional[str] = field(
-        default=None, metadata={"help": "Path to (Eval-)Dataset (before Preprocessing) or `same`. Same Splits Train "
-                                        "into Train[split%], Val[1-split%]"}
-    )
+#    preprocess_dataset_train_path: Optional[str] = field(
+#        default=None, metadata={"help": "Path to (Train-)Dataset (before Preprocessing)"}
+#    )
+#
+#    preprocess_dataset_eval_path: Optional[str] = field(
+#        default=None, metadata={"help": "Path to (Eval-)Dataset (before Preprocessing) or `same`. Same Splits Train "
+#                                        "into Train[split%], Val[1-split%]"}
+#    )
 
     dataset_path: Optional[str] = field(
         default=None, metadata={"help": "Path to Dataset (after Preprocessing)"}

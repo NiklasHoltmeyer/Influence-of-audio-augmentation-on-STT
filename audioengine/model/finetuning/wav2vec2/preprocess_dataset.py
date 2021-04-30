@@ -33,8 +33,8 @@ print("Chars to Ignore", chars_to_ignore_regex)
 print("Workers", data_args.preprocessing_num_workers)
 
 assert data_args.dataset_path, "Please set Flag dataset_path"
-assert data_args.preprocess_dataset_train_path, "Please set Flag preprocess_dataset_train_path"
-assert data_args.preprocess_dataset_eval_path, "Please set Flag preprocess_dataset_eval_path"
+# assert data_args.preprocess_dataset_train_path, "Please set Flag preprocess_dataset_train_path"
+# assert data_args.preprocess_dataset_eval_path, "Please set Flag preprocess_dataset_eval_path"
 
 resampled_data_dir = Path(data_args.dataset_path)
 resampled_data_dir.mkdir(exist_ok=True)
@@ -120,12 +120,22 @@ def load_resample_save(f):
         speech_array_resampled = resampler(speech_array)
         input_values = processor(speech_array_resampled, sampling_rate=16_000).input_values
         input_values = torch.from_numpy(input_values).float().flatten()
-        torch.save(input_values, new_path)
-    return str(new_path)
+
+        min_len, max_len = 16_000 * 1.5, 16_000 * 6.0
+
+        if min_len <= len(input_values) <= max_len:
+            torch.save(input_values, new_path)
+            return str(new_path)
+    return None
 
 
-new_train_paths = [load_resample_save(f) for f in tqdm(train_dataset['path'], miniters=100, desc='resample (train)')]
-new_eval_paths = [load_resample_save(f) for f in tqdm(eval_dataset['path'], miniters=100, desc='resample (eval)')]
+new_train_paths = [load_resample_save(f)
+                   for f in tqdm(train_dataset['path'], miniters=100, desc='resample (train)') if not None]
+new_eval_paths = [load_resample_save(f)
+                  for f in tqdm(eval_dataset['path'], miniters=100, desc='resample (eval)') if not None]
+
+assert not None in new_train_paths
+assert not None in new_eval_paths
 
 # update paths and sampling rate
 train_dataset = train_dataset.map(
