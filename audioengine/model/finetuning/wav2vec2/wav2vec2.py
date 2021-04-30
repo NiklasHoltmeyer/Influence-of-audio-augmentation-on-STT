@@ -1,6 +1,7 @@
 import transformers
 from transformers import TrainingArguments, Trainer
 
+from audioengine.logging.logging import defaultLogger
 from audioengine.model.finetuning.wav2vec2.wav2vec2_trainer import compute_metrics, GroupedLengthsTrainer, \
     CustomProgressBarCallback
 
@@ -28,6 +29,7 @@ def load_training_arguments_from_kwargs(output_dir, **kwargs):
 
 
 def load_trainer(model, processor, data_collator, args, train_dataset=None, eval_dataset=None, **kwargs):
+    defaultLogger().debug("load_trainer")
     trainer = Trainer(
         model=model,
         data_collator=data_collator,
@@ -43,6 +45,7 @@ def load_trainer(model, processor, data_collator, args, train_dataset=None, eval
 
 
 def load_grouped_trainer(model, processor, data_collator, args, train_dataset=None, eval_dataset=None, **kwargs):
+    defaultLogger().debug("load_grouped_trainer")
     trainer = GroupedLengthsTrainer(
         model=model,
         data_collator=data_collator,
@@ -53,8 +56,8 @@ def load_grouped_trainer(model, processor, data_collator, args, train_dataset=No
         train_seq_lengths=train_dataset.input_seq_lengths,
         compute_metrics=compute_metrics(processor),
     )
-    trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
-    trainer.add_callback(CustomProgressBarCallback)
+#    trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
+#    trainer.add_callback(CustomProgressBarCallback)
     return trainer
 
 # wer_metric = load_metric("wer")

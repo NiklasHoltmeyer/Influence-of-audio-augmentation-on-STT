@@ -8,6 +8,8 @@ import json
 import pyarrow.parquet as pq
 import torch
 import torchaudio
+from tqdm.contrib.concurrent import process_map
+
 from audioengine.model.finetuning.wav2vec2.parquetdataset import ParquetDataset
 from tqdm.auto import tqdm
 from transformers import (
@@ -109,6 +111,7 @@ if data_args.max_val_samples is not None:
 # )
 # processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
 processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
+target_sample_rate = 16_000
 
 
 def load_resample_save(f):
@@ -116,26 +119,23 @@ def load_resample_save(f):
     new_path = resampled_data_dir / f'{f.stem}_resampled16k.pt'
     if not new_path.exists():
         speech_array, sampling_rate = torchaudio.load(f)
-        resampler = torchaudio.transforms.Resample(sampling_rate, 16_000)
+        resampler = torchaudio.transforms.Resample(sampling_rate, target_sample_rate)
         speech_array_resampled = resampler(speech_array)
-        input_values = processor(speech_array_resampled, sampling_rate=16_000).input_values
+        input_values = processor(speech_array_resampled, sampling_rate=target_sample_rate).input_values
         input_values = torch.from_numpy(input_values).float().flatten()
 
-        min_len, max_len = 16_000 * 1.5, 16_000 * 6.0
-
-        if min_len <= len(input_values) <= max_len:
-            torch.save(input_values, new_path)
-            return str(new_path)
-    return None
+        torch.save(input_values, new_path)
+    return str(new_path)
 
 
 new_train_paths = [load_resample_save(f)
-                   for f in tqdm(train_dataset['path'], miniters=100, desc='resample (train)') if not None]
+                  for f in tqdm(train_dataset['path'], miniters=100, desc='resample (train)')]
 new_eval_paths = [load_resample_save(f)
-                  for f in tqdm(eval_dataset['path'], miniters=100, desc='resample (eval)') if not None]
+                 for f in tqdm(eval_dataset['path'], miniters=100, desc='resample (eval)')]
 
-assert not None in new_train_paths
-assert not None in new_eval_paths
+# new_train_paths = [x for x in new_train_paths if x is not None]
+# new_eval_paths = [x for x in new_train_paths if x is not None]
+
 
 # update paths and sampling rate
 train_dataset = train_dataset.map(
@@ -145,6 +145,7 @@ train_dataset = train_dataset.map(
     keep_in_memory=True,
     remove_columns=train_dataset.column_names,
 )
+
 eval_dataset = eval_dataset.map(
     lambda x: {'path': new_eval_paths, 'sampling_rate': [16_000] * len(eval_dataset), 'target_text': x['text']},
     batched=True,

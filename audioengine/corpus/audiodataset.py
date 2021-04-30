@@ -27,6 +27,13 @@ class AudioDataset(metaclass=ABCMeta):
         min_duration = kwargs.get("min_duration", None)
         max_duration = kwargs.get("max_duration", None)
 
+        min_sentence_length = kwargs.get("min_sentence_length", 5)
+
+        if min_sentence_length:
+            data_frame["sentence_len"] = data_frame.sentence.map(len)
+            data_frame = data_frame[data_frame["sentence_len"] >= min_sentence_length]
+            data_frame.drop("sentence_len", inplace=True, axis=1, errors='ignore')
+
         if drop_cols:
             data_frame.drop(drop_cols, inplace=True, axis=1, errors='ignore')
 

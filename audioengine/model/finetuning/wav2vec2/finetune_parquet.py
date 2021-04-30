@@ -86,7 +86,9 @@ def main():
         model.freeze_feature_extractor()
 
     trainer = load_trainer(model, processor, data_collator,
-                                   training_args, train_dataset, eval_dataset)
+                           training_args, train_dataset, eval_dataset) if training_args.group_by_length else \
+        load_grouped_trainer(model, processor, data_collator,
+                             training_args, train_dataset, eval_dataset)
     # load_trainer load_grouped_trainer
 
     logger.info("Training-Args:")
