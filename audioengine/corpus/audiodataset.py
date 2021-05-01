@@ -42,28 +42,20 @@ class AudioDataset(metaclass=ABCMeta):
         if rename_cols:
             data_frame = data_frame.rename(columns=rename_cols)
 
-#        if min_duration or max_duration:
-#            warnings.filterwarnings('ignore')
-#            threads = min(os.cpu_count(), len(data_frame))
-#            #with Pool(threads) as p:
-#                #data_frame["duration"] = p.map(IO.load_duration, tqdm(data_frame["path"], desc=f"Load-DF Truncated DS (Duration) {threads} Threads"))
-#            self.logger.debug(f"Load-DF Truncated DS (Duration) {threads} Threads")
-#            data_frame["duration"] = process_map(IO.load_duration, data_frame["path"], max_workers=threads)
-#            len_pre = len(data_frame)
-#            min_duration = max(0, min_duration)
-#            if max_duration:
-#                data_frame = data_frame[data_frame["duration"].between(min_duration, max_duration)]
-#            else:
-#                data_frame = data_frame[data_frame["duration"] <= min_duration]
-#            warnings.filterwarnings('default')
-
-#            len_after = len(data_frame)
-#            self.logger.debug("*"*72)
-#            max_duration = max_duration if max_duration else "inf"
-#            self.logger.debug(f"Duration Range {min_duration}-{max_duration}s")
-#            self.logger.debug(f"Total DS-Length {len_pre}")
-#            self.logger.debug(f"Truncated DS-Length {len_after} (-{len_pre-len_after})")
-#            self.logger.debug("*" * 72)
+        if min_duration or max_duration:
+            len_pre = len(data_frame)
+            min_duration = max(0, min_duration)
+            if max_duration:
+                data_frame = data_frame[data_frame["duration"].between(min_duration, max_duration)]
+            else:
+                data_frame = data_frame[data_frame["duration"] <= min_duration]
+            len_after = len(data_frame)
+            self.logger.debug("*"*72)
+            max_duration = max_duration if max_duration else "inf"
+            self.logger.debug(f"Duration Range {min_duration}-{max_duration}s")
+            self.logger.debug(f"Total DS-Length {len_pre}")
+            self.logger.debug(f"Truncated DS-Length {len_after} (-{len_pre-len_after})")
+            self.logger.debug("*" * 72)
 
         if fixed_length:
             if not kwargs.get("shuffle"):
