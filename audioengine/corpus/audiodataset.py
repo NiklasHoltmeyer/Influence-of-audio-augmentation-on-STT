@@ -41,11 +41,12 @@ class AudioDataset(metaclass=ABCMeta):
 
         if min_duration or max_duration:
             len_pre = len(data_frame)
-            min_duration = max(0, min_duration)
+            min_duration = float(max(0, min_duration))
+
             if max_duration:
-                data_frame = data_frame[data_frame["duration"].between(min_duration, max_duration)]
+                data_frame = data_frame[data_frame["duration"].between(min_duration, float(max_duration))]
             else:
-                data_frame = data_frame[data_frame["duration"] <= min_duration]
+                data_frame = data_frame[data_frame["duration"] >= min_duration]
             len_after = len(data_frame)
             self.logger.debug("*"*72)
             max_duration = max_duration if max_duration else "inf"

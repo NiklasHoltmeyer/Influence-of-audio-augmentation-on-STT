@@ -180,8 +180,8 @@ eval_dataset = eval_dataset.map(
     num_proc=data_args.preprocessing_num_workers,
 )
 
-pq.write_table(train_dataset.data, f'{resampled_data_dir}/{data_args.dataset_config_name}.train.parquet')
-pq.write_table(eval_dataset.data, f'{resampled_data_dir}/{data_args.dataset_config_name}.eval.parquet')
+pq.write_table(train_dataset.data.table, f'{resampled_data_dir}/{data_args.dataset_config_name}.train.parquet')
+pq.write_table(eval_dataset.data.table, f'{resampled_data_dir}/{data_args.dataset_config_name}.eval.parquet')
 print(f"Saved Pq`s to: {resampled_data_dir}")
 
 print("Prepare: input_seq_lengths")
