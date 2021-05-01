@@ -16,15 +16,20 @@ class VoxForge(AudioDataset):
     @time_logger(name="VF-load DF",
                  header="VoxForge", padding_length=50)
     def load_dataframe(self, **kwargs):
-        data = self._load_data()
-        shuffle = kwargs.get("shuffle", False)
+        tsv_path = self.load_preprocessed_df(**kwargs)
 
-        df = pd.DataFrame(data, columns=['path', 'sentence'])
+        dataframe = super().load_dataframe(tsv_path, sep="\t", encoding="utf-8", **kwargs)
+        return dataframe
 
-        if shuffle:
-            df = df.sample(frac=1)
+    def load_preprocessed_df(self, **kwargs):
+        processed_path = Path(self.path, "info.csv")
+        if not processed_path.exists():
+            data = self._load_data()
+            df = pd.DataFrame(data, columns=['path', 'sentence'])
+            df = super().add_duration_column(df, desc=f"Preprocess VF-DF")
+            df.to_csv(processed_path, sep="\t", encoding="utf-8", index=False)
+        return processed_path
 
-        return df
 
     def _list_prompts(self):
         folders = os.listdir(self.path)
@@ -62,8 +67,9 @@ class VoxForge(AudioDataset):
         return np.array(data)
 
 if __name__ == "__main__":
-    vf = VoxForge("/share/datasets/vf_de")
-    vf.load_dataframe()
+    print("Path", "/share/datasets/vf_de")
+    df = VoxForge("/share/datasets/vf_de").load_dataframe()
+
 
 
 

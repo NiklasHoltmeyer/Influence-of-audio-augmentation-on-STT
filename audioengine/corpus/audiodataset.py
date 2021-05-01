@@ -27,9 +27,6 @@ class AudioDataset(metaclass=ABCMeta):
         min_duration = kwargs.get("min_duration", None)
         max_duration = kwargs.get("max_duration", None)
 
-        min_sentence_length = kwargs.get("min_sentence_length", 5)
-        add_duration = kwargs.get("add_duration", True)
-
         if full_path_fn:
             data_frame.path = data_frame.path.map(full_path_fn)
 
@@ -66,9 +63,7 @@ class AudioDataset(metaclass=ABCMeta):
         return data_frame.reset_index(drop=True)
 
     def add_duration_column(self, df, desc="", threads=(os.cpu_count()*2)):
-        warnings.filterwarnings('ignore')
         df["duration"] = process_map(IO.load_duration, df["path"], max_workers=threads, desc=f"{desc} [{threads} Threads]")
-        warnings.filterwarnings('default')
         return df
 
     def sanity_check(self, paths):
