@@ -69,13 +69,8 @@ if __name__ == "__main__":
     df = CommonVoice(r"/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de").load_dataframe(type="other")
     type_all = ["train", "dev", "test", "invalidated", "reported", "other", "validated"]
 
-    from tqdm.auto import tqdm
-    for type in tqdm(type_all): #preprocess all xml's
-        try:
-            df = CommonVoice(r"/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de").load_dataframe(type=type)
-        except Exception as e:
-            print("*"*72)
-            print(e)
-            print("*" * 72)
-    print(df.head())
+    df = CommonVoice(r"/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de").load_dataframe(type="test")
+    print(df.head(5))
+    print("*")
+    print(df.head(-5))
 
