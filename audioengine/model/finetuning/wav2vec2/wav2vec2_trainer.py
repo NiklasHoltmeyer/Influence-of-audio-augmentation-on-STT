@@ -189,15 +189,6 @@ def compute_metrics(processor):
         # we do not want to group tokens when computing the metrics
         label_str = processor.batch_decode(pred.label_ids, group_tokens=False)
 
-        print("Type", "pred_str", type(pred_str))
-        print("Type", "label_str", type(label_str))
-
-        print("len(pred_str)", len(pred_str))
-        print("len(label_str)", len(label_str))
-
-        print("Type", "pred_str[0]", type(pred_str[0]))
-        print("Type", "label_str[0]", type(label_str[0]))
-
         wer = wer_metric.compute(predictions=pred_str, references=label_str)
 
         return {"wer": wer}
