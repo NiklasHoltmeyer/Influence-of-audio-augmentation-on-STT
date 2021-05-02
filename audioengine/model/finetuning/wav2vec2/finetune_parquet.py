@@ -100,11 +100,9 @@ def main():
         if "all" in training_args.report_to or "wandb" in training_args.report_to:
             wandb.login()
             lr = "{:.2e}".format(training_args.learning_rate)
-            bs = training_args.per_device_train_batch_size
-            ep = training_args.num_train_epochs
-            training_args.run_name = f"{ep}_{lr}_{bs}"
-            #
-            training_args.run_name = "nope"
+            bs = int(training_args.per_device_train_batch_size)
+            ep = int(training_args.num_train_epochs)
+            training_args.run_name = "_".join([training_args.run_name, f"{ep}_{lr}_{bs}"])
             logger.info(f"WANDB Run Name: {training_args.run_name}")
         else:
             wandb.init(mode="disabled")
