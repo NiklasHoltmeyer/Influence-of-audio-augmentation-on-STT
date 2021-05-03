@@ -11,8 +11,8 @@ def preprocess_settings():
         "validation_split": None,
         "fixed_length": 7404, # -> 20% f. train
         "type": "test",
-        "min_duration": 0.25,
-#        "max_duration": 8.00
+        "min_duration": 1.00,
+        "max_duration": 6.00
     }
 
     cv_train_fixed_length = {
@@ -21,16 +21,16 @@ def preprocess_settings():
         "validation_split": None,  # -> all entries
         "fixed_length": 24683 / 2,  # -> 75% vf + 25% cv_train
         "type": "train",
-        "min_duration": 0.25,
-#        "max_duration": 8.00
+        "min_duration": 1.00,
+        "max_duration": 6.00
     }
 
     vf_full = {
         "base_path": "/share/datasets/vf_de",
         "shuffle": True,
         "validation_split": None,  # -> all entries,
-        "min_duration": 0.25,
-#        "max_duration": 8.00
+        "min_duration": 1.00,
+        "max_duration": 6.00
     }
 
     test_settings = {

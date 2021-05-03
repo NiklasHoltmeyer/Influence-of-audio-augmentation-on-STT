@@ -1,6 +1,8 @@
 import logging
 import os
 import sys
+from pathlib import Path
+
 import wandb
 
 import transformers
@@ -99,6 +101,10 @@ def main():
     if training_args.do_train:
         if "all" in training_args.report_to or "wandb" in training_args.report_to:
             wandb.login()
+
+            project_name = Path(data_args.dataset_path).name
+
+            wandb.init(project=project_name)
             lr = "{:.2e}".format(training_args.learning_rate)
             bs = int(training_args.per_device_train_batch_size)
             ep = int(training_args.num_train_epochs)
