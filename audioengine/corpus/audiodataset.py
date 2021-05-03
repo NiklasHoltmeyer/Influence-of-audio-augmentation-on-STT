@@ -29,6 +29,7 @@ class AudioDataset(metaclass=ABCMeta):
         max_duration = kwargs.get("max_duration", None)
 
         min_target_length = kwargs.get("min_target_length", 1)
+        max_target_length = kwargs.get("max_target_length", None)
 
         if full_path_fn:
             data_frame.path = data_frame.path.map(full_path_fn)
@@ -43,8 +44,10 @@ class AudioDataset(metaclass=ABCMeta):
             data_frame = data_frame.rename(columns=rename_cols)
 
         if min_target_length:
-            data_frame = data_frame[data_frame["target_length"] > min_target_length]
-            #min_target_length
+            data_frame = data_frame[data_frame["target_length"] >= min_target_length]
+
+        if max_target_length:
+            data_frame = data_frame[data_frame["target_length"] <= min_target_length]
 
         if min_duration or max_duration:
             len_pre = len(data_frame)

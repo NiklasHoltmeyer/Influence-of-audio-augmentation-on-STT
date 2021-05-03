@@ -109,6 +109,7 @@ def main():
             bs = int(training_args.per_device_train_batch_size)
             ep = int(training_args.num_train_epochs)
             training_args.run_name = "_".join([training_args.run_name, f"{ep}_{lr}_{bs}"])
+            wandb.run.name = training_args.run_name
             logger.info(f"WANDB Run Name: {training_args.run_name}")
         else:
             wandb.init(mode="disabled")

@@ -9,20 +9,24 @@ def preprocess_settings():
         "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
         "shuffle": True,
         "validation_split": None,
-        "fixed_length": 7404, # -> 20% f. train
+        "fixed_length": 4500, # -> 20% f. train
         "type": "test",
         "min_duration": 1.00,
-        "max_duration": 6.00
+        "max_duration": 6.00,
+        "min_target_length": 2,
+        "max_target_length": None
     }
 
     cv_train_fixed_length = {
         "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
         "shuffle": True,
         "validation_split": None,  # -> all entries
-        "fixed_length": 24683 / 2,  # -> 75% vf + 25% cv_train
+        "fixed_length": 4000,  # -> 80% vf + 20% cv_train
         "type": "train",
         "min_duration": 1.00,
-        "max_duration": 6.00
+        "max_duration": 6.00,
+        "min_target_length": 2,
+        "max_target_length": None
     }
 
     vf_full = {
@@ -30,7 +34,9 @@ def preprocess_settings():
         "shuffle": True,
         "validation_split": None,  # -> all entries,
         "min_duration": 1.00,
-        "max_duration": 6.00
+        "max_duration": 6.00,
+        "min_target_length": 2,
+        "max_target_length": None
     }
 
     test_settings = {
