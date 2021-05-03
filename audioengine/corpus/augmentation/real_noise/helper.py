@@ -1,3 +1,4 @@
+import json
 import logging
 from pathlib import Path
 
@@ -24,6 +25,12 @@ def augment_dataframe(signal_df: object, noise_df: object, **settings: object) -
     data_augmented, data_clean = init_df(signal_df, **settings)
 
     noise = init_df(noise_df, skip_split=True, **settings)
+
+    print(1, data_augmented.keys())
+    print(2, data_clean.keys())
+    print(3, noise.keys())
+
+    exit(0)
 
     data_augmented = add_noise_column(data_augmented, noise)
 
@@ -56,16 +63,14 @@ def init_df(df, **kwargs):
     #    df = pd.DataFrame({"path": df.path[:10]})
     ###del ende
 
+
     logger.debug("Parallel Apply Load_Duration")
     if skip_split:
         logger.debug(f"Files: {len(df['path'])}")
-        df["duration"] = df['path'].swifter.progress_bar(True, desc="Load_Duration").apply(IO.load_duration)
         return df.sort_values(by=['duration']).reset_index(drop=True)
 
     data_augmented, data_clean = train_test_split(df, test_size=1 - split, random_state=42)
     logger.debug(f"Files: {len(data_augmented['path'])}")
-    data_augmented["duration"] = data_augmented['path'].swifter.\
-        progress_bar(True, desc="Load_Duration").apply(IO.load_duration)
 
     return data_augmented.reset_index(drop=True), data_clean.reset_index(drop=True)
 
@@ -154,3 +159,16 @@ def save_df(df, **settings):
     logger.debug(f"Saving the Results to: {absolute_path}")
 
     df.to_csv(absolute_path, sep=sep, encoding=encoding, index=False)
+    save_settings(**settings)
+
+def save_settings(**settings):
+    target_path = settings.get("target_path", None)
+    target = Path(target_path, "augmentation_settings.json")
+
+
+    settings_json = json.dumps(settings, indent=4)
+
+    with open(target, "w") as f:
+        f.write(settings_json)
+
+    logger.debug(f"Saved Dataset-Settings to {str(target.resolve())}")

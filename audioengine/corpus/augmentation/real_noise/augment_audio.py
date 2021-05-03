@@ -57,7 +57,10 @@ def main():
 
     sanity_check_settings(**settings)
 
-    signal_df, noise_df = load_dataframes(settings)
+    signal_df, noise_df = load_dataframes(**settings)
 
     augmented_df = augment_dataframe(signal_df, noise_df, **settings)
     save_df(augmented_df)
+
+if __name__ == "__main__":
+    main()
