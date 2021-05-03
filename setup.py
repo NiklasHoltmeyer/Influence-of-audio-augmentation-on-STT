@@ -18,7 +18,7 @@ setup(
     license=license,
     packages=find_packages(exclude=('tests', 'docs')),
     install_requires=[
-        "modin",
+        "modin==0.9.1",
         "librosa",
         "SoundFile",
         "pydub",
@@ -28,7 +28,7 @@ setup(
         "swifter",
         "pandas==1.2.3",
         "tensorflow",
-        "tqdm",
+        "tqdm==4.49.0",
         "sklearn",
         "torchaudio",
         "torch",
