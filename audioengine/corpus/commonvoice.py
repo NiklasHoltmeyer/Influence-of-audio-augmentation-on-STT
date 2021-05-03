@@ -38,7 +38,9 @@ class CommonVoice(AudioDataset):
             dataframe = super().load_dataframe(str(input_path.resolve()),
                         drop_cols=drop_cols, rename_cols=rename_cols, sep="\t",
                         encoding="utf-8", full_path_fn=full_path_fn)
-            dataframe = super().add_duration_column(dataframe, desc=f"Preprocess CV-DF-{type}")
+            dataframe = super().add_duration_column(dataframe, desc=f"Preprocess CV-DF-{type} (Durations)")
+            dataframe = super().add_target_Lengths(dataframe, desc=f"Preprocess CV-DF-{type} (Target-Lengths)")
+            dataframe = dataframe[["path", "sentence", "duration", "target_length"]]
             dataframe.to_csv(processed_path, sep="\t", encoding="utf-8", index=False)
 
         return str(processed_path.resolve())

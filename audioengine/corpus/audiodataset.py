@@ -24,8 +24,11 @@ class AudioDataset(metaclass=ABCMeta):
         data_frame = Text.read_csv(path, **kwargs).fillna("")
         shuffle = kwargs.get("shuffle", False)
         fixed_length = kwargs.get("fixed_length", None)
+
         min_duration = kwargs.get("min_duration", None)
         max_duration = kwargs.get("max_duration", None)
+
+        min_target_length = kwargs.get("min_target_length", 1)
 
         if full_path_fn:
             data_frame.path = data_frame.path.map(full_path_fn)
@@ -38,6 +41,10 @@ class AudioDataset(metaclass=ABCMeta):
 
         if rename_cols:
             data_frame = data_frame.rename(columns=rename_cols)
+
+        if min_target_length:
+            data_frame = data_frame[data_frame["target_length"] > min_target_length]
+            #min_target_length
 
         if min_duration or max_duration:
             len_pre = len(data_frame)
@@ -65,6 +72,11 @@ class AudioDataset(metaclass=ABCMeta):
 
     def add_duration_column(self, df, desc="", threads=(os.cpu_count()*2)):
         df["duration"] = process_map(IO.load_duration, df["path"], max_workers=threads, desc=f"{desc} [{threads} Threads]")
+        return df
+
+    def add_target_Lengths(self, df, desc="", threads=(os.cpu_count()*2)):
+        df["target_length"] = process_map(len, df["sentence"], max_workers=threads,
+                                     desc=f"{desc} [{threads} Threads]")
         return df
 
     def sanity_check(self, paths):

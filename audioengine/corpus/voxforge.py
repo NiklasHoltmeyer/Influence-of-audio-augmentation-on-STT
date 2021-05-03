@@ -26,7 +26,9 @@ class VoxForge(AudioDataset):
         if not processed_path.exists():
             data = self._load_data()
             df = pd.DataFrame(data, columns=['path', 'sentence'])
-            df = super().add_duration_column(df, desc=f"Preprocess VF-DF")
+            df = super().add_duration_column(df, desc=f"Preprocess VF-DF (Durations)")
+            df = super().add_target_Lengths(df, desc=f"Preprocess VF-DF (Target-Lengths)")
+            df = df[["path", "sentence", "duration", "target_length"]]
             df.to_csv(processed_path, sep="\t", encoding="utf-8", index=False)
         return processed_path
 

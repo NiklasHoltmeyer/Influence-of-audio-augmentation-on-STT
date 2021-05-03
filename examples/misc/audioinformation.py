@@ -81,7 +81,7 @@ if __name__ == "__main__":
 #    cv_de_full_, regexp = "C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de\clips", False #-> de
 #    ljspeech_full, regexp = "C:\workspace\datasets\LJSpeech-1.1\wavs", False # -> en
     vf_de, regexp = "/share/datasets/vf_de/*/wav/*.wav", True
-
+    VoxForge()
     ai = AudioInformation(vf_de, regexp=regexp)
     print(ai)
 
