@@ -1,8 +1,9 @@
+import os
+
 import librosa
+import numpy as np
 import soundfile as sf
 from pydub import AudioSegment
-import numpy as np
-import os
 
 
 class IO:
@@ -89,6 +90,6 @@ Convert MP3 File to WAV File
 
     @staticmethod
     def load_duration_and_sr(path):
-        y, sr = IO.load(path, None) # sr -> None = native
+        y, sr = IO.load(path, None)  # sr -> None = native
         duration = librosa.get_duration(y=y, sr=sr)
         return duration, sr

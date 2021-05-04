@@ -1,5 +1,7 @@
 import json
 import logging
+import time
+from multiprocessing import Pool
 from pathlib import Path
 
 import librosa
@@ -7,36 +9,50 @@ import pandas as pd
 import swifter
 from sklearn.model_selection import train_test_split
 import numpy as np
+from tqdm.contrib.concurrent import process_map
 
 from audioengine.corpus.util.interceptors import time_logger
 from audioengine.logging.logging import defaultLogger
 from audioengine.transformations.backend.librosa.effect import Effect
 from audioengine.transformations.backend.librosa.io import IO
 from tqdm.auto import tqdm
-
+import os
 ## Pandas-Dataframe
 tqdm.pandas()
 logger = defaultLogger()
 
+
 @time_logger(name="Augment Dataframe",
              header="Augment Dataframe", padding_length=50)
-def augment_dataframe(signal_df: object, noise_df: object, **settings: object) -> object:
+def augment_dataframe(signal_df: object, noise_df: object, threads=(os.cpu_count()*2), **settings: object) -> object:
+    signal_df = signal_df.head(32)
+    noise_df = noise_df.head(32)
     shuffle = settings.get("shuffle", True)
     data_augmented, data_clean = init_df(signal_df, **settings)
 
     noise = init_df(noise_df, skip_split=True, **settings)
 
-    print(1, data_augmented.keys())
-    print(2, data_clean.keys())
-    print(3, noise.keys())
-
-    exit(0)
-
     data_augmented = add_noise_column(data_augmented, noise)
 
-    data_augmented["path_augmented"] = data_augmented["path"].swifter.progress_bar(True, desc="Add new Path").apply(get_target_column(**settings))
-    #data_augmented = data_augmented.swifter.apply(merge_sounds(**settings), axis=1)
-    data_augmented = data_augmented.swifter.progress_bar(True, desc="Merge Sounds").apply(merge_sounds(**settings), axis=1)
+    data_augmented["path_augmented"] = data_augmented["path"].swifter.progress_bar(True, desc="Add new Path").apply(
+        get_target_column(**settings))
+
+    # data_augmented = data_augmented.swifter.apply(merge_sounds(**settings), axis=1)
+
+    start = time.time()
+    lambda_fn = merge_sounds(**settings) #doesnt work if i put it in the line below.
+    data_augmented = process_map(lambda_fn, data_augmented, max_workers=threads,
+                                     desc=f"Merge_sounds [{threads} Threads]")
+
+    #data_augmented = data_augmented.swifter.progress_bar(True, desc="Merge Sounds") \
+        #.apply(merge_sounds(**settings), axis=1)
+
+    #with Pool(processes=16) as pool:
+        #data_augmented = pool.map(merge_sounds(**settings), tqdm(data_augmented, desc=f"Merge Sounds: {16} Threads"))
+
+    print(f"{time.time-(start)} - Map Timer")
+    exit(0)
+    print("WUHU")
 
     rename = {"path": "path_source", "path_augmented": "path"}
     data_augmented.rename(columns=rename, inplace=True)
@@ -55,14 +71,6 @@ def init_df(df, **kwargs):
     skip_split = kwargs.get("skip_split", False)
 
     assert 0 <= split <= 1, "Split must be between 0 and 1"
-
-    ###del_me
-    #if "sentence" in df.keys():
-    #    df = pd.DataFrame({"path": df.path[:10], "sentence": df.sentence[:10]})
-    #else:
-    #    df = pd.DataFrame({"path": df.path[:10]})
-    ###del ende
-
 
     logger.debug("Parallel Apply Load_Duration")
     if skip_split:
@@ -100,7 +108,7 @@ from random import uniform
 
 
 def merge_sounds(**settings):
-    _range = settings.get("snr_range", (0.15, 0.75))
+    _range = settings.get("snr_range", (0.15, 0.65))
     assert len(_range), "snr_range -> e.g. (0.15, 0.75)"
     target_sample_rate = settings.get("target_sample_rate", "16000")
 
@@ -110,12 +118,15 @@ def merge_sounds(**settings):
     target_path.mkdir(parents=True, exist_ok=True)
 
     def __call__(item):
+        _target_path = item["path_augmented"]
+
         snr = round(uniform(_range[0], _range[1]), 4)
         pad_idx = item.name
+
         yp, _ = IO.load(item["path"], sample_rate=target_sample_rate)
         yn, _ = IO.load(item["path_noise"], sample_rate=target_sample_rate)
         item["snr"] = snr
-        _target_path = item["path_augmented"]
+
         y_augmented = Effect.add_noise(yp, yn, snr=snr, pad_idx=pad_idx)
         IO.save_wav(y_augmented, _target_path, target_sample_rate)
         return item
@@ -161,14 +172,16 @@ def save_df(df, **settings):
     df.to_csv(absolute_path, sep=sep, encoding=encoding, index=False)
     save_settings(**settings)
 
+
 def save_settings(**settings):
     target_path = settings.get("target_path", None)
-    target = Path(target_path, "augmentation_settings.json")
-
+    augmentation_settings_path = settings.get("augmentation_settings_path", None)
+    target = str(Path(target_path, "augmentation_settings.json").resolve()) if augmentation_settings_path is None \
+        else augmentation_settings_path
 
     settings_json = json.dumps(settings, indent=4)
 
     with open(target, "w") as f:
         f.write(settings_json)
 
-    logger.debug(f"Saved Dataset-Settings to {str(target.resolve())}")
+    logger.debug(f"Saved Dataset-Settings to {target}")

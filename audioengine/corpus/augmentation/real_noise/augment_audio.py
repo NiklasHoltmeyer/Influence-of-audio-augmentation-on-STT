@@ -51,7 +51,8 @@ def main():
         "signal_split": ds_type,
         "target_sample_rate": 16_000,
         "target_path": "/share/datasets/cv_augmented/clips",
-        "target_file_name": f"..\{ds_type}.tsv",
+        "target_file_name": f"../{ds_type}.tsv",
+        "augmentation_settings_path": "/share/datasets/cv_augmented/augmentation_settings.json",
         "sep": "\t"
     }
 
@@ -60,7 +61,9 @@ def main():
     signal_df, noise_df = load_dataframes(**settings)
 
     augmented_df = augment_dataframe(signal_df, noise_df, **settings)
-    save_df(augmented_df)
+
+
+    save_df(augmented_df,**settings)
 
 if __name__ == "__main__":
     main()

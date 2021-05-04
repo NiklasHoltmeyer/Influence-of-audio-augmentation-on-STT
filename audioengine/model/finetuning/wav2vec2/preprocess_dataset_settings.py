@@ -17,24 +17,24 @@ def preprocess_settings():
         "max_target_length": None
     }
 
-    cv_train_fixed_length = {
-        "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
-        "shuffle": True,
-        "validation_split": None,  # -> all entries
-        "fixed_length": 4000,  # -> 80% vf + 20% cv_train
-        "type": "train",
-        "min_duration": 1.00,
-        "max_duration": 6.00,
-        "min_target_length": 2,
-        "max_target_length": None
-    }
+#    cv_train_fixed_length = {
+#        "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
+#        "shuffle": True,
+#        "validation_split": None,  # -> all entries
+#        "fixed_length": 4000,  # -> 80% vf + 20% cv_train
+#        "type": "train",
+#        "min_duration": 1.00,
+#        "max_duration": 6.00,
+#        "min_target_length": 2,
+#        "max_target_length": None
+#    }
 
     vf_full = {
         "base_path": "/share/datasets/vf_de",
         "shuffle": True,
         "validation_split": None,  # -> all entries,
         "min_duration": 1.00,
-        "max_duration": 6.00,
+#        "max_duration": 6.00,
         "min_target_length": 2,
         "max_target_length": None
     }
@@ -42,7 +42,7 @@ def preprocess_settings():
     test_settings = {
         "val_settings": [cv_test_full],
         "train_settings": [
-            cv_train_fixed_length,
+            #cv_train_fixed_length,
             vf_full
         ]
     }

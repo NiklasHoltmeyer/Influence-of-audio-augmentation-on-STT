@@ -104,7 +104,10 @@ def main():
 
             project_name = Path(data_args.dataset_path).name
 
-            wandb.init(project=project_name)
+            os.environ["WANDB_PROJECT"] = str(project_name)
+            os.environ["WANDB_LOG_MODEL"] = "true"
+
+            #wandb.init(project=project_name)
             lr = "{:.2e}".format(training_args.learning_rate)
             bs = int(training_args.per_device_train_batch_size)
             ep = int(training_args.num_train_epochs)
