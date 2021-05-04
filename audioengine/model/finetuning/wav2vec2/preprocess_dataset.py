@@ -30,9 +30,17 @@ model_args, data_args, training_args = argument_parser(sys.argv)
 print(f'Using {data_args.preprocessing_num_workers} threads')
 torch.set_num_threads(data_args.preprocessing_num_workers)
 
-chars_to_ignore_regex = f'[{"".join(data_args.chars_to_ignore)}]'
-print("Chars to Ignore", chars_to_ignore_regex)
-print("Workers", data_args.preprocessing_num_workers)
+mappings = {
+            'facebook/wav2vec2-large-xlsr-53-german': '[\,\?\.\!\-\;\:\"]',
+            'maxidl/wav2vec2-large-xlsr-german': '[\,\?\.\!\-\;\:\"\“]',
+            'marcel/wav2vec2-large-xlsr-53-german': '[\,\?\.\!\-\;\:\"\“\%\”\�\カ\æ\無\ན\カ\臣\ѹ\…\«\»\ð\ı\„\幺\א\ב\比\ш\ע\)\ứ\в\œ\ч\+\—\ш\‚\נ\м\ń\乡\$\=\ש\ф\支\(\°\и\к\̇]',
+            'flozi00/wav2vec-xlsr-german': '[\,\?\.\!\-\;\:\"\“\%\‘\”\�]',
+            "marcel/wav2vec2-large-xlsr-german-demo": '[\,\?\.\!\-\;\:\"\“\%\”\�\カ\æ\無\ན\カ\臣\ѹ\…\«\»\ð\ı\„\幺\א\ב\比\ш\ע\)\ứ\в\œ\ч\+\—\ш\‚\נ\м\ń\乡\$\=\ש\ф\支\(\°\и\к\̇]',
+            'MehdiHosseiniMoghadam/wav2vec2-large-xlsr-53-German': '[\,\?\.\!\-\;\:\"\“\%\‘\”\�]'
+}
+chars_to_ignore_regex = mappings.get(model_args.model_name_or_path, None)
+chars_to_ignore_regex = chars_to_ignore_regex if not None else f'[{"".join(data_args.chars_to_ignore)}]'
+
 
 assert data_args.dataset_path, "Please set Flag dataset_path"
 # assert data_args.preprocess_dataset_train_path, "Please set Flag preprocess_dataset_train_path"
@@ -194,3 +202,4 @@ print("eval_info:", eval_info)
 # save processor for training
 # print(f"Saving Processor to {training_args.output_dir}")
 # processor.save_pretrained(training_args.output_dir)
+
