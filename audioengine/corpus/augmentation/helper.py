@@ -1,9 +1,13 @@
 from pathlib import Path
+from random import uniform
 
+import librosa
 import numpy as np
 
 from audioengine.corpus.dataset import logger
+from audioengine.transformations.backend.librosa.effect import Effect
 
+from pysndfx import AudioEffectsChain
 
 def add_filter_job_column(df, filter_settings):
     _filter_list = [""] * len(df)
@@ -50,12 +54,58 @@ def add_output_path_column(df, output_dir, subfolder=None):
     output_path.mkdir(exist_ok=True, parents=True)
     output_path = str(output_path.resolve())
 
-    def _calc_output_path(input_path):
+    def _calc_output_path(item):
+        input_path = item["path_input"]
+        filter_applied = len(item.filter_job) != 0
+        if not filter_applied:
+            return input_path
         file_name_w_o_extension = Path(input_path).name.split(".")[0] + ".wav"
         return str(Path(output_path, file_name_w_o_extension).resolve())
 
-    df["path_output"] = df["path_input"].map(_calc_output_path)
+    df["path_output"] = df.apply(_calc_output_path, axis=1)
     return df
+
+def zip_jobs(df):
+    """
+
+    Args:
+        df: Input DF
+
+    Returns:
+        [(Path_Input, Path_Output, Filter_Job)]
+    """
+
+    _df = (df[["path_input", "path_output", "filter_job"]])[df.filter_job != ""]
+    _paths_in = _df["path_input"]
+    _paths_out = _df["path_output"]
+    _filter_jobs = _df["filter_job"]
+    return zip(_paths_in, _paths_out, _filter_jobs)
+
+def callback_dict(filter_settings):
+    def random_rate(_range):
+        _from, _to = _range
+        return lambda: uniform(_from, _to)
+
+    range_fn_mapping = {}
+    for key, value in filter_settings.items():
+        _range = value["range"]
+        range_fn_mapping[key] = random_rate(_range)
+
+    job_fn_mapping = {
+        "time_stretch": lambda y, rate: Effect.time_stretch(y, rate),
+        "harmonic_remove": lambda y, rate: (y - 0.5 * librosa.effects.harmonic(y, margin=rate)),
+        "percussive_remove": lambda y, rate: librosa.effects.percussive(y, margin=rate),
+        "random_noise": lambda y, rate: Effect.add_noise_random(y, rate),
+        "real_noise": lambda y: y,
+        "reverb": lambda y, rate: AudioEffectsChain().reverb(reverberance=rate, hf_damping=rate, room_scale=rate * 2)(
+            y),
+        "bandpass": lambda y, rate: AudioEffectsChain().bandpass(rate)(y),
+        "tremolo": lambda y, rate: AudioEffectsChain().tremolo(rate)(y),
+    }
+
+    assert False not in [key in job_fn_mapping.keys() for key in filter_settings.keys()], "Uknown Filter-Option"
+
+    return job_fn_mapping
 
 def build_job_df(df, noise_df, filter_settings, output_dir, output_subfolder=None):
     Path(output_dir).mkdir(exist_ok=True, parents=True)

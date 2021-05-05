@@ -11,11 +11,11 @@ filter_settings = {
         "range": (1, 5),  # margin
         "probability": 0.05
     },
-    "randon_noise": {
+    "random_noise": {
         "range": (0.96, 1),  # PSNR range
         "probability": 0.05
     },
-    "realse_noise": {
+    "real_noise": {
         "range": (0.15, 0.65),
         "probability": 0.25,
     },
