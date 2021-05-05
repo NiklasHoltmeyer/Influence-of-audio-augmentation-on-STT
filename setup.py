@@ -35,6 +35,7 @@ setup(
         "datasets", #hugging_face
         "jiwer>=2.2.0",
         "transformers",
-        "wandb"
+        "wandb",
+        "pysndfx"
     ],
 )
