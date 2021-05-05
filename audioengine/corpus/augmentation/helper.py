@@ -10,6 +10,8 @@ from audioengine.transformations.backend.librosa.effect import Effect
 
 from pysndfx import AudioEffectsChain
 
+from audioengine.transformations.backend.librosa.io import IO
+
 
 def add_filter_job_column(df, filter_settings):
     _filter_list = [""] * len(df)
@@ -68,24 +70,21 @@ def add_output_path_column(df, output_dir, subfolder=None):
     return df
 
 
-def zip_jobs(df, noise_column=False):
+def zip_jobs(df):
     """
 
     Args:
         df: Input DF
 
     Returns:
-        [(Path_Input, Path_Output, Filter_Job)]
+        [(Path_Input, Path_Noise, Path_Output, Filter_Job)]
     """
     _df = (df[["path_input", "path_output", "path_noise", "filter_job"]])[df.filter_job != ""]
     _paths_in = _df["path_input"]
     _paths_out = _df["path_output"]
     _filter_jobs = _df["filter_job"]
-
-    if not noise_column:
-        return zip(_paths_in, _paths_out, _filter_jobs)
-
     _path_noise = _df["path_noise"]
+
     return zip(_paths_in, _path_noise, _paths_out, _filter_jobs)
 
 
@@ -94,22 +93,30 @@ def random_rate(_range):
     return lambda: uniform(_from, _to)
 
 
-def callback_dict(filter_settings):
+def callback_dict(filter_settings, target_sample_rate=16_000):
     range_fn_mapping = {}
     for key, value in filter_settings.items():
         _range = value["range"]
         range_fn_mapping[key] = random_rate(_range)
 
+    snr_fn = random_rate(filter_settings["real_noise"]["range"])
+
+    def __add_real_noise(idx, y_path, rate, y_n_path):
+        yp, _ = IO.load(y_path, sample_rate=target_sample_rate)
+        yn, _ = IO.load(y_n_path, sample_rate=target_sample_rate)
+
+        return Effect.add_noise(yp, yn, snr=snr_fn(), pad_idx=idx)
+
     job_fn_mapping = {
-        "time_stretch": lambda y, rate: Effect.time_stretch(y, rate),
-        "harmonic_remove": lambda y, rate: (y - 0.5 * librosa.effects.harmonic(y, margin=rate)),
-        "percussive_remove": lambda y, rate: librosa.effects.percussive(y, margin=rate),
-        "random_noise": lambda y, rate: Effect.add_noise_random(y, rate),
-        "real_noise": lambda y: y,
-        "reverb": lambda y, rate: AudioEffectsChain().reverb(reverberance=rate, hf_damping=rate, room_scale=rate * 2)(
+        "time_stretch": lambda __, y, rate, _: Effect.time_stretch(y, rate),
+        "harmonic_remove": lambda __, y, rate, _: (y - 0.5 * librosa.effects.harmonic(y, margin=rate)),
+        "percussive_remove": lambda __, y, rate, _: librosa.effects.percussive(y, margin=rate),
+        "random_noise": lambda __, y, rate, _: Effect.add_noise_random(y, rate),
+        "real_noise": lambda __, y, rate, y_n: __add_real_noise,
+        "reverb": lambda __, y, rate, _: AudioEffectsChain().reverb(reverberance=rate, hf_damping=rate, room_scale=rate * 2)(
             y),
-        "bandpass": lambda y, rate: AudioEffectsChain().bandpass(rate)(y),
-        "tremolo": lambda y, rate: AudioEffectsChain().tremolo(rate)(y),
+        "bandpass": lambda __, y, rate, _: AudioEffectsChain().bandpass(rate)(y),
+        "tremolo": lambda __, y, rate, _: AudioEffectsChain().tremolo(rate)(y),
     }
 
     assert False not in [key in job_fn_mapping.keys() for key in filter_settings.keys()], "Uknown Filter-Option"
