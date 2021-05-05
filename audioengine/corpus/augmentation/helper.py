@@ -112,7 +112,7 @@ def callback_dict(filter_settings, target_sample_rate=16_000):
         "harmonic_remove": lambda __, y, rate, _: (y - 0.5 * librosa.effects.harmonic(y, margin=rate)),
         "percussive_remove": lambda __, y, rate, _: librosa.effects.percussive(y, margin=rate),
         "random_noise": lambda __, y, rate, _: Effect.add_noise_random(y, rate),
-        "real_noise": lambda __, y, rate, y_n: __add_real_noise,
+        "real_noise": lambda idx, y, rate, y_n: __add_real_noise(idx, y, rate, y_n),
         "reverb": lambda __, y, rate, _: AudioEffectsChain().reverb(reverberance=rate, hf_damping=rate, room_scale=rate * 2)(
             y),
         "bandpass": lambda __, y, rate, _: AudioEffectsChain().bandpass(rate)(y),
