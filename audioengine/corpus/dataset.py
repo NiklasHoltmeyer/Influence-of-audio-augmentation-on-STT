@@ -60,6 +60,9 @@ class Dataset:
             return df, f"commonvoice-{kwargs.get('type')}({len(df)})"
         if self.__is_vf(base_path):
             df = VoxForge(base_path, **kwargs).load_dataframe(**kwargs)
+            _type = kwargs.get('type')
+            if _type:
+                return df, f"voxforge-{_type}({len(df)})"
             return df, f"voxforge({len(df)})"
         raise Exception(f"Unknown DS {base_path}")
 

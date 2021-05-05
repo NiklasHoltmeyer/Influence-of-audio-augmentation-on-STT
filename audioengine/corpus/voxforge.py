@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import train_test_split
+
 from audioengine.corpus.audiodataset import AudioDataset
 import codecs
 
@@ -18,11 +20,13 @@ class VoxForge(AudioDataset):
     def load_dataframe(self, **kwargs):
         tsv_path = self.load_preprocessed_df(**kwargs)
 
-        dataframe = super().load_dataframe(tsv_path, sep="\t", encoding="utf-8", **kwargs)
-        return dataframe
+        return super().load_dataframe(tsv_path, sep="\t", encoding="utf-8", **kwargs)
+
 
     def load_preprocessed_df(self, **kwargs):
         processed_path = Path(self.path, "info.csv")
+        type = kwargs.get("type", None)
+
         if not processed_path.exists():
             data = self._load_data()
             df = pd.DataFrame(data, columns=['path', 'sentence'])
@@ -30,8 +34,25 @@ class VoxForge(AudioDataset):
             df = super().add_target_Lengths(df, desc=f"Preprocess VF-DF (Target-Lengths)")
             df = df[["path", "sentence", "duration", "target_length"]]
             df.to_csv(processed_path, sep="\t", encoding="utf-8", index=False)
-        return processed_path
 
+        if type is None:
+            return processed_path
+
+        assert type in {"train", "test"}
+
+        processed_type_path = Path(self.path, f"info_{type}.csv")
+        if not processed_type_path.exists():
+            processed_train_path = Path(self.path, f"info_train.csv")
+            processed_test_path = Path(self.path, f"info_test.csv")
+
+            dataframe = super().load_dataframe(processed_path, sep="\t", encoding="utf-8", **kwargs)
+            dataframe = dataframe[["path", "sentence", "duration", "target_length"]]
+
+            train_dataframe, test_dataframe = train_test_split(dataframe, train_size=0.8)
+            train_dataframe.to_csv(processed_train_path, sep="\t", encoding="utf-8", index=False)
+            test_dataframe.to_csv(processed_test_path, sep="\t", encoding="utf-8", index=False)
+
+        return processed_type_path
 
     def _list_prompts(self):
         folders = os.listdir(self.path)
@@ -70,7 +91,8 @@ class VoxForge(AudioDataset):
 
 if __name__ == "__main__":
     print("Path", "/share/datasets/vf_de")
-    df = VoxForge("/share/datasets/vf_de").load_dataframe()
+    df = VoxForge("/share/datasets/vf_de").load_dataframe(type="train")
+    print(df.head())
 
 
 

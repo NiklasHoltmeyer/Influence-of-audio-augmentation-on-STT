@@ -1,8 +1,10 @@
 import json
 import logging
 import time
+import warnings
 from multiprocessing import Pool
 from pathlib import Path
+from pandarallel import pandarallel
 
 import librosa
 import pandas as pd
@@ -17,16 +19,17 @@ from audioengine.transformations.backend.librosa.effect import Effect
 from audioengine.transformations.backend.librosa.io import IO
 from tqdm.auto import tqdm
 import os
+import datetime
+
 ## Pandas-Dataframe
 tqdm.pandas()
 logger = defaultLogger()
+pandarallel.initialize()
 
 
 @time_logger(name="Augment Dataframe",
              header="Augment Dataframe", padding_length=50)
-def augment_dataframe(signal_df: object, noise_df: object, threads=(os.cpu_count()*2), **settings: object) -> object:
-    signal_df = signal_df.head(32)
-    noise_df = noise_df.head(32)
+def augment_dataframe(signal_df: object, noise_df: object, threads=(os.cpu_count() * 2), **settings: object) -> object:
     shuffle = settings.get("shuffle", True)
     data_augmented, data_clean = init_df(signal_df, **settings)
 
@@ -39,20 +42,16 @@ def augment_dataframe(signal_df: object, noise_df: object, threads=(os.cpu_count
 
     # data_augmented = data_augmented.swifter.apply(merge_sounds(**settings), axis=1)
 
-    start = time.time()
-    lambda_fn = merge_sounds(**settings) #doesnt work if i put it in the line below.
-    data_augmented = process_map(lambda_fn, data_augmented, max_workers=threads,
-                                     desc=f"Merge_sounds [{threads} Threads]")
+    #data_augmented_n = data_augmented.swifter.apply(merge_sounds(**settings), axis=1)
 
-    #data_augmented = data_augmented.swifter.progress_bar(True, desc="Merge Sounds") \
-        #.apply(merge_sounds(**settings), axis=1)
+    print("Merge Sounds")
+    data_augmented = data_augmented.parallel_apply(merge_sounds(**settings), axis=1)
+    warnings.filterwarnings('default')
+    print("Merge Sounds [DONE]")
 
-    #with Pool(processes=16) as pool:
-        #data_augmented = pool.map(merge_sounds(**settings), tqdm(data_augmented, desc=f"Merge Sounds: {16} Threads"))
-
-    print(f"{time.time-(start)} - Map Timer")
-    exit(0)
-    print("WUHU")
+    #data_augmented = process_map(merge_sounds(**settings), data_augmented, max_workers=threads,
+                                 #desc=f"Merge_sounds [{threads} Threads]")
+    print("End:", datetime.datetime.now())
 
     rename = {"path": "path_source", "path_augmented": "path"}
     data_augmented.rename(columns=rename, inplace=True)
@@ -104,9 +103,6 @@ def add_noise_column(signal_df, noise_df):
     return signal_df
 
 
-from random import uniform
-
-
 def merge_sounds(**settings):
     _range = settings.get("snr_range", (0.15, 0.65))
     assert len(_range), "snr_range -> e.g. (0.15, 0.75)"
@@ -116,6 +112,8 @@ def merge_sounds(**settings):
         raise Exception("please Specify target_path in Settings-Dict")
     target_path = Path(settings["target_path"])
     target_path.mkdir(parents=True, exist_ok=True)
+
+    warnings.filterwarnings('ignore')
 
     def __call__(item):
         _target_path = item["path_augmented"]
@@ -133,6 +131,7 @@ def merge_sounds(**settings):
 
     return __call__
 
+from random import uniform
 
 def get_target_column(**settings):
     target_path = settings.get("target_path", None)

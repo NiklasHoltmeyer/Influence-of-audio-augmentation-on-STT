@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 import sys
 # from audioengine.logging.logging import defaultLogger
-from audioengine.corpus.augmentation.real_noise.helper import augment_dataframe, save_df
+from audioengine.corpus.augmentation_del.real_noise.helper import augment_dataframe, save_df
 from audioengine.corpus.voxforge import VoxForge
 
 from audioengine.corpus.commonvoice import CommonVoice
@@ -45,14 +45,14 @@ def main():
 
     settings = {
         "shuffle": True,
-        "split": 0.5,
+        "split": 0.8,
         "signal_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
         "noise_path": "/share/datasets/FSD50K",
         "signal_split": ds_type,
         "target_sample_rate": 16_000,
         "target_path": "/share/datasets/cv_augmented/clips",
         "target_file_name": f"../{ds_type}.tsv",
-        "augmentation_settings_path": "/share/datasets/cv_augmented/augmentation_settings.json",
+        "augmentation_settings_path": "/share/datasets/cv_noise80augmented/augmentation_settings.json",
         "sep": "\t"
     }
 
@@ -60,10 +60,10 @@ def main():
 
     signal_df, noise_df = load_dataframes(**settings)
 
-    augmented_df = augment_dataframe(signal_df, noise_df, **settings)
+    augmented_df = augment_datarame(signal_df, noise_df, **settings)
 
+    save_df(augmented_df, **settings)
 
-    save_df(augmented_df,**settings)
 
 if __name__ == "__main__":
     main()
