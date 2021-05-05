@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from random import uniform
 
@@ -8,6 +9,7 @@ from audioengine.corpus.dataset import logger
 from audioengine.transformations.backend.librosa.effect import Effect
 
 from pysndfx import AudioEffectsChain
+
 
 def add_filter_job_column(df, filter_settings):
     _filter_list = [""] * len(df)
@@ -46,7 +48,7 @@ def add_real_noise_column(signal_df, noise_df):
 
     # assert len(signal_df) == len(noise_df), "Padding (Dataframes) failed"
     signal_df["path_noise"] = noise_df
-    return signal_df
+    return signal_df.sample(frac=1).reset_index(drop=True)
 
 
 def add_output_path_column(df, output_dir, subfolder=None):
@@ -65,7 +67,8 @@ def add_output_path_column(df, output_dir, subfolder=None):
     df["path_output"] = df.apply(_calc_output_path, axis=1)
     return df
 
-def zip_jobs(df):
+
+def zip_jobs(df, noise_column=False):
     """
 
     Args:
@@ -74,18 +77,24 @@ def zip_jobs(df):
     Returns:
         [(Path_Input, Path_Output, Filter_Job)]
     """
-
-    _df = (df[["path_input", "path_output", "filter_job"]])[df.filter_job != ""]
+    _df = (df[["path_input", "path_output", "path_noise", "filter_job"]])[df.filter_job != ""]
     _paths_in = _df["path_input"]
     _paths_out = _df["path_output"]
     _filter_jobs = _df["filter_job"]
-    return zip(_paths_in, _paths_out, _filter_jobs)
+
+    if not noise_column:
+        return zip(_paths_in, _paths_out, _filter_jobs)
+
+    _path_noise = _df["path_noise"]
+    return zip(_paths_in, _path_noise, _paths_out, _filter_jobs)
+
+
+def random_rate(_range):
+    _from, _to = _range
+    return lambda: uniform(_from, _to)
+
 
 def callback_dict(filter_settings):
-    def random_rate(_range):
-        _from, _to = _range
-        return lambda: uniform(_from, _to)
-
     range_fn_mapping = {}
     for key, value in filter_settings.items():
         _range = value["range"]
@@ -107,7 +116,19 @@ def callback_dict(filter_settings):
 
     return job_fn_mapping
 
-def build_job_df(df, noise_df, filter_settings, output_dir, output_subfolder=None):
+
+def save_settings(df, output_dir, filter_settings, file_name="data.csv", **kwargs):
+    sep = kwargs.get("sep", ";")
+    df_path = Path(output_dir, file_name)
+    json_path = Path(output_dir, "filter_settings.json")
+    df.to_csv(df_path.resolve(), sep=sep, encoding="utf8", index=False)
+
+    settings_json = json.dumps(filter_settings, indent=4)
+    with open(json_path, "w") as f:
+        f.write(settings_json)
+
+
+def build_job_df(df, noise_df, filter_settings, output_dir, output_subfolder=None, **kwargs):
     Path(output_dir).mkdir(exist_ok=True, parents=True)
 
     df = add_real_noise_column(df, noise_df)
@@ -115,10 +136,10 @@ def build_job_df(df, noise_df, filter_settings, output_dir, output_subfolder=Non
     df = add_filter_job_column(df, filter_settings)
     df = add_output_path_column(df, output_dir, output_subfolder)
 
+    save_settings(df, output_dir, filter_settings, **kwargs)
+
     return df
 
+# time_stretch+harmonic_remove+percussive_remove+randon_noise+realse_noise+reverb+bandpass+tremolo
 
-
-#time_stretch+harmonic_remove+percussive_remove+randon_noise+realse_noise+reverb+bandpass+tremolo
-
-#/share/datasets/vf_de/guenter-20140125-ftr/wav/de5-026.wav
+# /share/datasets/vf_de/guenter-20140125-ftr/wav/de5-026.wav
