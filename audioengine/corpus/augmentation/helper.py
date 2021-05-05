@@ -101,8 +101,8 @@ def callback_dict(filter_settings, target_sample_rate=16_000):
 
     snr_fn = random_rate(filter_settings["real_noise"]["range"])
 
-    def __add_real_noise(idx, y_path, rate, y_n_path):
-        yp, _ = IO.load(y_path, sample_rate=target_sample_rate)
+    def __add_real_noise(idx, yp, rate, y_n_path):
+#        yp, _ = IO.load(y_path, sample_rate=target_sample_rate)
         yn, _ = IO.load(y_n_path, sample_rate=target_sample_rate)
 
         return Effect.add_noise(yp, yn, snr=snr_fn(), pad_idx=idx)
@@ -121,7 +121,7 @@ def callback_dict(filter_settings, target_sample_rate=16_000):
 
     assert False not in [key in job_fn_mapping.keys() for key in filter_settings.keys()], "Uknown Filter-Option"
 
-    return job_fn_mapping
+    return job_fn_mapping, range_fn_mapping
 
 
 def save_settings(df, output_dir, filter_settings, file_name="data.csv", **kwargs):
