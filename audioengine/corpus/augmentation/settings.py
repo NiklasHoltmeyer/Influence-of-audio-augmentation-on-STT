@@ -16,8 +16,8 @@ filter_settings = {
         "probability": 0.05
     },
     "real_noise": {
-        "range": (0.15, 0.65),
-        "probability": 0.25,
+        "range": (0.15, 0.45),
+        "probability": 0.15,
     },
     "reverb": {
         "range": (5, 50),

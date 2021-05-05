@@ -1,17 +1,26 @@
 import json
+import os
+from multiprocessing import Pool
 from pathlib import Path
 from random import uniform
 
+from tqdm.auto import tqdm
+
 import librosa
 import numpy as np
+from audioengine.corpus.augmentation.settings import filter_settings
 
 from audioengine.corpus.dataset import logger
+from audioengine.corpus.util.interceptors import time_logger
+from audioengine.logging import logging
+from audioengine.logging.logging import defaultLogger
 from audioengine.transformations.backend.librosa.effect import Effect
 
 from pysndfx import AudioEffectsChain
 
 from audioengine.transformations.backend.librosa.io import IO
 
+logger = defaultLogger()
 
 def add_filter_job_column(df, filter_settings):
     _filter_list = [""] * len(df)
@@ -93,7 +102,7 @@ def random_rate(_range):
     return lambda: uniform(_from, _to)
 
 
-def callback_dict(filter_settings, target_sample_rate=16_000):
+def callback_dict(filter_settings, target_sample_rate):
     range_fn_mapping = {}
     for key, value in filter_settings.items():
         _range = value["range"]
@@ -102,7 +111,7 @@ def callback_dict(filter_settings, target_sample_rate=16_000):
     snr_fn = random_rate(filter_settings["real_noise"]["range"])
 
     def __add_real_noise(idx, yp, rate, y_n_path):
-#        yp, _ = IO.load(y_path, sample_rate=target_sample_rate)
+        #        yp, _ = IO.load(y_path, sample_rate=target_sample_rate)
         yn, _ = IO.load(y_n_path, sample_rate=target_sample_rate)
 
         return Effect.add_noise(yp, yn, snr=snr_fn(), pad_idx=idx)
@@ -113,7 +122,8 @@ def callback_dict(filter_settings, target_sample_rate=16_000):
         "percussive_remove": lambda __, y, rate, _: librosa.effects.percussive(y, margin=rate),
         "random_noise": lambda __, y, rate, _: Effect.add_noise_random(y, rate),
         "real_noise": lambda idx, y, rate, y_n: __add_real_noise(idx, y, rate, y_n),
-        "reverb": lambda __, y, rate, _: AudioEffectsChain().reverb(reverberance=rate, hf_damping=rate, room_scale=rate * 2)(
+        "reverb": lambda __, y, rate, _: AudioEffectsChain().reverb(reverberance=rate, hf_damping=rate,
+                                                                    room_scale=rate * 2)(
             y),
         "bandpass": lambda __, y, rate, _: AudioEffectsChain().bandpass(rate)(y),
         "tremolo": lambda __, y, rate, _: AudioEffectsChain().tremolo(rate)(y),
@@ -134,7 +144,21 @@ def save_settings(df, output_dir, filter_settings, file_name="data.csv", **kwarg
     with open(json_path, "w") as f:
         f.write(settings_json)
 
+    logger.debug(f"Save Settings {{{file_name}, filter_settings.json}} to  {output_dir}")
 
+
+def execute_job(job):
+    idx, (_paths_in, _path_noise, _paths_out, _filter_jobs) = job
+    y, sr = IO.load(_paths_in, target_samplerate)
+    job_names = _filter_jobs.split("+")
+    for job_name in job_names:
+        rate = range_fn_mapping[job_name]()
+        y = job_fn_mapping[job_name](idx, y, rate, _path_noise)
+    IO.save_wav(y, _paths_out, target_samplerate)
+
+
+@time_logger(name="Building DF",
+             header="Augmentation", padding_length=50)
 def build_job_df(df, noise_df, filter_settings, output_dir, output_subfolder=None, **kwargs):
     Path(output_dir).mkdir(exist_ok=True, parents=True)
 
@@ -147,6 +171,25 @@ def build_job_df(df, noise_df, filter_settings, output_dir, output_subfolder=Non
 
     return df
 
-# time_stretch+harmonic_remove+percussive_remove+randon_noise+realse_noise+reverb+bandpass+tremolo
+global job_fn_mapping, range_fn_mapping, target_samplerate
 
-# /share/datasets/vf_de/guenter-20140125-ftr/wav/de5-026.wav
+@time_logger(name="Augment-Dataset",
+             header="Augmentation", padding_length=50)
+def augment_dataset(df, noise_df, **kwargs):
+    global job_fn_mapping, range_fn_mapping, target_samplerate
+    _filter_settings = kwargs.get("filter_settings", filter_settings)
+    target_samplerate = kwargs.get("target_sample_rate", 16_000)
+    _threads = kwargs.get("threads", os.cpu_count() * 2)
+    _output_dir = kwargs.get("output_dir", None)
+    _output_subfolder = kwargs.get("output_subfolder", None)
+
+    assert _output_dir, "Please Specifiy output_dir."
+
+    df = build_job_df(df, noise_df, filter_settings, _output_dir, _output_subfolder)
+    job_fn_mapping, range_fn_mapping = callback_dict(filter_settings, target_sample_rate=target_samplerate)
+    jobs = list(enumerate((zip_jobs(df))))
+
+    with Pool(processes=_threads) as pool:
+        data_augmented = pool.map(execute_job, tqdm(jobs, desc=f"Audio-Augmentation: {_threads} Threads"))
+
+
