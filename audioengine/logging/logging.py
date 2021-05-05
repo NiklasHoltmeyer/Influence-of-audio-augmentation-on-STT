@@ -9,5 +9,6 @@ def defaultLogger(level=logging.DEBUG, handlers=[logging.StreamHandler(sys.stdou
     logger = logging.getLogger("audio-engine")
     logging.getLogger("matplotlib").setLevel(logging.WARNING)
     logging.getLogger("nltk_data").setLevel(logging.WARNING)
+    logging.getLogger("pysndfx").setLevel(logging.WARNING)
 
     return logger
