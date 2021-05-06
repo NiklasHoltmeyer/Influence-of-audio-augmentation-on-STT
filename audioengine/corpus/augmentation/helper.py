@@ -39,17 +39,15 @@ def add_filter_job_column(df, filter_settings):
 
 
 def add_real_noise_column(signal_df, noise_df):
-    signal_df = signal_df.sort_values(by=['duration']).reset_index(drop=True)
-    noise_df = noise_df.sort_values(by=['duration']).reset_index(drop=True)
+    #signal_df = signal_df.sort_values(by=['duration']).reset_index(drop=True)
+    #noise_df = noise_df.sort_values(by=['duration']).reset_index(drop=True)
 
     len_dif = len(signal_df) - len(noise_df)
 
     if len_dif < 0:  # -> s_df < n_df
-        logger.debug("Remove Noise-Samples")
         noise_df = noise_df[: len(signal_df)]["path"]
     elif len_dif > 0:  # -> s_df > n_df
         pad_fn = 'symmetric'
-        logger.debug(f"Pad Noise-Samples ({pad_fn})")
         beg = int(len_dif / 2)
         end = len_dif - beg
         noise_df = np.pad(noise_df["path"], (beg, end), pad_fn)
@@ -88,9 +86,9 @@ def zip_jobs(df):
     Returns:
         [(Path_Input, Path_Noise, Path_Output, Filter_Job)]
     """
-    _df = (df[["path_input", "path_output", "path_noise", "filter_job"]])[df.filter_job != ""]
+    _df = (df[["path_input", "path", "path_noise", "filter_job"]])[df.filter_job != ""]
     _paths_in = _df["path_input"]
-    _paths_out = _df["path_output"]
+    _paths_out = _df["path"]
     _filter_jobs = _df["filter_job"]
     _path_noise = _df["path_noise"]
 
@@ -137,14 +135,25 @@ def callback_dict(filter_settings, target_sample_rate):
 def save_settings(df, output_dir, filter_settings, file_name="data.csv", **kwargs):
     sep = kwargs.get("sep", ";")
     df_path = Path(output_dir, file_name)
-    json_path = Path(output_dir, "filter_settings.json")
+    json_path = Path(output_dir, "transform_settings.json")
     df.to_csv(df_path.resolve(), sep=sep, encoding="utf8", index=False)
 
-    settings_json = json.dumps(filter_settings, indent=4)
+    _len_unfilterd = len(df[df.filter_job != ""])
+    _len_filterd = len(df) - _len_unfilterd
+
+    transform_settings = {
+        "filter_settings": filter_settings,
+        "dataset_info": {
+            "un_changed": _len_unfilterd, "transformed": _len_filterd,
+            "sum": len(df)
+        }
+    }
+
+    settings_json = json.dumps(transform_settings, indent=4)
     with open(json_path, "w") as f:
         f.write(settings_json)
 
-    logger.debug(f"Save Settings {{{file_name}, filter_settings.json}} to  {output_dir}")
+    logger.debug(f"Save Settings {{{file_name}, transform_settings.json}} to  {output_dir}")
 
 
 def execute_job(job):
@@ -166,6 +175,9 @@ def build_job_df(df, noise_df, filter_settings, output_dir, output_subfolder=Non
     df = df.rename({'path': 'path_input'}, axis=1)
     df = add_filter_job_column(df, filter_settings)
     df = add_output_path_column(df, output_dir, output_subfolder)
+    df = df.rename({'path_output': 'path'}, axis=1)
+
+    df = df[["path", "sentence", "duration", "target_length", "path_input", "path_noise", "filter_job"]]
 
     save_settings(df, output_dir, filter_settings, **kwargs)
 
@@ -185,11 +197,13 @@ def augment_dataset(df, noise_df, **kwargs):
 
     assert _output_dir, "Please Specifiy output_dir."
 
-    df = build_job_df(df, noise_df, filter_settings, _output_dir, _output_subfolder)
+    df = build_job_df(df, noise_df, filter_settings, **kwargs)
     job_fn_mapping, range_fn_mapping = callback_dict(filter_settings, target_sample_rate=target_samplerate)
     jobs = list(enumerate((zip_jobs(df))))
 
     with Pool(processes=_threads) as pool:
         data_augmented = pool.map(execute_job, tqdm(jobs, desc=f"Audio-Augmentation: {_threads} Threads"))
+
+    logger.debug("Finished Augmenting Dataset")
 
 

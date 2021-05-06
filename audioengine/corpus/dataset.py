@@ -55,15 +55,17 @@ class Dataset:
         return (train_ds, train_df_info), (val_ds, val_df_info)
 
     def _load_from_name(self, base_path, **kwargs):
+        desc = kwargs.get("desc", None)
+        desc = f"-{desc}" if desc else "-"
         if self.__is_cv(base_path):
             df = CommonVoice(base_path, **kwargs).load_dataframe(**kwargs)
-            return df, f"commonvoice-{kwargs.get('type')}({len(df)})"
+            return df, f"commonvoice{desc}-{kwargs.get('type')}({len(df)})"
         if self.__is_vf(base_path):
             df = VoxForge(base_path, **kwargs).load_dataframe(**kwargs)
             _type = kwargs.get('type')
             if _type:
-                return df, f"voxforge-{_type}({len(df)})"
-            return df, f"voxforge({len(df)})"
+                return df, f"voxforge{desc}-{_type}({len(df)})"
+            return df, f"voxforge{desc}-({len(df)})"
         raise Exception(f"Unknown DS {base_path}")
 
     def __is_cv(self, name):
@@ -124,3 +126,4 @@ if __name__ == "__main__":
 # load_max_input_length
 # max_input_length
 #
+

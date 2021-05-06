@@ -38,6 +38,9 @@ mappings = {
             "marcel/wav2vec2-large-xlsr-german-demo": '[\,\?\.\!\-\;\:\"\“\%\”\�\カ\æ\無\ན\カ\臣\ѹ\…\«\»\ð\ı\„\幺\א\ב\比\ш\ע\)\ứ\в\œ\ч\+\—\ш\‚\נ\м\ń\乡\$\=\ש\ф\支\(\°\и\к\̇]',
             'MehdiHosseiniMoghadam/wav2vec2-large-xlsr-53-German': '[\,\?\.\!\-\;\:\"\“\%\‘\”\�]'
 }
+
+print("model_args.model_name_or_path", model_args.model_name_or_path)
+
 chars_to_ignore_regex = mappings.get(model_args.model_name_or_path, None)
 chars_to_ignore_regex = chars_to_ignore_regex if not None else f'[{"".join(data_args.chars_to_ignore)}]'
 
@@ -65,6 +68,7 @@ def remove_special_characters(batch):
 
 train_dataset = train_dataset.map(remove_special_characters, remove_columns=["sentence"], keep_in_memory=True,
                                   num_proc=data_args.preprocessing_num_workers)
+
 eval_dataset = eval_dataset.map(remove_special_characters, remove_columns=["sentence"], keep_in_memory=True,
                                 num_proc=data_args.preprocessing_num_workers)
 
@@ -197,6 +201,8 @@ ds = ParquetDataset(data_args, split="train")
 
 print("train_info:", train_info)
 print("eval_info:", eval_info)
+
+print("model_name_or_path", model_args.model_name_or_path)
 # def __init__(self, data_args, split='train'):
 
 # save processor for training
