@@ -30,8 +30,8 @@ class Dataset:
         val_settings = settings["val_settings"]
         train_settings = settings["train_settings"]
 
-        val_ds, val_df_info = self._build_df_from_settings(val_settings)
-        train_ds, train_df_info = self._build_df_from_settings(train_settings)
+        val_ds, val_df_info = self._build_ds_from_settings(val_settings)
+        train_ds, train_df_info = self._build_ds_from_settings(train_settings)
 
         return (train_ds, train_df_info), (val_ds, val_df_info)
 
