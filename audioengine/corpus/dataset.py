@@ -36,9 +36,8 @@ class Dataset:
         return (train_ds, train_df_info), (val_ds, val_df_info)
 
     def _build_ds_from_settings(self, settings):
-        skip = settings.get("skip", False)
-        if skip:
-            return None, "skip Flag is set to True"
+        if not settings:
+            return None, "No Settings Provided"
         dfs_with_info = [self._load_from_name(**settings) for settings in settings]
         df_info = "+".join([info for _, info in dfs_with_info])
         dfs = [df for df, _ in dfs_with_info]
