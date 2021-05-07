@@ -5,18 +5,23 @@ from audioengine.model.finetuning.wav2vec2.wav2vec2_trainer import DataCollatorC
 from audioengine.transformations.backend.pytorch.audiotransformations import LoadAudio
 from audioengine.transformations.backend.pytorch.texttransformations import Regexp, ToLower
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
+from audioengine.transformations.backend.pytorch.texttransformations import ToUpper
+from torchvision import transforms
 
 
 class wav2vec2:
-    def __init__(self, model_name, based_on=None, device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")):
+    def __init__(self, model_name, based_on=None,
+                 device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"), skip_loading=False):
         self.model_name = model_name
         self.device = device
         self.based_on = based_on
 
         self.logger = defaultLogger()
         self.logger.info(f"Wav2Vec Device: {device}")
-
-        self.model, self.processor = self._load_pretrained()
+        if not skip_loading:
+            self.model, self.processor = self._load_pretrained()
+        else:
+            self.logger.warning("skip_loading is set! No Model loaded!")
 
     def predict(self, speeches, sampling_rate=16_000, padding=True):
         inputs = self.processor(speeches, sampling_rate=sampling_rate, return_tensors="pt", padding=padding)
@@ -50,7 +55,15 @@ class wav2vec2:
             transformations.append(regexp_layer)
 
         transformations.append(LoadAudio(input_sample_rate, output_sample_rate))
+
+        if self.model_name == "flozi00/wav2vec-xlsr-german":
+            transformations[0] = ToUpper("sentence")
         return transformations
+
+    def transformation(self, input_sample_rate=48_000, output_sample_rate=16_000, **kwargs):
+        transformations = self.transformations(input_sample_rate=input_sample_rate,
+                                               output_sample_rate=output_sample_rate, **kwargs)
+        return transforms.Compose(transformations)
 
     def _load_pretrained(self):
         proc_name = self.model_name if not self.based_on else self.based_on
