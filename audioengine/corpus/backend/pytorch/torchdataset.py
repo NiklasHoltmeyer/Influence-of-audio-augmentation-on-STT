@@ -17,10 +17,5 @@ class TorchDataset:
         Returns:
             DataLoader
         """
-        print("Torch-Dataset-Loader")
-        print("Kwargs")
-        print(kwargs)
-        print("---")
-        print("transform", transform)
         return DataframeDataset(data_frame, input_key, target_key, transform, features=features, **kwargs)
         #return DataLoader(ds, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)

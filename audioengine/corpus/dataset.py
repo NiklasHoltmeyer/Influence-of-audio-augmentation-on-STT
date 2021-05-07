@@ -88,10 +88,6 @@ class Dataset:
         #    return self.backend.from_dataframe(dataframe, input_key, target_key, audio_format=audio_format,
         #                                       features=features, **kwargs)
 
-        print("from DF")
-        print(kwargs)
-        print("-----------------------")
-
         if fixed_length or not validation_split:
             return self.backend.from_dataframe(dataframe, input_key, target_key, audio_format=audio_format,
                                                features=features, **kwargs)
