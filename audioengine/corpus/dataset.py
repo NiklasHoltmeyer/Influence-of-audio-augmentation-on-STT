@@ -29,13 +29,14 @@ class Dataset:
     def from_settings(self, settings):
         val_settings = settings["val_settings"]
         train_settings = settings["train_settings"]
+        transform = settings.get("transform", None)
 
-        val_ds, val_df_info = self._build_ds_from_settings(val_settings)
-        train_ds, train_df_info = self._build_ds_from_settings(train_settings)
+        val_ds, val_df_info = self._build_ds_from_settings(val_settings, transform)
+        train_ds, train_df_info = self._build_ds_from_settings(train_settings, transform)
 
         return (train_ds, train_df_info), (val_ds, val_df_info)
 
-    def _build_ds_from_settings(self, settings):
+    def _build_ds_from_settings(self, settings, transform):
         if not settings:
             return None, "No Settings Provided"
         dfs_with_info = [self._load_from_name(**settings) for settings in settings]
@@ -45,13 +46,14 @@ class Dataset:
 
         input_key, target_key = "path", "sentence"
         ds = self._from_Dataframe(audio_format="mix", dataframe=df,
-                                  input_key=input_key, target_key=target_key)
+                                  input_key=input_key, target_key=target_key, transform=transform)
         # fixed_length=None, validation_split=None
         return ds, df_info
 
     def _load_from_name(self, base_path, **kwargs):
         desc = kwargs.get("desc", None)
         desc = f"-{desc}" if desc else "-"
+
         if self.__is_cv(base_path):
             df = CommonVoice(base_path, **kwargs).load_dataframe(**kwargs)
             return df, f"commonvoice{desc}-{kwargs.get('type')}({len(df)})"
@@ -85,6 +87,11 @@ class Dataset:
         #    dataframe = dataframe[: _items]
         #    return self.backend.from_dataframe(dataframe, input_key, target_key, audio_format=audio_format,
         #                                       features=features, **kwargs)
+
+        print("from DF")
+        print(kwargs)
+        print("-----------------------")
+
         if fixed_length or not validation_split:
             return self.backend.from_dataframe(dataframe, input_key, target_key, audio_format=audio_format,
                                                features=features, **kwargs)
