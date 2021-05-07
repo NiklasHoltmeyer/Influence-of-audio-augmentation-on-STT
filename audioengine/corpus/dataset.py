@@ -72,7 +72,7 @@ class Dataset:
     def _from_AudioDataset(self, audio_ds, input_key="path", target_key="sentence", **kwargs):
         audio_format = audio_ds.audio_format
         dataframe = audio_ds.load_dataframe(**kwargs)
-        return self._from_Dataframe(audio_format, dataframe, input_key, kwargs, target_key)
+        return self._from_Dataframe(audio_format, dataframe, input_key, target_key, **kwargs)
 
     def _from_Dataframe(self, audio_format, dataframe, input_key, target_key, **kwargs):
         validation_split = kwargs.get("validation_split", None)

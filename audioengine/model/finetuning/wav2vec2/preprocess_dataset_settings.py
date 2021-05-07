@@ -5,7 +5,8 @@ from audioengine.logging.logging import defaultLogger
 logger = defaultLogger()
 
 def preprocess_settings():
-    return preprocess_settings_vfPcv_cv_full_full_no_aug()
+    return None
+    #return preprocess_settings_eval()
 
 def preprocess_settings_vf_vf():
     vf_full_train = {
@@ -95,18 +96,6 @@ def preprocess_settings_vfPcv_cv_full_full_no_aug():
         "max_target_length": None
     }
 
-    cv_train_fixed_length = {
-        "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
-        "shuffle": True,
-        "validation_split": None,  # -> all entries
-#        "fixed_length": 1,  # -> 80% vf + 20% cv_train
-        "type": "train",
-        "min_duration": 0.85,
-#        "max_duration": 6.00,
-        "min_target_length": 2,
-        "max_target_length": None
-    }
-
     vf_full_test = {
         "base_path": "/share/datasets/vf_de",
         "shuffle": True,
@@ -121,7 +110,6 @@ def preprocess_settings_vfPcv_cv_full_full_no_aug():
     test_settings = {
         "val_settings": [cv_test_full],
         "train_settings": [
-            cv_train_fixed_length,
             vf_full_test,
         ]
     }
@@ -142,17 +130,17 @@ def preprocess_settings_vfPcv_cv_full_full():
         "max_target_length": None
     }
 
-    cv_train_fixed_length = {
-        "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
-        "shuffle": True,
-        "validation_split": None,  # -> all entries
-#        "fixed_length": 1,  # -> 80% vf + 20% cv_train
-        "type": "train",
-        "min_duration": 0.85,
-#        "max_duration": 6.00,
-        "min_target_length": 2,
-        "max_target_length": None
-    }
+#    cv_train_fixed_length = {
+#        "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
+#        "shuffle": True,
+#        "validation_split": None,  # -> all entries
+##        "fixed_length": 1,  # -> 80% vf + 20% cv_train
+#        "type": "train",
+#        "min_duration": 0.85,
+##        "max_duration": 6.00,
+#        "min_target_length": 2,
+#        "max_target_length": None
+#    }
 
     vf_full_test = {
         "base_path": "/share/datasets/vf_de",
@@ -162,8 +150,7 @@ def preprocess_settings_vfPcv_cv_full_full():
 #        "max_duration": 6.00,
         "min_target_length": 2,
         "max_target_length": None,
-        "type":  "test",
-        "desc": "test"
+        "desc": "clean-full"
     }
 
     vf_augmented = {
@@ -180,7 +167,7 @@ def preprocess_settings_vfPcv_cv_full_full():
     test_settings = {
         "val_settings": [cv_test_full],
         "train_settings": [
-            cv_train_fixed_length,
+#            cv_train_fixed_length,
             vf_full_test,
             vf_augmented
         ]
