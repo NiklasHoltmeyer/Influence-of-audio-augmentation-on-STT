@@ -30,29 +30,25 @@ class Dataset:
         val_settings = settings["val_settings"]
         train_settings = settings["train_settings"]
 
-        val_dfs_with_info = [self._load_from_name(**settings) for settings in val_settings]
-        train_dfs_with_info = [self._load_from_name(**settings) for settings in train_settings]
-
-        val_df_info = "+".join([info for _, info in val_dfs_with_info])
-        train_df_info = "+".join([info for _, info in train_dfs_with_info])
-
-        val_dfs = [df for df, _ in val_dfs_with_info]
-        train_dfs = [df for df, _ in train_dfs_with_info]
-
-        val_df = pd.concat(val_dfs).sample(frac=1)
-        train_df = pd.concat(train_dfs).sample(frac=1)
-
-        ###
-        input_key = "path"
-        target_key = "sentence"
-        val_ds = self._from_Dataframe(audio_format="mix", dataframe=val_df,
-                                      input_key=input_key, target_key=target_key)  # kwargs
-
-        train_ds = self._from_Dataframe(audio_format="mix", dataframe=train_df,
-                                      input_key=input_key, target_key=target_key)
-        # fixed_length=None, validation_split=None
+        val_ds, val_df_info = self._build_df_from_settings(val_settings)
+        train_ds, train_df_info = self._build_df_from_settings(train_settings)
 
         return (train_ds, train_df_info), (val_ds, val_df_info)
+
+    def _build_ds_from_settings(self, settings):
+        skip = settings.get("skip", False)
+        if skip:
+            return None, "skip Flag is set to True"
+        dfs_with_info = [self._load_from_name(**settings) for settings in settings]
+        df_info = "+".join([info for _, info in dfs_with_info])
+        dfs = [df for df, _ in dfs_with_info]
+        df = pd.concat(dfs).sample(frac=1)
+
+        input_key, target_key = "path", "sentence"
+        ds = self._from_Dataframe(audio_format="mix", dataframe=df,
+                                  input_key=input_key, target_key=target_key)
+        # fixed_length=None, validation_split=None
+        return ds, df_info
 
     def _load_from_name(self, base_path, **kwargs):
         desc = kwargs.get("desc", None)
@@ -126,4 +122,3 @@ if __name__ == "__main__":
 # load_max_input_length
 # max_input_length
 #
-
