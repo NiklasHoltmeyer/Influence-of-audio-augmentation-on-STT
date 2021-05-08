@@ -1,5 +1,3 @@
-import json
-
 from audioengine.logging.logging import defaultLogger
 
 logger = defaultLogger()
@@ -176,23 +174,3 @@ def preprocess_settings_vfPcv_cv_full_full():
     return test_settings
 
 
-def save_settings(path, settings, infos=None, indent=4):
-    """
-
-    Args:
-        path: Path
-        settings: dict
-        infos: Array of KVPs
-    """
-
-    infos = [] if not infos else infos
-
-    for key, value in infos:
-        settings[key] = value
-
-    settings_json = json.dumps(settings, indent=indent)
-
-    with open(path, "w") as f:
-        f.write(settings_json)
-
-    logger.debug(f"Saved Dataset-Settings to {path}")

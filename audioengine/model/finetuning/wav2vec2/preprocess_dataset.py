@@ -20,7 +20,8 @@ from transformers import (
 
 from audioengine.corpus.dataset import Dataset
 from audioengine.model.finetuning.wav2vec2.argument_parser import argument_parser
-from audioengine.model.finetuning.wav2vec2.preprocess_dataset_settings import preprocess_settings, save_settings
+from audioengine.model.finetuning.wav2vec2.preprocess_dataset_settings import preprocess_settings
+from audioengine.corpus.util.text import save_settings
 
 model_args, data_args, training_args = argument_parser(sys.argv)
 

@@ -1,6 +1,9 @@
+import json
 import os
 import pandas as pd
 import csv
+
+from audioengine.model.finetuning.wav2vec2.preprocess_dataset_settings import logger
 
 
 class Text:
@@ -74,3 +77,25 @@ class Text:
                            encoding=encoding, dialect=dialect, error_bad_lines=error_bad_lines,
                            warn_bad_lines=warn_bad_lines, delim_whitespace=delim_whitespace, memory_map=memory_map,
                            float_precision=float_precision, storage_options=storage_options)
+
+
+def save_settings(path, settings, infos=None, indent=4, desc=""):
+    """
+
+    Args:
+        path: Path
+        settings: dict
+        infos: Array of KVPs
+    """
+
+    infos = [] if not infos else infos
+
+    for key, value in infos:
+        settings[key] = value
+
+    settings_json = json.dumps(settings, indent=indent)
+
+    with open(path, "w") as f:
+        f.write(settings_json)
+
+    logger.debug(f"Saved {desc} Settings to {path}")

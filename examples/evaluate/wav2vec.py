@@ -16,18 +16,21 @@ from audioengine.transformations.backend.pytorch.texttransformations import ToUp
 
 def validate_model(model_name, based_on = None):
     w2c = wav2vec2(model_name, based_on=based_on)
-    transformations = w2c.transformations()
+    transform = w2c.transformation()
 
-    if model_name == "flozi00/wav2vec-xlsr-german":
-        transformations[0] =ToUpper("sentence")
+    cv_test_full = {
+        "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
+        "shuffle": False,
+        "validation_split": None,
+        "type": "test",
+        "min_target_length": 2,
+    }
 
-    transform = transforms.Compose(transformations)
+    ds_settings = {"val_settings": [cv_test_full], "train_settings": None, "transform": transform}
+    (_, _), (ds, ds_info) = Dataset("torch").from_settings(ds_settings)
 
-    dataset = Dataset("torch").CommonVoice("/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de", shuffle=False,
-                                           transform=transform, type="test", validation_split=None)
     core_count = os.cpu_count()
-
-    dataloader = DataLoader(dataset, batch_size=16, num_workers=os.cpu_count(),
+    dataloader = DataLoader(ds, batch_size=20, num_workers=os.cpu_count(),
                             collate_fn=DataframeDataset.collate_fn("speech", "sentence"))
 
     wer = Jiwer()
@@ -38,14 +41,6 @@ def validate_model(model_name, based_on = None):
         transcriptions = w2c.predict(speeches)
         transcriptions_stacked.extend(transcriptions)
         sentence_stacked.extend(sentences)
-
-       # for x, y in zip(sentences, transcriptions):
-       #     print("")
-       #     print(x)
-       #     print(y)
-       #     print("*"*32)
-       #     exit(0)
-
 
         if idx % 97 == 0: #97 71
             wer.add_batch(sentence_stacked, transcriptions_stacked, core_count)
