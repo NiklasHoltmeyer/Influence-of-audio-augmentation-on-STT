@@ -11,10 +11,10 @@ from transformers import (
 )
 from transformers.trainer_utils import is_main_process, get_last_checkpoint
 
-from audioengine.model.finetuning.wav2vec2.parquetdataset import ParquetDataset
-from audioengine.model.finetuning.wav2vec2.argument_parser import argument_parser
-from audioengine.model.finetuning.wav2vec2.wav2vec2_trainer import CustomProgressBarCallback, DataCollatorCTCWithPadding
-from audioengine.model.finetuning.wav2vec2.wav2vec2 import load_trainer, load_grouped_trainer
+from audioengine.model.finetuning.wav2vec2.helper.parquetdataset import ParquetDataset
+from audioengine.model.finetuning.wav2vec2.helper.argument_parser import argument_parser
+from audioengine.model.finetuning.wav2vec2.helper.wav2vec2_trainer import DataCollatorCTCWithPadding
+from audioengine.model.finetuning.wav2vec2.helper.wav2vec2 import load_trainer, load_grouped_trainer
 
 logger = logging.getLogger(__name__)
 

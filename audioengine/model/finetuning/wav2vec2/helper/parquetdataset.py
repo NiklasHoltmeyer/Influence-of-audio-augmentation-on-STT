@@ -1,5 +1,5 @@
 from multiprocessing import Pool
-from tqdm.auto import tqdm
+from tqdm import tqdm
 import torch
 from pathlib import Path
 import pandas as pd

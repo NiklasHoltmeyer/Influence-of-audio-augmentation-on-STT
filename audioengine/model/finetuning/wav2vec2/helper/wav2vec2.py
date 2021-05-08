@@ -1,9 +1,7 @@
-import transformers
 from transformers import TrainingArguments, Trainer
 
 from audioengine.logging.logging import defaultLogger
-from audioengine.model.finetuning.wav2vec2.wav2vec2_trainer import compute_metrics, GroupedLengthsTrainer, \
-    CustomProgressBarCallback
+from audioengine.model.finetuning.wav2vec2.helper.wav2vec2_trainer import compute_metrics, GroupedLengthsTrainer
 
 
 def load_training_arguments_from_kwargs(output_dir, **kwargs):

@@ -4,7 +4,7 @@ from multiprocessing import Pool
 from pathlib import Path
 from random import uniform
 
-from tqdm.auto import tqdm
+from tqdm import tqdm
 
 import librosa
 import numpy as np

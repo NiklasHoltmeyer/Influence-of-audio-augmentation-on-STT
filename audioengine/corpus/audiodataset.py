@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC, ABCMeta
 from multiprocessing import Pool
 
-from tqdm.auto import tqdm
+from tqdm import tqdm
 import logging
 import swifter
 import os

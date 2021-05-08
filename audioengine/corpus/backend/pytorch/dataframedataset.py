@@ -4,7 +4,7 @@ import os
 import torch
 from torch.utils.data import Dataset
 from multiprocessing import Pool
-from tqdm.auto import tqdm
+from tqdm import tqdm
 
 
 class DataframeDataset(Dataset):

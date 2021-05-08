@@ -11,7 +11,7 @@ from audioengine.metrics.wer import Jiwer
 from datasets import load_metric
 from torch import nn
 from torch.cuda.amp import autocast
-from tqdm.auto import tqdm
+from tqdm import tqdm
 from transformers import (
     Trainer,
     Wav2Vec2Processor,

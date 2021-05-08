@@ -1,7 +1,7 @@
 import torch
 
 from audioengine.logging.logging import defaultLogger
-from audioengine.model.finetuning.wav2vec2.wav2vec2_trainer import DataCollatorCTCWithPadding
+from audioengine.model.finetuning.wav2vec2.helper.wav2vec2_trainer import DataCollatorCTCWithPadding
 from audioengine.transformations.backend.pytorch.audiotransformations import LoadAudio
 from audioengine.transformations.backend.pytorch.texttransformations import Regexp, ToLower
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor

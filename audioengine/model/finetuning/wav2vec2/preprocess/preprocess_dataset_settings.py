@@ -3,7 +3,7 @@ from audioengine.logging.logging import defaultLogger
 logger = defaultLogger()
 
 def preprocess_settings():
-    return None
+    return preprocess_settings_vf_vf()
     #return preprocess_settings_eval()
 
 def preprocess_settings_vf_vf():
@@ -11,7 +11,7 @@ def preprocess_settings_vf_vf():
         "base_path": "/share/datasets/vf_de",
         "shuffle": True,
         "validation_split": None,  # -> all entries,
-        "min_duration": 1.00,
+        #"min_duration": 1.00,
         #        "max_duration": 6.00,
         "min_target_length": 2,
         "max_target_length": None,
@@ -21,7 +21,7 @@ def preprocess_settings_vf_vf():
         "base_path": "/share/datasets/vf_de",
         "shuffle": True,
         "validation_split": None,  # -> all entries,
-        "min_duration": 1.00,
+        #"min_duration": 1.00,
         #        "max_duration": 6.00,
         "min_target_length": 2,
         "max_target_length": None,

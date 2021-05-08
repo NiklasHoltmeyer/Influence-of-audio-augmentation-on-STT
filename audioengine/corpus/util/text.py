@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import csv
 
-from audioengine.model.finetuning.wav2vec2.preprocess_dataset_settings import logger
+from audioengine.model.finetuning.wav2vec2.preprocess.preprocess_dataset_settings import logger
 
 
 class Text:

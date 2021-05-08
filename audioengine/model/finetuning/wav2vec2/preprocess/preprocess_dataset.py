@@ -3,24 +3,20 @@
 import re
 import sys
 from pathlib import Path
-import json
 
 import pyarrow.parquet as pq
 import torch
 import torchaudio
-from tqdm.contrib.concurrent import process_map
 
-from audioengine.model.finetuning.wav2vec2.parquetdataset import ParquetDataset
-from tqdm.auto import tqdm
+from audioengine.model.finetuning.wav2vec2.helper.parquetdataset import ParquetDataset
+from tqdm import tqdm
 from transformers import (
-    Wav2Vec2CTCTokenizer,
-    Wav2Vec2FeatureExtractor,
     Wav2Vec2Processor,
 )
 
 from audioengine.corpus.dataset import Dataset
-from audioengine.model.finetuning.wav2vec2.argument_parser import argument_parser
-from audioengine.model.finetuning.wav2vec2.preprocess_dataset_settings import preprocess_settings
+from audioengine.model.finetuning.wav2vec2.helper.argument_parser import argument_parser
+from audioengine.model.finetuning.wav2vec2.preprocess.preprocess_dataset_settings import preprocess_settings
 from audioengine.corpus.util.text import save_settings
 
 model_args, data_args, training_args = argument_parser(sys.argv)
