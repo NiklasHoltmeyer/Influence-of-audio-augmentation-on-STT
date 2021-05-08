@@ -1,25 +1,17 @@
-import argparse
-from argparse import RawTextHelpFormatter, ArgumentTypeError
+import os
+import time
 from pathlib import Path
 
-import torch
+import pandas as pd
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
+from audioengine.corpus.backend.pytorch.dataframedataset import DataframeDataset
 from audioengine.corpus.dataset import Dataset  # dataset.Dataset
 from audioengine.corpus.util.text import save_settings
 from audioengine.logging.logging import defaultLogger
 from audioengine.metrics.wer import Jiwer
-from torchvision import transforms
 from audioengine.model.pretrained.wav2vec2 import wav2vec2
-from audioengine.corpus.backend.pytorch.dataframedataset import DataframeDataset
-from torch.utils.data import DataLoader
-import os
-import time
-import pandas as pd
-from tqdm import tqdm
-# from tqdm.auto import tqdm
-
-from audioengine.transformations.backend.pytorch.texttransformations import ToUpper
-
-#    return wer.to_tsv(prefix=model_name, suffix=str(time.time()-start_time)).replace(".", ",")
 
 logger = defaultLogger()
 
@@ -31,11 +23,10 @@ def evaluate(model_name, settings):
     settings["dataset"]["transform"] = w2v.transformation()
 
     logger.debug("*" * 72)
-    logger.debug(model_name, "loaded.")
+    logger.debug(model_name + " loaded.")
 
     (_, _), (ds, ds_info) = Dataset("torch").from_settings(settings["dataset"])
 
-    core_count = os.cpu_count()
     dataloader = DataLoader(ds, batch_size=20, num_workers=os.cpu_count(),
                             collate_fn=DataframeDataset.collate_fn("speech", "sentence"))
 
@@ -51,7 +42,7 @@ def _run_eval(w2v, dataloader, settings):
     start_time = time.time()
 
     eval_settings = settings.get("eval", {})
-    threads = eval_settings.get("num_workers", os.cpu_count())
+    threads = eval_settings.get("num_workers", os.cpu_count() * 2)
 
     infos = {}
 
