@@ -16,10 +16,12 @@ from audioengine.model.pretrained.wav2vec2 import wav2vec2
 logger = defaultLogger()
 
 
-def evaluate(model_name, settings):
+def evaluate(settings):
     assert "dataset" in settings.keys(), "DataSet Settings needed!"
-
-    w2v = wav2vec2(model_name)
+    assert "eval" in settings.keys(), "DataSet Settings needed!"
+    model_name = settings["eval"]["model_name"]
+    model_based_on_name = settings["eval"].get("model_based_on", None)
+    w2v = wav2vec2(model_name, based_on=model_based_on_name)
     settings["dataset"]["transform"] = w2v.transformation()
 
     logger.debug("*" * 72)
@@ -57,8 +59,7 @@ def _run_eval(w2v, dataloader, settings):
             sentences_full.extend(sentence_stacked)
             sentence_stacked, transcriptions_stacked = [], []
 
-    infos["elapsed_time"] = end_time = time.time() - start_time
-    infos["wer"] = {"score":wer.calc()}
+    infos["elapsed_time"] = time.time() - start_time
 
     path = eval_settings.get("path", None)
     skip_wordwise_wer = eval_settings.get("skip_wordwise_wer", False)
@@ -79,17 +80,23 @@ def _run_eval(w2v, dataloader, settings):
         csv_path = str(csv_path.resolve())
 
         result.to_csv(csv_path, encoding="UTF8", sep=sep_symbol, index=False, decimal=decimal_symbol)
-        infos["wer"]["median"] = result.median()
-        infos["wer"]["mean"] = result.mean()
-        infos["wer"]["min"] = result.min()
-        infos["wer"]["max"] = result.max()
-        infos["wer"]["var"] = result.var()
-        infos["wer"]["std"] = result.var()
+
+        infos["wer"] = {"score":    wer.calc(),
+                        "median":   result["wer"].median(),
+                        "mean":     result["wer"].mean(),
+                        "min":      result["wer"].min(),
+                        "max":      result["wer"].max(),
+                        "var":      result["wer"].var()}
 
         infos["dataset"] = settings.get("dataset", {})
+        if "transform" in infos["dataset"].keys():
+            del settings["dataset"]["transform"]
         save_settings(json_path, infos)
+    else:
+        infos["wer"] = {"score": wer.calc()}
 
     return infos, result
+
 
 def _per_prediction_wer(sentences, predictions):
     def _calc_wer(sentence, transcript):
@@ -100,3 +107,25 @@ def _per_prediction_wer(sentences, predictions):
     _wers = [_calc_wer(sentence, transcript) for sentence, transcript in tqdm(zip(sentences, predictions))]
     return _wers
 
+
+if __name__ == "__main__":
+    cv_test_full = {
+        "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
+        "shuffle": False,
+        "validation_split": None,
+        "type": "test",
+        "min_target_length": 2,
+    }
+
+    eval_settings = {  # eval
+        "path": "/share/notebook/eval_results",
+        "decimal": ",",
+        "model_name": "maxidl/wav2vec2-large-xlsr-german"
+    }
+
+    settings = {
+        "dataset": {"val_settings": [cv_test_full], "train_settings": None},
+        "eval": eval_settings
+    }
+
+    infos, result = evaluate(settings)

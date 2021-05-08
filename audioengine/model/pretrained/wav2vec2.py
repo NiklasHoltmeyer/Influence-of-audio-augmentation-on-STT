@@ -66,8 +66,8 @@ class wav2vec2:
         return transforms.Compose(transformations)
 
     def _load_pretrained(self):
-        proc_name = self.model_name if not self.based_on else self.based_on
-        processor = Wav2Vec2Processor.from_pretrained(proc_name)
+        processor_name = self.model_name if not self.based_on else self.based_on
+        processor = Wav2Vec2Processor.from_pretrained(processor_name)
         model = Wav2Vec2ForCTC.from_pretrained(self.model_name)
         model = model.to(self.device)
         return model, processor
