@@ -58,23 +58,23 @@ def main():
     logger.info(f"Split Train[{len(train_dataset)}], Eval[{len(eval_dataset)}]")
 
     logger.warning(f"Load Processor {training_args.output_dir}")
-    # processor = Wav2Vec2Processor.from_pretrained(training_args.output_dir)
+    processor = Wav2Vec2Processor.from_pretrained(training_args.output_dir)
 
     logger.warning(f"Load Model {model_args.model_name_or_path}")
     logger.warning(f"* Cache_Dir {model_args.cache_dir}")
 
-    processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
+    #processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
 
     model = Wav2Vec2ForCTC.from_pretrained(
         model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
-        #activation_dropout=model_args.activation_dropout,
-        #attention_dropout=model_args.attention_dropout,
-        #hidden_dropout=model_args.hidden_dropout,
-        #feat_proj_dropout=model_args.feat_proj_dropout,
-        #mask_time_prob=model_args.mask_time_prob,
-        gradient_checkpointing=True, #model_args.gradient_checkpointing,
-        #layerdrop=model_args.layerdrop,
+        activation_dropout=model_args.activation_dropout,
+        attention_dropout=model_args.attention_dropout,
+        hidden_dropout=model_args.hidden_dropout,
+        feat_proj_dropout=model_args.feat_proj_dropout,
+        mask_time_prob=model_args.mask_time_prob,
+        gradient_checkpointing=model_args.gradient_checkpointing,
+        layerdrop=model_args.layerdrop,
         ctc_loss_reduction="mean",
         pad_token_id=processor.tokenizer.pad_token_id,
         vocab_size=len(processor.tokenizer),
