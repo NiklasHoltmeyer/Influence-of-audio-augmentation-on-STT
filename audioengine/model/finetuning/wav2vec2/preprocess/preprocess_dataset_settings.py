@@ -3,7 +3,7 @@ from audioengine.logging.logging import defaultLogger
 logger = defaultLogger()
 
 def preprocess_settings():
-    return preprocess_settings_vf_vf()
+    return preprocess_settings_cv_eval()
     #return preprocess_settings_eval()
 
 def preprocess_settings_vf_vf():
@@ -35,7 +35,7 @@ def preprocess_settings_vf_vf():
     }
     return test_settings
 
-def preprocess_settings_vfPcv_cv_duration_truncatation():
+def preprocess_settings_cv_eval():
     cv_test_full = {
         "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
         "shuffle": True,
@@ -52,7 +52,7 @@ def preprocess_settings_vfPcv_cv_duration_truncatation():
         "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
         "shuffle": True,
         "validation_split": None,  # -> all entries
-#        "fixed_length": 1,  # -> 80% vf + 20% cv_train
+        "fixed_length": 32,  # -> 80% vf + 20% cv_train
         "type": "train",
         "min_duration": 1.50,
         "max_duration": 6.00,
@@ -60,22 +60,10 @@ def preprocess_settings_vfPcv_cv_duration_truncatation():
         "max_target_length": None
     }
 
-    vf_full = {
-       "base_path": "/share/datasets/vf_de",
-       "shuffle": True,
-       "validation_split": None,  # -> all entries,
-       "min_duration": 0.85,
-#        "max_duration": 6.00,
-       "min_target_length": 2,
-       "max_target_length": None,
-       "desc": "test"
-    }
-
     test_settings = {
         "val_settings": [cv_test_full],
         "train_settings": [
-            cv_train_fixed_length,
-            vf_full
+            cv_train_fixed_length
         ]
     }
 

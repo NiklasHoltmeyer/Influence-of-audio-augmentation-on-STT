@@ -65,6 +65,15 @@ class ModelArguments:
         }
     )
 
+    processor_create_skip: bool = field(
+        default=False,
+        metadata={
+            "help":(
+                "Force Resume from Checkpoint"
+            )
+        }
+    )
+
 
 @dataclass
 class DataTrainingArguments:

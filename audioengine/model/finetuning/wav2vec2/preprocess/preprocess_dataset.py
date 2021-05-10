@@ -36,15 +36,17 @@ mappings = {
     "marcel/wav2vec2-large-xlsr-german-demo": '[\,\?\.\!\-\;\:\"\“\%\”\�\カ\æ\無\ན\カ\臣\ѹ\…\«\»\ð\ı\„\幺\א\ב\比\ш\ע\)\ứ\в\œ\ч\+\—\ш\‚\נ\м\ń\乡\$\=\ש\ф\支\(\°\и\к\̇]',
     'MehdiHosseiniMoghadam/wav2vec2-large-xlsr-53-German': '[\,\?\.\!\-\;\:\"\“\%\‘\”\�]',
 
-
-    "facebook/wav2vec2-large-xlsr-53": '[\,\?\.\!\-\;\:\‘\”\�\']'# <- change from original
+    "facebook/wav2vec2-large-xlsr-53": '[\,\?\.\!\-\;\:\‘\”\�\']'  # <- change from original
 }
-#facebook/wav2vec2-large-xlsr-53
+# facebook/wav2vec2-large-xlsr-53
 
 print("model_args.model_name_or_path", model_args.model_name_or_path)
 
 chars_to_ignore_regex = mappings.get(model_args.model_name_or_path, None)
 chars_to_ignore_regex = chars_to_ignore_regex if not None else f'[{"".join(data_args.chars_to_ignore)}]'
+
+if model_args.processor_create_skip:
+    chars_to_ignore_regex = mappings["facebook/wav2vec2-large-xlsr-53"]
 
 target_sample_rate = 16_000
 assert data_args.dataset_path, "Please set Flag dataset_path"
@@ -67,28 +69,35 @@ eval_dataset = eval_dataset.map(remove_special_characters(chars_to_ignore_regex)
                                 keep_in_memory=True,
                                 num_proc=data_args.preprocessing_num_workers)
 
-vocab_path = Path(str(resampled_data_dir) + '/vocab.json').resolve()
+if not model_args.processor_create_skip:
+    vocab_path = Path(str(resampled_data_dir) + '/vocab.json').resolve()
+    vocab_dict = build_vocab(train_dataset, eval_dataset)
 
-vocab_dict = build_vocab(train_dataset, eval_dataset)
-with open(vocab_path, 'w') as vocab_file:
-    json.dump(vocab_dict, vocab_file)
+    with open(vocab_path, 'w') as vocab_file:
+        json.dump(vocab_dict, vocab_file)
 
-if data_args.max_train_samples is not None:
+    tokenizer = Wav2Vec2CTCTokenizer(
+        vocab_path,
+        unk_token="[UNK]",
+        pad_token="[PAD]",
+        word_delimiter_token="|",
+    )
+
+    feature_extractor = Wav2Vec2FeatureExtractor(
+        feature_size=1, sampling_rate=target_sample_rate, padding_value=0.0, do_normalize=True,
+        return_attention_mask=True
+    )
+    processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
+else:
+    vocab_path = model_args.model_name_or_path
+    processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
+
+if data_args.max_train_samples is not None and data_args.max_train_samples > 0:
     train_dataset = train_dataset.select(range(data_args.max_train_samples))
 
-if data_args.max_val_samples is not None:
+if data_args.max_val_samples is not None and data_args.max_val_samples > 0:
     eval_dataset = eval_dataset.select(range(data_args.max_val_samples))
 
-tokenizer = Wav2Vec2CTCTokenizer(
-    vocab_path,
-    unk_token="[UNK]",
-    pad_token="[PAD]",
-    word_delimiter_token="|",
-)
-feature_extractor = Wav2Vec2FeatureExtractor(
-    feature_size=1, sampling_rate=target_sample_rate, padding_value=0.0, do_normalize=True, return_attention_mask=True
-)
-processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
 # processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
 load_resample_save_fn = load_resample_save(resampled_data_dir, processor, target_sample_rate)
 new_train_paths = [load_resample_save_fn(f)
@@ -159,5 +168,5 @@ print("eval_info:", eval_info)
 
 print("model_name_or_path", model_args.model_name_or_path)
 print("vocab_path", vocab_path)
+print("vocab_trained", not model_args.processor_create_skip)
 print("Processor Path", training_args.output_dir)
-
