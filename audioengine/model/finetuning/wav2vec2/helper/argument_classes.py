@@ -56,6 +56,15 @@ class ModelArguments:
     )
     layerdrop: Optional[float] = field(default=0.0, metadata={"help": "The LayerDrop probability."})
 
+    force_resume: bool = field(
+        default=False,
+        metadata={
+            "help":(
+                "Force Resume from Checkpoint"
+            )
+        }
+    )
+
 
 @dataclass
 class DataTrainingArguments:
@@ -115,3 +124,4 @@ class DataTrainingArguments:
         default=[",", "?", ".", "!", "-", ";", ":", '""', "%", "'", '"', "�"],
         metadata={"help": "A list of characters to remove from the transcripts."},
     )
+
