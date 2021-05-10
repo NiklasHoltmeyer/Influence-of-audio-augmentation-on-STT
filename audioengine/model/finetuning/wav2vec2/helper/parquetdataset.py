@@ -17,7 +17,7 @@ class ParquetDataset(torch.utils.data.Dataset):
         self.input_seq_lengths_path = Path(
             f'{resampled_data_dir}/{data_args.dataset_config_name}.input_seq_len.parquet')
 
-        assert self.path.exists()
+        assert self.path.exists(), f"Path {{{self.path}}} does not exist!"
 
         df = pd.read_parquet(self.path)
         self.labels = [x.tolist() for x in df['labels'].tolist()]
