@@ -93,9 +93,18 @@ class wav2vec2:
 
             "facebook/wav2vec2-large-xlsr-53": '[\,\?\.\!\-\;\:\‘\”\�\']'
         }
-        if self.based_on:
-            return mappings.get(self.based_on, mappings["facebook/wav2vec2-large-xlsr-53"])
-        return mappings.get(self.model_name, mappings["facebook/wav2vec2-large-xlsr-53"])
+        __chars_to_remove = mappings.get(self.based_on, None) \
+            if self.based_on else mappings.get(self.model_name, None)
+
+        if __chars_to_remove:
+            return __chars_to_remove
+
+        fallback_name = 'facebook/wav2vec2-large-xlsr-53'
+        fallback_value = mappings[fallback_name]
+
+        self.logger.warning("Using Fallback Chars to Ignore!")
+        self.logger.warning(f"Fallback: {{'{fallback_name}': {fallback_value}}}")
+        return mappings['facebook/wav2vec2-large-xlsr-53']
 
     def _chars_to_replace(self, _else=None):
         substitutions_marcel = {
