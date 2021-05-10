@@ -39,7 +39,9 @@ def main():
 
     # Detecting last checkpoint.
     last_checkpoint = None
-    if os.path.isdir(training_args.output_dir) and training_args.do_train and not training_args.overwrite_output_dir:
+    if model_args.force_resume or \
+            (os.path.isdir(training_args.output_dir) and
+                training_args.do_train and not training_args.overwrite_output_dir):
         last_checkpoint = get_last_checkpoint(training_args.output_dir)
         if last_checkpoint is None and len(os.listdir(training_args.output_dir)) > 0:
             raise ValueError(
@@ -58,6 +60,7 @@ def main():
     logger.info(f"Split Train[{len(train_dataset)}], Eval[{len(eval_dataset)}]")
 
     logger.warning(f"Load Processor {training_args.output_dir}")
+
     processor = Wav2Vec2Processor.from_pretrained(training_args.output_dir)
 
     logger.warning(f"Load Model {model_args.model_name_or_path}")
@@ -65,8 +68,11 @@ def main():
 
     #processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
 
+    _model_name_or_path = model_args.model_name_or_path if not model_args.force_resume else last_checkpoint
+
+    logger.debug("Load Model", _model_name_or_path)
     model = Wav2Vec2ForCTC.from_pretrained(
-        model_args.model_name_or_path,
+        _model_name_or_path,
         cache_dir=model_args.cache_dir,
         activation_dropout=model_args.activation_dropout,
         attention_dropout=model_args.attention_dropout,
@@ -152,6 +158,13 @@ def main():
 
     logger.info("args:")
     logger.info(args)
+
+    if "all" in training_args.report_to or "wandb" in training_args.report_to:
+        logger.info("Uploading Results to WANDB")
+        wandb.save(training_args.output_dir)
+        logger.info("[DONE] Uploading Results to WANDB")
+
+    logger.debug("[Base] Model", _model_name_or_path)
 
     return results
 
