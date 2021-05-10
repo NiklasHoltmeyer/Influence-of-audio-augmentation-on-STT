@@ -58,8 +58,7 @@ class CommonVoice(AudioDataset):
             "validated": "validated.tsv",
         }
 
-        value = mapping.get(name, None)
-        assert value
+        value = mapping.get(name, name + ".tsv")
 
         input_path, processed_path = Path(self.path, value), Path(self.path, "processed_"+value)
 

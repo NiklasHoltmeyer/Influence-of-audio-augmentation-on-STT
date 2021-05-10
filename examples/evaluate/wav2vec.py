@@ -1,17 +1,14 @@
-import argparse
-from argparse import RawTextHelpFormatter, ArgumentTypeError
-import torch
-from audioengine.corpus.dataset import Dataset  # dataset.Dataset
-from audioengine.metrics.wer import Jiwer
-from torchvision import transforms
-from tqdm import tqdm
-from audioengine.model.pretrained.wav2vec2 import wav2vec2
-from audioengine.corpus.backend.pytorch.dataframedataset import DataframeDataset
-from torch.utils.data import DataLoader
 import os
 import time
+from argparse import ArgumentTypeError
 
-from audioengine.transformations.backend.pytorch.texttransformations import ToUpper
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
+from audioengine.corpus.backend.pytorch.dataframedataset import DataframeDataset
+from audioengine.corpus.dataset import Dataset  # dataset.Dataset
+from audioengine.metrics.wer import Jiwer
+from audioengine.model.pretrained.wav2vec2 import wav2vec2
 
 
 def validate_model(model_name, based_on = None):
@@ -55,9 +52,8 @@ def in_list(_list, exception_text):
         return item
     return __call__
 
-based_on = "maxidl/wav2vec2-large-xlsr-german"
-model_name = "/share/w2v/wav2vec2-large-xlsr-german-sm"
-print(validate_model(model_name, based_on))
+model_name = "/share/modelle/run_pro_500_wu/checkpoint-9000"
+print(validate_model(model_name))
 
 exit(0)
 
@@ -79,9 +75,11 @@ parser_supported_models_str = "Supported Models: \r\n" + "\r\n".join(parser_supp
 #args = parser.parse_args()
 #model_name = args.model_name
 #model_name = "flozi00/wav2vec-xlsr-german"
-for model_name in supported_models:
-    try:
-        print(validate_model(model_name))
-    except Exception as e:
-        error = "\t".join([model_name, "error", str(e)])
-        print(error)
+#for model_name in supported_models:
+#    try:
+#        print(validate_model(model_name))
+#    except Exception as e:
+#        error = "\t".join([model_name, "error", str(e)])
+#        print(error)
+
+
