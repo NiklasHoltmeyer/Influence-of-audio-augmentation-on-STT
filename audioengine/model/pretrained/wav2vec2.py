@@ -94,8 +94,8 @@ class wav2vec2:
             "facebook/wav2vec2-large-xlsr-53": '[\,\?\.\!\-\;\:\‘\”\�\']'
         }
         if self.based_on:
-            return mappings.get(self.based_on, None)
-        return mappings.get(self.model_name, None)
+            return mappings.get(self.based_on, mappings["facebook/wav2vec2-large-xlsr-53"])
+        return mappings.get(self.model_name, mappings["facebook/wav2vec2-large-xlsr-53"])
 
     def _chars_to_replace(self, _else=None):
         substitutions_marcel = {
