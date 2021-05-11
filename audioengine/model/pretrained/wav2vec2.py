@@ -10,11 +10,13 @@ from torchvision import transforms
 
 
 class wav2vec2:
-    def __init__(self, model_name, based_on=None,
+    def __init__(self, model_name, processor_name=None, based_on=None,
                  device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"), skip_loading=False):
         self.model_name = model_name
+        self.processor_name = processor_name #only needed for testing
         self.device = device
         self.based_on = based_on
+
 
         self.logger = defaultLogger()
         self.logger.info(f"Wav2Vec Device: {device}")
@@ -67,6 +69,7 @@ class wav2vec2:
 
     def _load_pretrained(self):
         processor_name = self.model_name if not self.based_on else self.based_on
+        processor_name = self.processor_name if self.processor_name else processor_name
         processor = Wav2Vec2Processor.from_pretrained(processor_name)
         model = Wav2Vec2ForCTC.from_pretrained(self.model_name)
         model = model.to(self.device)
