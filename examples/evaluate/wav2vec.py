@@ -1,6 +1,7 @@
 import os
 import time
 from argparse import ArgumentTypeError
+from pathlib import Path
 
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -11,7 +12,7 @@ from audioengine.metrics.wer import Jiwer
 from audioengine.model.pretrained.wav2vec2 import wav2vec2
 
 
-def validate_model(model_name, based_on = None):
+def validate_model(model_name, based_on=None):
     w2c = wav2vec2(model_name, based_on=based_on)
     transform = w2c.transformation()
 
@@ -34,52 +35,77 @@ def validate_model(model_name, based_on = None):
     sentence_stacked = []
     transcriptions_stacked = []
     start_time = time.time()
-    for idx, (speeches, sentences) in enumerate(tqdm(dataloader)):
+    for idx, (speeches, sentences) in enumerate(tqdm(dataloader, desc=model_name)):
         transcriptions = w2c.predict(speeches)
         transcriptions_stacked.extend(transcriptions)
         sentence_stacked.extend(sentences)
 
-        if idx % 97 == 0: #97 71
+        if idx % 97 == 0:  # 97 71
             wer.add_batch(sentence_stacked, transcriptions_stacked, core_count)
             sentence_stacked, transcriptions_stacked = [], []
 
-    return wer.to_tsv(prefix=model_name, suffix=str(time.time()-start_time)).replace(".", ",")
+    return wer.to_tsv(prefix=model_name, suffix=str(time.time() - start_time)).replace(".", ",")
+
 
 def in_list(_list, exception_text):
     def __call__(item):
         if not item in _list:
             raise ArgumentTypeError(exception_text + item)
         return item
+
     return __call__
 
-model_name = "/share/modelle/run_pro_500_wu/checkpoint-9000"
-print(validate_model(model_name))
+#jobs = ["/share/download/run_g_f_p_1_resume/checkpoint-19000", "/share/download/run_pro_500_wu/checkpoint-9000", "/share/download/run_pro_750_wu/checkpoint-9000", "/share/download/run_pro_idleback/checkpoint-24000"]
+jobs = ["/share/modelle/base/run_g_f_i_1/checkpoint-3000"]
 
-exit(0)
+results = []
+failed = []
+for model_name in tqdm(
+        jobs, desc="troll"):
+    try:
+        #base_on = str(Path(model_name).parent.resolve())
+        #base_on = "/share/datasets/wav2vec2-large-xlsr-german-vf_nh"
+        base_on=None
+        results.append(validate_model(model_name, based_on=base_on))
+    except Exception as e:
+        print(e)
+        failed.append(model_name)
 
+print("*" * 72)
+print("*" * 72)
+print("*" * 72)
+for result in results:
+    print(result)
+print("-" * 72)
+print(results)
+print("-" * 72)
+for fail in failed:
+    print(fail)
+print("-" * 72)
+print(failed)
+print("*" * 72)
+print("*" * 72)
+print("*" * 72)
 
 supported_models = ['facebook/wav2vec2-large-xlsr-53-german',
-                        'maxidl/wav2vec2-large-xlsr-german',
-                        'marcel/wav2vec2-large-xlsr-53-german',
-                        'flozi00/wav2vec-xlsr-german',
-                        'marcel/wav2vec2-large-xlsr-german-demo',
-                        'MehdiHosseiniMoghadam/wav2vec2-large-xlsr-53-German']
+                    'maxidl/wav2vec2-large-xlsr-german',
+                    'marcel/wav2vec2-large-xlsr-53-german',
+                    'flozi00/wav2vec-xlsr-german',
+                    'marcel/wav2vec2-large-xlsr-german-demo',
+                    'MehdiHosseiniMoghadam/wav2vec2-large-xlsr-53-German']
 parser_supported_models_str = ["\t" + model for model in supported_models]
 parser_supported_models_str = "Supported Models: \r\n" + "\r\n".join(parser_supported_models_str)
 
-
-#parser = argparse.ArgumentParser(description="Evaluate Wav2Vec", formatter_class=RawTextHelpFormatter)
-#parser.add_argument('--model_name', '-m', required=True,
+# parser = argparse.ArgumentParser(description="Evaluate Wav2Vec", formatter_class=RawTextHelpFormatter)
+# parser.add_argument('--model_name', '-m', required=True,
 #                    help=parser_supported_models_str, type=in_list(supported_models, "\r\nInvalid Model Name: "))
 
-#args = parser.parse_args()
-#model_name = args.model_name
-#model_name = "flozi00/wav2vec-xlsr-german"
-#for model_name in supported_models:
+# args = parser.parse_args()
+# model_name = args.model_name
+# model_name = "flozi00/wav2vec-xlsr-german"
+# for model_name in supported_models:
 #    try:
 #        print(validate_model(model_name))
 #    except Exception as e:
 #        error = "\t".join([model_name, "error", str(e)])
 #        print(error)
-
-

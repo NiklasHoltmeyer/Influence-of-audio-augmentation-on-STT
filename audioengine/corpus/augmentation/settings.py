@@ -1,4 +1,10 @@
 filter_settings = {
+    "real_noise": {
+        "range": (0.6, 0.9), #0.5 geht fitt
+        "probability": 1.0,
+    }
+}
+filter_settings_all = {
     "time_stretch": {
         "range": (0.8, 1.5),
         "probability": 0.3

@@ -1,5 +1,6 @@
 import json
 import os
+import warnings
 from multiprocessing import Pool
 from pathlib import Path
 from random import uniform
@@ -201,9 +202,12 @@ def augment_dataset(df, noise_df, **kwargs):
     job_fn_mapping, range_fn_mapping = callback_dict(filter_settings, target_sample_rate=target_samplerate)
     jobs = list(enumerate((zip_jobs(df))))
 
-    with Pool(processes=_threads) as pool:
-        data_augmented = pool.map(execute_job, tqdm(jobs, desc=f"Audio-Augmentation: {_threads} Threads"))
+    warnings.filterwarnings('ignore')
 
+    with Pool(processes=_threads) as pool: #_threads
+        pool.map(execute_job, tqdm(jobs, desc=f"Audio-Augmentation: {_threads} Threads"))
+
+    warnings.filterwarnings('default')
     logger.debug("Finished Augmenting Dataset")
 
 

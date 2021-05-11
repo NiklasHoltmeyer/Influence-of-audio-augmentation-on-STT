@@ -1,9 +1,13 @@
 from audioengine.corpus.augmentation.helper import *
 
 from audioengine.corpus.noise import Noise
-from audioengine.corpus.voxforge import VoxForge
+from audioengine.corpus.commonvoice import CommonVoice
 
-df = VoxForge("/share/datasets/vf_de").load_dataframe(shuffle="True", type="train")
-noise_df = Noise("/share/datasets/FSD50K").load_dataframe()
+df = CommonVoice("/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de").load_dataframe(shuffle="True", type="train_small")
+noise_df = Noise("/share/datasets/FSD50K").load_dataframe(shuffle="True")
 
-augment_dataset(df, noise_df, output_dir="/share/datasets/vf_augment_train", output_subfolder="wav", sep="\t")
+augment_dataset(df, noise_df,
+                output_dir="/share/datasets/cv_small_rnoise",
+                output_subfolder="wav",
+                sep="\t",
+                file_name="processed_train_small.tsv")

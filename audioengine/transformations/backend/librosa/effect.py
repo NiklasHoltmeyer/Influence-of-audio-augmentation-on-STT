@@ -1,3 +1,5 @@
+from random import randint
+
 import librosa
 import numpy as np
 
@@ -27,12 +29,22 @@ Apply Noise-Signal to Signal.
         dif = s_len - n_len
 
         if dif < 0:
-            beg = int(-dif / 2)
-            end = -((-1 * dif) - beg)
-            y_noise_padded = y_noise[beg:end]
+            beg = randint(0, -dif)# -> end <= 0
+            end = beg+s_len
+
+            #beg = randint(dif, 0) #int(-dif / 2)
+            #end = -((-1 * dif) - beg)
+
+            #beg, end = min(beg, end), max(beg, end)
+            y_noise_padded = y_noise[beg: end]
+            if len(y_noise_padded) == 0:
+                print(end)
+                print(beg)
+                exit(0)
+
         elif dif > 0:
             pad_fn = pad_predefined[pad_idx % 10]
-            beg = int(dif / 2)
+            beg = randint(0, dif) # int(dif / 2)
             end = dif - beg
             y_noise_padded = np.pad(y_noise, (beg, end), pad_fn)
         else:
