@@ -59,14 +59,14 @@ def main():
 
     logger.info(f"Split Train[{len(train_dataset)}], Eval[{len(eval_dataset)}]")
 
-    logger.warning(f"Load Processor {training_args.output_dir}")
+    ##logger.warning(f"Load Processor {training_args.output_dir}")
 
-    processor = Wav2Vec2Processor.from_pretrained(training_args.output_dir)
+    ###processor = Wav2Vec2Processor.from_pretrained(training_args.output_dir)
 
     logger.warning(f"Load Model {model_args.model_name_or_path}")
     logger.warning(f"* Cache_Dir {model_args.cache_dir}")
 
-    #processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
+    processor = Wav2Vec2Processor.from_pretrained(model_args.model_name_or_path)
 
     _model_name_or_path = model_args.model_name_or_path if not model_args.force_resume else last_checkpoint
 
