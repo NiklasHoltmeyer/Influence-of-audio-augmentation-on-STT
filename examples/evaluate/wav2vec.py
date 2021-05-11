@@ -56,7 +56,7 @@ def in_list(_list, exception_text):
     return __call__
 
 #jobs = ["/share/download/run_g_f_p_1_resume/checkpoint-19000", "/share/download/run_pro_500_wu/checkpoint-9000", "/share/download/run_pro_750_wu/checkpoint-9000", "/share/download/run_pro_idleback/checkpoint-24000"]
-jobs = ["/share/modelle/base/run_g_f_i_1/checkpoint-3000"]
+jobs = ["/share/modelle/vf_cv_small/cv_small_noaug_1/", "/share/modelle/vf_cv_small/cv_small_noaug_2/"]
 
 results = []
 failed = []
@@ -65,7 +65,7 @@ for model_name in tqdm(
     try:
         #base_on = str(Path(model_name).parent.resolve())
         #base_on = "/share/datasets/wav2vec2-large-xlsr-german-vf_nh"
-        base_on=None
+        base_on="unknownTransformer/wav2vec2-large-xlsr-german"
         results.append(validate_model(model_name, based_on=base_on))
     except Exception as e:
         print(e)

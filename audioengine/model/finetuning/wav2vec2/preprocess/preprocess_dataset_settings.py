@@ -3,7 +3,7 @@ from audioengine.logging.logging import defaultLogger
 logger = defaultLogger()
 
 def preprocess_settings():
-    return preprocess_settings_cvmd_no_aug()
+    return preprocess_settings_cv_no_aug()#preprocess_settings_cv_realnoise_aug()
     #return preprocess_settings_eval()
 
 def preprocess_settings_cv_eval():
@@ -57,7 +57,6 @@ def preprocess_settings_cv_no_aug():
         "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
         "shuffle": True,
         "validation_split": None,  # -> all entries
-        "fixed_length": 15_000,  # -> 80% vf + 20% cv_train
         "type": "train_small",
         "min_duration": 1.50,
         "max_duration": 6.00,
@@ -124,7 +123,6 @@ def preprocess_settings_cv_realnoise_aug():
         "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
         "shuffle": True,
         "validation_split": None,  # -> all entries
-        "fixed_length": 15_000,  # -> 80% vf + 20% cv_train
         "type": "train_small",
         "min_duration": 1.50,
         "max_duration": 6.00,
@@ -133,15 +131,15 @@ def preprocess_settings_cv_realnoise_aug():
     }
 
     cv_train_fixed_length_aug = {
-        "base_path": "/share/datasets/cv/de/cv_small_real_noise/",
+        "base_path": "/share/datasets/cv_small_rnoise/",
         "shuffle": True,
         "validation_split": None,  # -> all entries
-        "fixed_length": 15_000,  # -> 80% vf + 20% cv_train
         "type": "train_small",
         "min_duration": 1.50,
         "max_duration": 6.00,
         "min_target_length": 2,
-        "max_target_length": None
+        "max_target_length": None,
+        "type": "train_small",
     }
 
     test_settings = {

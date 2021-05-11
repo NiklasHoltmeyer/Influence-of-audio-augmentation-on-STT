@@ -68,7 +68,6 @@ train_dataset = train_dataset.map(remove_special_characters(chars_to_ignore_rege
 eval_dataset = eval_dataset.map(remove_special_characters(chars_to_ignore_regex), remove_columns=["sentence"],
                                 keep_in_memory=True,
                                 num_proc=data_args.preprocessing_num_workers)
-
 if not model_args.processor_create_skip:
     vocab_path = Path(str(resampled_data_dir) + '/vocab.json').resolve()
     vocab_dict = build_vocab(train_dataset, eval_dataset)
@@ -145,6 +144,7 @@ train_dataset = train_dataset.map(
     batched=True,
     num_proc=data_args.preprocessing_num_workers,
 )
+
 print('preparing dataset: eval')
 eval_dataset = eval_dataset.map(
     tokenize_targets,
