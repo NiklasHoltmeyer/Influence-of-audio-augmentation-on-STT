@@ -2,6 +2,7 @@ from sklearn.model_selection import train_test_split
 
 from audioengine.corpus.backend.pytorch.huggingfacedataset import HuggingfaceDataset
 from audioengine.corpus.commonvoice import CommonVoice
+from audioengine.corpus.tts_synthesized import TTSSynthesized
 from audioengine.corpus.voxforge import VoxForge
 from audioengine.logging.logging import defaultLogger
 from audioengine.transformations.backend.tensorflow.audiotransformations import AudioTransformations
@@ -63,6 +64,13 @@ class Dataset:
             if _type:
                 return df, f"voxforge{desc}-{_type}({len(df)})"
             return df, f"voxforge{desc}-({len(df)})"
+        if self.__is_tts(base_path):
+            df = TTSSynthesized(output_dir=base_path, tts_engine=None, text_files=None)
+            _type = kwargs.get("type")
+            if _type:
+                return df, f"tts{desc}-{_type}({len(df)})"
+            return df, f"tts{desc}-({len(df)})"
+
         raise Exception(f"Unknown DS {base_path}")
 
     def __is_cv(self, name):
@@ -70,6 +78,9 @@ class Dataset:
 
     def __is_vf(self, name):
         return "voxforge" in name.lower() or "vf" in name.lower()
+
+    def __is_tts(self, name):
+        return "texttospeech" in name.lower() or "tts" in name.lower()
 
     def _from_AudioDataset(self, audio_ds, input_key="path", target_key="sentence", **kwargs):
         audio_format = audio_ds.audio_format

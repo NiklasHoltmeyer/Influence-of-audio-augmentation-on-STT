@@ -40,7 +40,14 @@ class TTSSynthesized(AudioDataset):
                  header="TTS", padding_length=50)
     def load_dataframe(self, **kwargs):
         tsv_path = self.load_preprocessed_df(**kwargs)
+        type = kwargs.get("type")
+        type_mapping = {
+            "filterd" : "",
+            "path": "",
+            "path_filterd": "",
 
+        }
+        usecols = ["text", "target_length"]
         dataframe = super().load_dataframe(tsv_path, encoding="utf-8", sep=self.df_sep, **kwargs)
 
         return dataframe
@@ -52,13 +59,20 @@ class TTSSynthesized(AudioDataset):
             dataframe = super().load_dataframe(df_path, encoding="utf-8", sep=self.df_sep, **kwargs)
 
             dataframe = self._add_does_exist_col(dataframe)
+
             self._apply_tts(dataframe)
             self._apply_filter(dataframe)
+
         return df_path
 
     def _apply_tts(self, dataframe):
         jobs = dataframe[~dataframe.path_exists]
         jobs_batched = chunks(jobs, self.batch_size)
+
+        if len(jobs) > 0 and not self.tts_engine:
+            raise Exception(f"Run TTSSynthesized with a valid TTS Engine! {{tts_engine = {self.tts_engine}}}")
+        elif len(jobs) > 0 and not self.text_files:
+            raise Exception(f"Run TTSSynthesized with valid Text Files! {{text_files = {self.text_files}}}")
 
         for batch in tqdm(jobs_batched, total=int(len(jobs) / self.batch_size)):
             texts = batch.text
@@ -89,12 +103,15 @@ class TTSSynthesized(AudioDataset):
             with open(textfile, "r", encoding="utf") as f:
                 _data = [d for d in f if filter_fn(d)]
                 data.extend(_data)
-        df = pd.DataFrame({"text": data}).sample(frac=1).reset_index(drop=True)
+        df = pd.DataFrame({"sentence": data}).sample(frac=1).reset_index(drop=True)
         df["path"] = df.index.map(lambda x: str(Path(self.output_dir, "wav", str(x) + ".wav").resolve()))
         df["path_filterd"] = df.index.map(
             lambda x: str(Path(self.output_dir, "wav_filterd", str(x) + ".wav").resolve()))
-        df["target_length"] = df["text"].map(len)
-        df.to_csv(path, encoding="utf-8", index=False)
+        df = super().add_duration_column(df, desc=f"Preprocess TTS-DF (Durations)")
+        df = super().add_target_Lengths(df, desc=f"Preprocess TTS-DF (Target-Lengths)")
+
+
+        df.to_csv(path, encoding="utf-8", index=False, sep=self.df_sep)
 
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
@@ -108,9 +125,7 @@ if __name__ == "__main__":
 
     tts_engine = SileroTTS("de", "thorsten_16khz", "cpu")
 
-    rename_cols = {"path_filterd": "path"}
+    rename_cols = {"path" : "path_nofilterd", "path_filterd": "path"}
     fixed_length = 15_000
     df = TTSSynthesized(text_files=texts, output_dir=output_dir, tts_engine=tts_engine)\
         .load_dataframe(rename_cols=rename_cols, fixed_length=fixed_length)
-
-    print(df)
