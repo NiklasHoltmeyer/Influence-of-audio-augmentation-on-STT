@@ -5,7 +5,7 @@ from audioengine.logging.logging import defaultLogger
 
 class SileroTTS:
     def __init__(self, language, speaker, device):
-        device = torch.device(device)
+        self.device = torch.device(device)
         self.model, self.symbols, self.sample_rate, example_text, self.apply_tts = torch.hub.load(repo_or_dir='snakers4/silero-models',
                                                                                    model='silero_tts',
                                                                                    language=language,
