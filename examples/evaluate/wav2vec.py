@@ -27,8 +27,8 @@ def validate_model(model_name, based_on=None):
     ds_settings = {"val_settings": [cv_test_full], "train_settings": None, "transform": transform}
     (_, _), (ds, ds_info) = Dataset("torch").from_settings(ds_settings)
 
-    core_count = os.cpu_count()
-    dataloader = DataLoader(ds, batch_size=20, num_workers=os.cpu_count(),
+    core_count = os.cpu_count() #batch-size -> 20
+    dataloader = DataLoader(ds, batch_size=16, num_workers=os.cpu_count(),
                             collate_fn=DataframeDataset.collate_fn("speech", "sentence"))
 
     wer = Jiwer()
@@ -56,8 +56,8 @@ def in_list(_list, exception_text):
     return __call__
 
 #jobs = ["/share/download/run_g_f_p_1_resume/checkpoint-19000", "/share/download/run_pro_500_wu/checkpoint-9000", "/share/download/run_pro_750_wu/checkpoint-9000", "/share/download/run_pro_idleback/checkpoint-24000"]
-jobs = ["/share/modelle/vf_cv_small/cv_small_noaug_1/", "/share/modelle/vf_cv_small/cv_small_noaug_2/"]
-
+jobs = ["/share/modelle/vf_cv_small/cv_sm_real_noise_1_20ep_1300/checkpoint-6000"]
+based_on = "unknownTransformer/wav2vec2-large-xlsr-german"
 results = []
 failed = []
 for model_name in tqdm(
@@ -65,8 +65,7 @@ for model_name in tqdm(
     try:
         #base_on = str(Path(model_name).parent.resolve())
         #base_on = "/share/datasets/wav2vec2-large-xlsr-german-vf_nh"
-        base_on="unknownTransformer/wav2vec2-large-xlsr-german"
-        results.append(validate_model(model_name, based_on=base_on))
+        results.append(validate_model(model_name, based_on=based_on))
     except Exception as e:
         print(e)
         failed.append(model_name)
