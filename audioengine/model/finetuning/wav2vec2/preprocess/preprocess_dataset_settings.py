@@ -3,8 +3,50 @@ from audioengine.logging.logging import defaultLogger
 logger = defaultLogger()
 
 def preprocess_settings():
-    return preprocess_settings_cv_no_aug()#preprocess_settings_cv_realnoise_aug()
+    return preprocess_settings_cv_ttsaug()#preprocess_settings_cv_realnoise_aug()
     #return preprocess_settings_eval()
+#"/share/datasets/8mil_tts/"
+
+def preprocess_settings_cv_ttsaug():
+    return {
+        "val_settings": [
+            {
+                "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
+                "shuffle": True,
+                "validation_split": None,
+                "type": "test_small",
+                "min_duration": 1.5,
+                "max_duration": 6.0,
+                "min_target_length": 2,
+                "max_target_length": None
+            }
+        ],
+        "train_settings": [
+            {
+                "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
+                "shuffle": True,
+                "validation_split": None,
+                "type": "train_small",
+                "min_duration": 1.5,
+                "max_duration": 6.0,
+                "min_target_length": 2,
+                "max_target_length": None
+            },
+            {
+                "base_path": "/share/datasets/8mil_tts/",
+                "shuffle": True,
+                "validation_split": None,
+                "type": "filterd",
+                "fixed_length": 15_000,
+                #"min_duration": 1.5,
+                #"max_duration": 6.0,
+                "min_target_length": 2,
+                "max_target_length": None,
+                "filter": '-af "highpass=200,lowpass=3000,afftdn"',
+                "tts_engine": "silero"
+            }
+        ],
+    }
 
 def preprocess_settings_cv_eval():
     cv_test_full = {

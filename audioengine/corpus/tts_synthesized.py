@@ -1,19 +1,15 @@
 import os
 from multiprocessing import Pool
 from pathlib import Path
-from random import random
 
-from tqdm.contrib.concurrent import process_map
+import pandas as pd
+import soundfile as sf
+from tqdm import tqdm
 
 from audioengine.corpus.audiodataset import AudioDataset
-import pandas as pd
-from tqdm import tqdm
 from audioengine.corpus.util.interceptors import time_logger
-import soundfile as sf
-
 from audioengine.logging.logging import defaultLogger
 from audioengine.model.pretrained.silero_tts import SileroTTS
-from audioengine.transformations.backend.librosa.io import IO
 
 
 class TTSSynthesized(AudioDataset):
@@ -23,7 +19,7 @@ class TTSSynthesized(AudioDataset):
         self.text_files = text_files
         self.output_dir = output_dir
 
-        self.threads = kwargs.get("threads", os.cpu_count())
+        self.threads = kwargs.get("threads", os.cpu_count() * 2)
 
         self.df_name = kwargs.get("dataframe_name", "data.tsv")
         self.df_sep = kwargs.get("dataframe_sep", "\t")
@@ -42,17 +38,23 @@ class TTSSynthesized(AudioDataset):
                  header="TTS", padding_length=50)
     def load_dataframe(self, **kwargs):
         tsv_path = self.load_preprocessed_df(**kwargs)
-        #type = kwargs.get("type")
-#
-#
-        #type_mapping = {
-#            "filterd": "",
-#            "path": "",
-#            "path_filterd": "",
-#
-        #}
-#        usecols = ["text", "target_length"]
-        dataframe = super().load_dataframe(tsv_path, encoding="utf-8", sep=self.df_sep, **kwargs)
+        type = kwargs.get("type", "clean") # -> clean = unedited
+
+        path_mapping = {
+            "filterd" : "path_filterd",
+            "clean": "path"
+        }
+
+        path_col = path_mapping.get(type)
+
+        usecols = ['sentence', path_col, 'target_length', 'duration']
+        rename_cols = {"path_filterd": "path"}
+
+        dataframe = super().load_dataframe(tsv_path, encoding="utf-8",
+                                           sep=self.df_sep, rename_cols=rename_cols, usecols=usecols, **kwargs)
+
+        defaultLogger().debug("path_col")
+        defaultLogger().debug(path_col)
 
         return dataframe
 
@@ -63,8 +65,8 @@ class TTSSynthesized(AudioDataset):
         split_name = self._size_mapping(fixed_length)
 
         df_path = Path(self.output_dir, self.df_name)
-        if True:#not df_path.exists():
-            #self._preprocess_df(df_path)
+        if not df_path.exists():
+            self._preprocess_df(df_path)
             #**kwargs ignored!
             dataframe = super().load_dataframe(df_path, min_target_length=None, max_target_length=None,
                                                encoding="utf-8", sep=self.df_sep, min_duration=None,
@@ -92,14 +94,14 @@ class TTSSynthesized(AudioDataset):
             df = super().add_duration_column(df, desc=f"Preprocess TTS-DF (Durations)")
             df = super().add_target_Lengths(df, desc=f"Preprocess TTS-DF (Target-Lengths)")
 
-            df[:split_len].to_csv(df_splitpath, encoding="utf-8", index=False, sep=self.df_sep)
+            df.to_csv(df_splitpath, encoding="utf-8", index=False, sep=self.df_sep)
 
 
     def _size_splits(self):
         return {
             "sm": 15_000,
-            "md": 30_000,
-            "lg": 60_000
+#            "md": 30_000,
+#            "lg": 60_000
         }
 
     def _size_mapping(self, length):
@@ -189,5 +191,8 @@ if __name__ == "__main__":
     rename_cols = {"text": "sentence"}
     tts = TTSSynthesized(text_files=texts, output_dir=output_dir, tts_engine=tts_engine)
     # .load_dataframe(rename_cols=rename_cols, fixed_length=fixed_length)
-    df = tts.load_dataframe(fixed_length=15_000)
+    df = tts.load_dataframe(fixed_length=15_000, type="filterd")
+
+    print(df)
     print(df.keys())
+    print(df["path"][0])

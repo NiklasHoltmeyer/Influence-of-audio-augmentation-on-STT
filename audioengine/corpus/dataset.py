@@ -65,7 +65,7 @@ class Dataset:
                 return df, f"voxforge{desc}-{_type}({len(df)})"
             return df, f"voxforge{desc}-({len(df)})"
         if self.__is_tts(base_path):
-            df = TTSSynthesized(output_dir=base_path, tts_engine=None, text_files=None)
+            df = TTSSynthesized(output_dir=base_path, tts_engine=None, text_files=None).load_dataframe(**kwargs)
             _type = kwargs.get("type")
             if _type:
                 return df, f"tts{desc}-{_type}({len(df)})"
@@ -129,6 +129,9 @@ if __name__ == "__main__":
     linux_path = "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de"
     windows_path = r"C:\workspace\datasets\cv\de\cv-corpus-6.1-2020-12-11\de"
     path = linux_path
+
+    #"/share/datasets/8mil_tts/"
+    Dataset("/share/datasets/8mil_tts/")
 
     # train_ds, val_ds = Dataset("torch").CommonVoice(path, validation_split=0.2, batch_size=1)
 
