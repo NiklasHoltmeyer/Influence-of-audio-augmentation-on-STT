@@ -94,9 +94,9 @@ def main():
         model.freeze_feature_extractor()
 
     trainer = load_trainer(model, processor, data_collator,
-                           training_args, train_dataset, eval_dataset) if training_args.group_by_length else \
-        load_grouped_trainer(model, processor, data_collator,
-                             training_args, train_dataset, eval_dataset)
+                           training_args, train_dataset, eval_dataset)# if training_args.group_by_length else \
+        #load_grouped_trainer(model, processor, data_collator,
+                             #training_args, train_dataset, eval_dataset)
     # load_trainer load_grouped_trainer
 
     logger.info("Training-Args:")
@@ -159,10 +159,10 @@ def main():
     logger.info("args:")
     logger.info(args)
 
-    if "all" in training_args.report_to or "wandb" in training_args.report_to:
-        logger.info("Uploading Results to WANDB")
-        wandb.save(training_args.output_dir)
-        logger.info("[DONE] Uploading Results to WANDB")
+##    if "all" in training_args.report_to or "wandb" in training_args.report_to:
+##        logger.info("Uploading Results to WANDB")
+##        wandb.save(training_args.output_dir)
+##        logger.info("[DONE] Uploading Results to WANDB")
 
     logger.debug("[Base] Model", _model_name_or_path)
 

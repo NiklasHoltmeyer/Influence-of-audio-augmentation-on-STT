@@ -107,7 +107,8 @@ def callback_dict(filter_settings, target_sample_rate):
         _range = value["range"]
         range_fn_mapping[key] = random_rate(_range)
 
-    snr_fn = random_rate(filter_settings["real_noise"]["range"])
+    if "real_noise" in filter_settings.keys():
+        snr_fn = random_rate(filter_settings["real_noise"]["range"])
 
     def __add_real_noise(idx, yp, rate, y_n_path):
         #        yp, _ = IO.load(y_path, sample_rate=target_sample_rate)
@@ -190,7 +191,7 @@ global job_fn_mapping, range_fn_mapping, target_samplerate
              header="Augmentation", padding_length=50)
 def augment_dataset(df, noise_df, **kwargs):
     global job_fn_mapping, range_fn_mapping, target_samplerate
-    _filter_settings = kwargs.get("filter_settings", filter_settings)
+    _filter_settings = kwargs.pop("filter_settings", filter_settings)
     target_samplerate = kwargs.get("target_sample_rate", 16_000)
     _threads = kwargs.get("threads", os.cpu_count() * 2)
     _output_dir = kwargs.get("output_dir", None)
@@ -198,14 +199,15 @@ def augment_dataset(df, noise_df, **kwargs):
 
     assert _output_dir, "Please Specifiy output_dir."
 
-    df = build_job_df(df, noise_df, filter_settings, **kwargs)
-    job_fn_mapping, range_fn_mapping = callback_dict(filter_settings, target_sample_rate=target_samplerate)
+    df = build_job_df(df, noise_df, filter_settings=_filter_settings, **kwargs)
+    job_fn_mapping, range_fn_mapping = callback_dict(filter_settings=_filter_settings, target_sample_rate=target_samplerate)
     jobs = list(enumerate((zip_jobs(df))))
+    job_len = len(jobs)
 
     warnings.filterwarnings('ignore')
 
-    with Pool(processes=_threads) as pool: #_threads
-        pool.map(execute_job, tqdm(jobs, desc=f"Audio-Augmentation: {_threads} Threads"))
+    with Pool(processes=min(_threads, job_len)) as pool: #_threads
+        pool.map(execute_job, tqdm(jobs, desc=f"Audio-Augmentation: {_threads} Threads", total=job_len))
 
     warnings.filterwarnings('default')
     logger.debug("Finished Augmenting Dataset")

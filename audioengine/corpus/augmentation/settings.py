@@ -1,8 +1,8 @@
 filter_settings = {
-    "real_noise": {
-        "range": (0.6, 0.9), #0.5 geht fitt
-        "probability": 1.0,
-    }
+    "reverb": {
+        "range": (5, 50),
+        "probability": 1.00,
+    },
 }
 filter_settings_all = {
     "time_stretch": {
@@ -41,3 +41,11 @@ filter_settings_all = {
 
 assert not False in [0 <= filter_settings[key]["probability"] <= 1 for key in
                      filter_settings.keys()], "Probability Range = 0..1"
+
+
+#filter_settings = {
+    #"real_noise": {
+        #"range": (0.6, 0.9), #0.5 geht fitt
+        #"probability": 1.0,
+    #}
+#}

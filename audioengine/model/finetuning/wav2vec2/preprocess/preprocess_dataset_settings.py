@@ -3,7 +3,7 @@ from audioengine.logging.logging import defaultLogger
 logger = defaultLogger()
 
 def preprocess_settings():
-    return preprocess_settings_cv_ttsaug()#preprocess_settings_cv_realnoise_aug()
+    return preprocess_settings_cv_random_aug()#preprocess_settings_cv_realnoise_aug()
     #return preprocess_settings_eval()
 #"/share/datasets/8mil_tts/"
 
@@ -36,13 +36,17 @@ def preprocess_settings_cv_ttsaug():
                 "base_path": "/share/datasets/8mil_tts/",
                 "shuffle": True,
                 "validation_split": None,
-                "type": "filterd",
+                "type": "filter_trim",
                 "fixed_length": 15_000,
                 #"min_duration": 1.5,
                 #"max_duration": 6.0,
                 "min_target_length": 2,
                 "max_target_length": None,
-                "filter": '-af "highpass=200,lowpass=3000,afftdn"',
+                "filter": ['-af "highpass=200,lowpass=3000,afftdn"',
+                           '-af "silenceremove=start_periods=1:start_duration=1:start_threshold=-50dB:detection=peak,'
+                           'aformat=dblp,areverse,'
+                           'silenceremove=start_periods=1:start_duration=1:start_threshold=-50dB:detection=peak,'
+                           'aformat=dblp,areverse"'],
                 "tts_engine": "silero"
             }
         ],
@@ -148,7 +152,7 @@ def preprocess_settings_cvmd_no_aug():
 
     return test_settings
 
-def preprocess_settings_cv_realnoise_aug():
+def preprocess_settings_cv_random_aug():
     cv_test_full = {
         "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
         "shuffle": True,
@@ -173,7 +177,7 @@ def preprocess_settings_cv_realnoise_aug():
     }
 
     cv_train_fixed_length_aug = {
-        "base_path": "/share/datasets/cv_small_rnoise/",
+        "base_path": "/share/datasets/cv_small_bandpass",
         "shuffle": True,
         "validation_split": None,  # -> all entries
         "type": "train_small",
@@ -189,6 +193,39 @@ def preprocess_settings_cv_realnoise_aug():
         "train_settings": [
             cv_train_fixed_length,
             cv_train_fixed_length_aug,
+        ]
+    }
+
+    return test_settings
+
+def preprocess_settings_TEST_TEST_TEST():
+    cv_test_full = {
+        "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
+        "shuffle": True,
+        "validation_split": None,
+        "fixed_length": 32, # -> 20% f. train
+        "type": "test_small",
+        "min_duration": 1.5,
+        "max_duration": 6.00,
+        "min_target_length": 2,
+        "max_target_length": None
+    }
+
+    cv_train_fixed_length = {
+        "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
+        "shuffle": True,
+        "validation_split": None,  # -> all entries
+        "type": "train_small",
+        "min_duration": 1.50,
+        "fixed_length": 32,
+        "max_duration": 6.00,
+        "min_target_length": 2,
+        "max_target_length": None
+    }
+    test_settings = {
+        "val_settings": [cv_test_full],
+        "train_settings": [
+            cv_train_fixed_length,
         ]
     }
 

@@ -42,13 +42,14 @@ class TTSSynthesized(AudioDataset):
 
         path_mapping = {
             "filterd" : "path_filterd",
+            "filter_trim" : "path_filterd_trim",
             "clean": "path"
         }
 
         path_col = path_mapping.get(type)
 
         usecols = ['sentence', path_col, 'target_length', 'duration']
-        rename_cols = {"path_filterd": "path"}
+        rename_cols = {path_col: "path"}
 
         dataframe = super().load_dataframe(tsv_path, encoding="utf-8",
                                            sep=self.df_sep, rename_cols=rename_cols, usecols=usecols, **kwargs)
@@ -191,7 +192,7 @@ if __name__ == "__main__":
     rename_cols = {"text": "sentence"}
     tts = TTSSynthesized(text_files=texts, output_dir=output_dir, tts_engine=tts_engine)
     # .load_dataframe(rename_cols=rename_cols, fixed_length=fixed_length)
-    df = tts.load_dataframe(fixed_length=15_000, type="filterd")
+    df = tts.load_dataframe(fixed_length=15_000, type="filter_trim")
 
     print(df)
     print(df.keys())
