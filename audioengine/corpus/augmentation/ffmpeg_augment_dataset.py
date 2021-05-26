@@ -11,14 +11,14 @@ import os
 logger = defaultLogger()
 
 
-def build_job_df(df, settings):
+def build_job_df(df, settings,file_prefix="ffmpeg_"):
     df = df.rename(columns={"path": "path_src"})
     output_sub_dir = settings.get("output_subfolder", "")
 
     output_dir = Path(settings["output_dir"], output_sub_dir)
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    new_path = lambda path: str(Path(output_dir, Path(path).name).resolve())
+    new_path = lambda path: str(Path(output_dir, file_prefix + Path(path).name).resolve())
     df["path"] = df["path_src"].map(new_path)
     return df
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     }
 
     settings = {
-        "output_dir": "/share/datasets/cv_ffmpeg",
+        "output_dir": "/share/datasets/cv_sm_noise_random",
         "output_subfolder": "wavs",
         "sep": "\t",
         "file_name": "processed_train_small.tsv",
@@ -77,6 +77,47 @@ if __name__ == "__main__":
 
     df, df_info = Dataset("torch")._load_from_name(**df_settings)
     df_job = build_job_df(df, settings)
+
     apply_filter(df_job, settings)
+
     df_job = df_job.drop(columns=["path_src"])
     save_df(df_job, settings)
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    df_settings = {
+        "base_path": "/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de",
+        "shuffle": True,
+        "validation_split": None,  # -> all entries
+        "type": "train_small",
+        "min_duration": 1.50,
+        "max_duration": 6.00,
+        "min_target_length": 2,
+        "max_target_length": None,
+        "type": "train_small",
+    }
+
+    settings = {
+        "output_dir": "/share/datasets/cv_sm_noise_random",
+        "output_subfolder": "wavs",
+        "sep": "\t",
+        "file_name": "processed_train_small.tsv",
+        "ffmpeg_filter": '-af "highpass=200,lowpass=3000,afftdn"',
+    }
+
+    df, df_info = Dataset("torch")._load_from_name(**df_settings)
+    df_job = build_job_df(df, settings)
+
+    apply_filter(df_job, settings)
+
+    df_job = df_job.drop(columns=["path_src"])
+    save_df(df_job, settings)
+
+
+
+

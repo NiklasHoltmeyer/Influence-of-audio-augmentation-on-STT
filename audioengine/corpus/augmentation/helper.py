@@ -46,22 +46,25 @@ def add_real_noise_column(signal_df, noise_df):
     len_dif = len(signal_df) - len(noise_df)
 
     if len_dif < 0:  # -> s_df < n_df
-        noise_df = noise_df[: len(signal_df)]["path"]
+        logger.debug(f"More Noise then Signale Samples! Truncating Noise")
+        noise_paths = noise_df[: len(signal_df)]["path"]
     elif len_dif > 0:  # -> s_df > n_df
+        logger.debug(f"More Signale then Noise Samples! Padding Noise")
         pad_fn = 'symmetric'
         beg = int(len_dif / 2)
         end = len_dif - beg
-        noise_df = np.pad(noise_df["path"], (beg, end), pad_fn)
+        noise_paths = np.pad(noise_df["path"], (beg, end), pad_fn)
     else:
         logger.debug(f"Signales and Noises are of the same Shape")
-        noise_df = noise_df["path"]
+        noise_paths = noise_df["path"]
 
     # assert len(signal_df) == len(noise_df), "Padding (Dataframes) failed"
-    signal_df["path_noise"] = noise_df
+    signal_df["path_noise"] = noise_paths
+
     return signal_df.sample(frac=1).reset_index(drop=True)
 
 
-def add_output_path_column(df, output_dir, subfolder=None):
+def add_output_path_column(df, output_dir, file_prefix, subfolder=None):
     output_path = Path(output_dir, subfolder) if subfolder else Path(output_dir)
     output_path.mkdir(exist_ok=True, parents=True)
     output_path = str(output_path.resolve())
@@ -71,7 +74,7 @@ def add_output_path_column(df, output_dir, subfolder=None):
         filter_applied = len(item.filter_job) != 0
         if not filter_applied:
             return input_path
-        file_name_w_o_extension = Path(input_path).name.split(".")[0] + ".wav"
+        file_name_w_o_extension = file_prefix + Path(input_path).name.split(".")[0] + ".wav"
         return str(Path(output_path, file_name_w_o_extension).resolve())
 
     df["path_output"] = df.apply(_calc_output_path, axis=1)
@@ -119,7 +122,9 @@ def callback_dict(filter_settings, target_sample_rate):
     job_fn_mapping = {
         "time_stretch": lambda __, y, rate, _: Effect.time_stretch(y, rate),
         "harmonic_remove": lambda __, y, rate, _: (y - 0.5 * librosa.effects.harmonic(y, margin=rate)),
-        "percussive_remove": lambda __, y, rate, _: librosa.effects.percussive(y, margin=rate),
+        "percussive_remove": lambda __, y, rate, _: (y - 0.5 * librosa.effects.percussive(y, margin=rate)),
+        "percussive": lambda __, y, rate, _: librosa.effects.percussive(y, margin=rate),
+        "harmonic": lambda __, y, rate, _: librosa.effects.harmonic(y, margin=rate),
         "random_noise": lambda __, y, rate, _: Effect.add_noise_random(y, rate),
         "real_noise": lambda idx, y, rate, y_n: __add_real_noise(idx, y, rate, y_n),
         "reverb": lambda __, y, rate, _: AudioEffectsChain().reverb(reverberance=rate, hf_damping=rate,
@@ -173,10 +178,12 @@ def execute_job(job):
 def build_job_df(df, noise_df, filter_settings, output_dir, output_subfolder=None, **kwargs):
     Path(output_dir).mkdir(exist_ok=True, parents=True)
 
+    file_prefix = kwargs.get("file_prefix", "aug_")
+
     df = add_real_noise_column(df, noise_df)
     df = df.rename({'path': 'path_input'}, axis=1)
     df = add_filter_job_column(df, filter_settings)
-    df = add_output_path_column(df, output_dir, output_subfolder)
+    df = add_output_path_column(df=df, output_dir=output_dir, subfolder=output_subfolder, file_prefix=file_prefix)
     df = df.rename({'path_output': 'path'}, axis=1)
 
     df = df[["path", "sentence", "duration", "target_length", "path_input", "path_noise", "filter_job"]]

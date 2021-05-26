@@ -1,9 +1,13 @@
 filter_settings = {
-    "reverb": {
-        "range": (5, 50),
-        "probability": 1.00,
+    "harmonic": {
+        "range": (1, 5),  # margin_range
+        "probability": 1.0
     },
 }
+
+
+
+
 filter_settings_all = {
     "time_stretch": {
         "range": (0.8, 1.5),
@@ -17,12 +21,20 @@ filter_settings_all = {
         "range": (1, 5),  # margin
         "probability": 0.1
     },
+    "harmonic": {
+        "range": (1, 5),  # margin_range
+        "probability": 0.1
+    },
+    "percussive": {
+        "range": (1, 5),  # margin
+        "probability": 0.1
+    },
     "random_noise": {
-        "range": (0.98, 1),  # PSNR range #<- still *quiet* loud!
+        "range": (0.98, 0.99),  # PSNR range #<- still *quiet* loud!
         "probability": 0.01
     },
     "real_noise": {
-        "range": (0.15, 0.45),
+        "range": (0.6, 0.9),
         "probability": 0.15,
     },
     "reverb": {

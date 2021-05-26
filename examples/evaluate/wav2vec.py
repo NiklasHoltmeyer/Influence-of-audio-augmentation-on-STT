@@ -59,77 +59,31 @@ def in_list(_list, exception_text):
 nh_proc = "unknownTransformer/wav2vec2-large-xlsr-german"
 
 jobs = [
-#    ('/share/modelle/no_aug/models/cv_small_noaug_2/checkpoint-3000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_small_noaug_2/checkpoint-4000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_small_noaug_2/checkpoint-2000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_sm_nh/checkpoint-3000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_sm_nh/checkpoint-4000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_sm_nh/checkpoint-5000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_sm_nh/checkpoint-8000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_sm_nh/checkpoint-7000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_sm_nh/checkpoint-6000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_small_noaug_1_conf/checkpoint-3000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_small_noaug_1_conf/checkpoint-4000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_small_noaug_1_conf/checkpoint-2000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_s_1_conf/checkpoint-6000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_small_noaug_1/checkpoint-3000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_small_noaug_1/checkpoint-4000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_small_noaug_1/checkpoint-2000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_md_noaug/checkpoint-3000', nh_proc),
-#    ('/share/modelle/no_aug/models/cv_md_noaug/checkpoint-4000', nh_proc),
-    ('/share/modelle/no_aug/models/cv_md_noaug/checkpoint-10000', nh_proc),
-    ('/share/modelle/no_aug/models/cv_md_noaug/checkpoint-5000', nh_proc),
-    ('/share/modelle/no_aug/models/cv_md_noaug/checkpoint-11000', nh_proc),
-    ('/share/modelle/no_aug/models/cv_md_noaug/checkpoint-8000', nh_proc),
-    ('/share/modelle/no_aug/models/cv_md_noaug/checkpoint-2000', nh_proc),
-    ('/share/modelle/no_aug/models/cv_md_noaug/checkpoint-7000', nh_proc),
-    ('/share/modelle/no_aug/models/cv_md_noaug/checkpoint-6000', nh_proc),
-    ('/share/modelle/no_aug/models/cv_md_noaug/checkpoint-9000', nh_proc),
-    ('/share/modelle/no_aug/models/cv_s_1/checkpoint-6000', nh_proc),
-    ('/share/modelle/noise/models/cv_sm_real_noise/checkpoint-3000', nh_proc),
-    ('/share/modelle/noise/models/cv_sm_real_noise/checkpoint-4000', nh_proc),
-    ('/share/modelle/noise/models/cv_sm_real_noise/checkpoint-10000', nh_proc),
-    ('/share/modelle/noise/models/cv_sm_real_noise/checkpoint-5000', nh_proc),
-    ('/share/modelle/noise/models/cv_sm_real_noise/checkpoint-8000', nh_proc),
-    ('/share/modelle/noise/models/cv_sm_real_noise/checkpoint-2000', nh_proc),
-    ('/share/modelle/noise/models/cv_sm_real_noise/checkpoint-7000', nh_proc),
-    ('/share/modelle/noise/models/cv_sm_real_noise/checkpoint-6000', nh_proc),
-    ('/share/modelle/noise/models/cv_sm_real_noise/checkpoint-9000', nh_proc),
-    ('/share/modelle/base/models/run_g_f_p_1_resume/checkpoint-18000',
-     '/share/modelle/base/models/run_g_f_p_1_resume/checkpoint-18000'),
-    ('/share/modelle/base/models/run_g_f_p_1_resume/checkpoint-19000',
-     '/share/modelle/base/models/run_g_f_p_1_resume/checkpoint-19000'),
-    ('/share/modelle/base/models/run_g_f_p_1_resume/checkpoint-17000',
-     '/share/modelle/base/models/run_g_f_p_1_resume/checkpoint-17000'),
-    (
-    '/share/modelle/base/models/run_g_f_i_1/checkpoint-3000', '/share/modelle/base/models/run_g_f_i_1/checkpoint-3000'),
-    (
-    '/share/modelle/base/models/run_g_f_i_1/checkpoint-1000', '/share/modelle/base/models/run_g_f_i_1/checkpoint-1000'),
-    (
-    '/share/modelle/base/models/run_g_f_i_1/checkpoint-2000', '/share/modelle/base/models/run_g_f_i_1/checkpoint-2000'),
-    ('/share/modelle/base/models/run_k_3/checkpoint-5000', '/share/modelle/base/models/run_k_3/checkpoint-5000'),
-    ('/share/modelle/base/models/run_k_3/checkpoint-1000', '/share/modelle/base/models/run_k_3/checkpoint-1000'),
-    ('/share/modelle/base/models/run_k_3/checkpoint-2000', '/share/modelle/base/models/run_k_3/checkpoint-2000'),
-    ('/share/modelle/base/models/run_pro_idleback/checkpoint-22000',
-     '/share/modelle/base/models/run_pro_idleback/checkpoint-22000'),
-    ('/share/modelle/base/models/run_pro_idleback/checkpoint-23000',
-     '/share/modelle/base/models/run_pro_idleback/checkpoint-23000'),
-    ('/share/modelle/base/models/run_pro_idleback/checkpoint-24000',
-     '/share/modelle/base/models/run_pro_idleback/checkpoint-24000'),
-    ('/share/modelle/base/models/run_k_1/checkpoint-3000', '/share/modelle/base/models/run_k_1/checkpoint-3000'),
-    ('/share/modelle/base/models/run_k_1/checkpoint-4000', '/share/modelle/base/models/run_k_1/checkpoint-4000'),
-    ('/share/modelle/base/models/run_k_1/checkpoint-5000', '/share/modelle/base/models/run_k_1/checkpoint-5000'),
-    ('/share/modelle/base/models/run_pro_750_wu/checkpoint-8000',
-     '/share/modelle/base/models/run_pro_750_wu/checkpoint-8000'),
-    ('/share/modelle/base/models/run_pro_750_wu/checkpoint-1000',
-     '/share/modelle/base/models/run_pro_750_wu/checkpoint-1000'),
-    ('/share/modelle/base/models/run_pro_750_wu/checkpoint-9000',
-     '/share/modelle/base/models/run_pro_750_wu/checkpoint-9000'),
-    ('/share/modelle/base/models/run_pro_500_wu/checkpoint-8000',
-     '/share/modelle/base/models/run_pro_500_wu/checkpoint-8000'),
-    ('/share/modelle/base/models/run_pro_500_wu/checkpoint-7000',
-     '/share/modelle/base/models/run_pro_500_wu/checkpoint-7000'),
-    ('/share/modelle/base/models/run_pro_500_wu/checkpoint-9000', '/share/modelle/base/models/run_pro_500_wu/checkpoint - 9000'),
+    '/share/modelle/tts/models/cv-tts-nofilter-nh/',
+     '/share/modelle/tts/models/cv-tts-filter-trim-nh/',
+     '/share/modelle/tts/models/cv-ttsfilter-nh/',
+     '/share/modelle/filter/models/cv-sm-tremolo-nh/',
+     '/share/modelle/filter/models/cv-sm-time-stretch-nh/',
+     '/share/modelle/filter/models/cv-sm-noise-random-nh/',
+     '/share/modelle/filter/models/cv_sm_bandpass_nh/',
+     '/share/modelle/filter/models/cv_sm_freqpass_nh/',
+     '/share/modelle/filter/models/cv-sm-percussive-nh/',
+     '/share/modelle/filter/models/cv-sm-harmonic-nh/',
+     '/share/modelle/filter/models/cv_sm_reverb_nh/',
+     '/share/modelle/noise/models/cv-sm-noise-real-nh/',
+     '/share/modelle/noise/models/cv-sm-noise-random-nh/',
+     '/share/modelle/noise/models/cv_sm_noise_mix_nh/',
+     '/share/modelle/no_aug/models/cv_sm_nh_1e5/',
+     '/share/modelle/no_aug/models/cv_sm_nh_1e3/',
+     '/share/modelle/no_aug/models/cv-sm-nh-5e5/',
+     '/share/modelle/no_aug/models/cv_sm_nh/',
+     '/share/modelle/no_aug/models/cv_sm_nh_5e3/',
+     '/share/modelle/no_aug/models/cv_sm_nh_5e4/',
+     '/share/modelle/no_aug/models/cv_md_nh/',
+     '/share/modelle/base/models/run_g_f_p_1_resume/',
+     '/share/modelle/base/models/run_k_3/',
+     '/share/modelle/base/models/run_pro_idleback/',
+     '/share/modelle/base/models/run_k_1/'
 ]
 
 results = []
@@ -146,10 +100,15 @@ def already_run(model_name, file_path):
                 return True
     return False
 
-result_path = "/share/modelle/check_results_checkpoints_bruteforce.tsv"
-failed_path = "/share/modelle/check_failed.tsv"
+result_path = "/share/modelle/results2205.tsv"
+failed_path = "/share/modelle/failed2205.tsv"
+based_on=nh_proc
+y = "/share/modelle/filter/models/cv_sm_freqpass_nh/"
+xxx = validate_model(y, based_on=based_on)
+print(xxx)
+exit(0)
 
-for model_name, based_on in tqdm(
+for model_name in tqdm(
         jobs, desc="troll"):
     try:
         # base_on = str(Path(model_name).parent.resolve())

@@ -68,11 +68,13 @@ class CommonVoice(AudioDataset):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)    
-    df = CommonVoice(r"/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de").load_dataframe(type="other")
-    type_all = ["train", "dev", "test", "invalidated", "reported", "other", "validated"]
+    #df = CommonVoice(r"/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de").load_dataframe(type="other")
+    #type_all = ["train", "dev", "test", "invalidated", "reported", "other", "validated"]
 
-    df = CommonVoice(r"/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de").load_dataframe(type="test")
+    df = CommonVoice(r"/share/datasets/cv/de/cv-corpus-6.1-2020-12-11/de").load_dataframe(type="test-sm")
     print(df.head(5))
     print("*")
     print(df.head(-5))
+    print("*")
+    print("Len", len(df))
 
