@@ -59,35 +59,12 @@ def in_list(_list, exception_text):
 nh_proc = "unknownTransformer/wav2vec2-large-xlsr-german"
 
 jobs = [
-    '/share/modelle/tts/models/cv-tts-nofilter-nh/',
-     '/share/modelle/tts/models/cv-tts-filter-trim-nh/',
-     '/share/modelle/tts/models/cv-ttsfilter-nh/',
-     '/share/modelle/filter/models/cv-sm-tremolo-nh/',
-     '/share/modelle/filter/models/cv-sm-time-stretch-nh/',
-     '/share/modelle/filter/models/cv-sm-noise-random-nh/',
-     '/share/modelle/filter/models/cv_sm_bandpass_nh/',
-     '/share/modelle/filter/models/cv_sm_freqpass_nh/',
-     '/share/modelle/filter/models/cv-sm-percussive-nh/',
-     '/share/modelle/filter/models/cv-sm-harmonic-nh/',
-     '/share/modelle/filter/models/cv_sm_reverb_nh/',
-     '/share/modelle/noise/models/cv-sm-noise-real-nh/',
-     '/share/modelle/noise/models/cv-sm-noise-random-nh/',
-     '/share/modelle/noise/models/cv_sm_noise_mix_nh/',
-     '/share/modelle/no_aug/models/cv_sm_nh_1e5/',
-     '/share/modelle/no_aug/models/cv_sm_nh_1e3/',
-     '/share/modelle/no_aug/models/cv-sm-nh-5e5/',
-     '/share/modelle/no_aug/models/cv_sm_nh/',
-     '/share/modelle/no_aug/models/cv_sm_nh_5e3/',
-     '/share/modelle/no_aug/models/cv_sm_nh_5e4/',
-     '/share/modelle/no_aug/models/cv_md_nh/',
-     '/share/modelle/base/models/run_g_f_p_1_resume/',
-     '/share/modelle/base/models/run_k_3/',
-     '/share/modelle/base/models/run_pro_idleback/',
-     '/share/modelle/base/models/run_k_1/'
+    '/share/modelle/tts/models/cv-tts-nofilter-nh',
 ]
 
 results = []
 failed = []
+
 
 ##/share/modelle/vf_cv_small/results.tsv
 ##/share/modelle/vf_cv_small/failed.tsv
@@ -99,70 +76,29 @@ def already_run(model_name, file_path):
             if model_name in line_model:
                 return True
     return False
+model_name = "jonatasgrosman/wav2vec2-large-xlsr-53-german"
+result_tsv = validate_model(model_name, based_on=model_name)
+print(result_tsv)
 
-result_path = "/share/modelle/results2205.tsv"
-failed_path = "/share/modelle/failed2205.tsv"
-based_on=nh_proc
-y = "/share/modelle/filter/models/cv_sm_freqpass_nh/"
-xxx = validate_model(y, based_on=based_on)
-print(xxx)
-exit(0)
+#supported_models = ['facebook/wav2vec2-large-xlsr-53-german',
+#                    'maxidl/wav2vec2-large-xlsr-german',
+#                    'marcel/wav2vec2-large-xlsr-53-german',
+#                    'flozi00/wav2vec-xlsr-german',
+#                    'marcel/wav2vec2-large-xlsr-german-demo',
+#                    'MehdiHosseiniMoghadam/wav2vec2-large-xlsr-53-German']
+#parser_supported_models_str = ["\t" + model for model in supported_models]
+#parser_supported_models_str = "Supported Models: \r\n" + "\r\n".join(parser_supported_models_str)
 
-for model_name in tqdm(
-        jobs, desc="troll"):
-    try:
-        # base_on = str(Path(model_name).parent.resolve())
-        # base_on = "/share/datasets/wav2vec2-large-xlsr-german-vf_nh"
-        if not already_run(model_name, result_path):
-            result_tsv = validate_model(model_name, based_on=based_on)
+#parser = argparse.ArgumentParser(description="Evaluate Wav2Vec", formatter_class=RawTextHelpFormatter)
+#parser.add_argument('--model_name', '-m', required=True,
+#                   help=parser_supported_models_str, type=in_list(supported_models, "\r\nInvalid Model Name: "))
 
-            with open(result_path, "a+") as f:
-                f.write("\t".join([result_tsv]))
-                f.write("\n")
-
-            results.append(result_tsv)
-    except Exception as e:
-        print(e)
-        with open(failed_path, "a+") as f:
-            f.write("\t".join([model_name, "2" + str(e)]))
-            f.write("\n")
-        failed.append(model_name)
-
-print("*" * 72)
-print("*" * 72)
-print("*" * 72)
-for result in results:
-    print(result)
-print("-" * 72)
-print(results)
-print("-" * 72)
-for fail in failed:
-    print(fail)
-print("-" * 72)
-print(failed)
-print("*" * 72)
-print("*" * 72)
-print("*" * 72)
-
-supported_models = ['facebook/wav2vec2-large-xlsr-53-german',
-                    'maxidl/wav2vec2-large-xlsr-german',
-                    'marcel/wav2vec2-large-xlsr-53-german',
-                    'flozi00/wav2vec-xlsr-german',
-                    'marcel/wav2vec2-large-xlsr-german-demo',
-                    'MehdiHosseiniMoghadam/wav2vec2-large-xlsr-53-German']
-parser_supported_models_str = ["\t" + model for model in supported_models]
-parser_supported_models_str = "Supported Models: \r\n" + "\r\n".join(parser_supported_models_str)
-
-# parser = argparse.ArgumentParser(description="Evaluate Wav2Vec", formatter_class=RawTextHelpFormatter)
-# parser.add_argument('--model_name', '-m', required=True,
-#                    help=parser_supported_models_str, type=in_list(supported_models, "\r\nInvalid Model Name: "))
-
-# args = parser.parse_args()
-# model_name = args.model_name
-# model_name = "flozi00/wav2vec-xlsr-german"
-# for model_name in supported_models:
+#args = parser.parse_args()
+#model_name = args.model_name
+#model_name = "flozi00/wav2vec-xlsr-german"
+#for model_name in supported_models:
 #    try:
-#        print(validate_model(model_name))
-#    except Exception as e:
-#        error = "\t".join([model_name, "error", str(e)])
-#        print(error)
+#       print(validate_model(model_name))
+#   except Exception as e:
+#       error = "\t".join([model_name, "error", str(e)])
+#       print(error)
