@@ -21,12 +21,12 @@ The two reference values (CV-SM, -MD) and the best augmentation technique will b
 
 ### Traditional approaches
 <p align="center">
-<img src="raw.githubusercontent.com/NiklasHoltmeyer/stt-audioengine/master/misc/comparison/svg/2_related_work_trad.svg"/>
+<img src="https://raw.githubusercontent.com/NiklasHoltmeyer/stt-audioengine/master/misc/comparison/svg/2_related_work_trad.svg"/>
 </p>
 
 ### End-to-End approaches
 <p align="center">
-<img src="raw.githubusercontent.com/NiklasHoltmeyer/stt-audioengine/master/misc/comparison/svg/2_related_work_end_to_end_comparison.svg"/>
+<img src="https://raw.githubusercontent.com/NiklasHoltmeyer/stt-audioengine/master/misc/comparison/svg/2_related_work_end_to_end_comparison.svg"/>
 </p>
 
 ## References
