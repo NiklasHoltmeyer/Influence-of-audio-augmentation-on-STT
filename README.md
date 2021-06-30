@@ -8,7 +8,10 @@ This project investigates the impact of audio augmentation techniques on low-res
 <image src="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/NiklasHoltmeyer/stt-audioengine/master/misc/comparison/1_datasets.pdf"/>
 
 3
+![alt text](http://url/to/img.png)
 
+4
+![alt text](https://github.com/NiklasHoltmeyer/stt-audioengine/master/misc/comparison/1_datasets.pdf?raw=true)
 
 
 
