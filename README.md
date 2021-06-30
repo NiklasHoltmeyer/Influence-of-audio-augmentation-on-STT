@@ -8,9 +8,9 @@ The following table shows the influence of different augmentations on the traini
 The two reference values (CV-SM, -MD) and the best augmentation technique will be evaluated relative to other models in the following. It should be noted that the other models were trained on the complete CV data set, unless otherwise described. The models trained on CV-Train were thus trained on about 9 times as much data.
 
 ![Overall](https://raw.githubusercontent.com/NiklasHoltmeyer/stt-audioengine/master/misc/comparison/svg/3_overall.svg)
-2
-<img align="center" src="https://raw.githubusercontent.com/NiklasHoltmeyer/stt-audioengine/master/misc/comparison/svg/3_overall.svg"/>
-x
+<p align="center">
+  <img src="https://raw.githubusercontent.com/NiklasHoltmeyer/stt-audioengine/master/misc/comparison/svg/3_overall.svg">
+</p>
 ## Other - comparison of STT solutions
 ### Datasets
 ![Datasets](https://raw.githubusercontent.com/NiklasHoltmeyer/stt-audioengine/master/misc/comparison/svg/1_datasets.svg)
